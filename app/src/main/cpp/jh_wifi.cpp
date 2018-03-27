@@ -5100,7 +5100,8 @@ void F_RecRP_RTSP_Status_Service() {
     int ret = -1;
     if (rev_cmd_thread == -1) {
         ret = pthread_create(&rev_cmd_thread, NULL, doReceive_cmd, (void *) NULL); // 成功返回0，错误返回错误编号
-        if (ret != 0) {
+        if (ret != 0)
+        {
             rev_cmd_thread = -1;
         }
     }
