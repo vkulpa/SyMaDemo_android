@@ -346,7 +346,8 @@ public class wifination {
     }
 
     // IC_GKA  获取SD卡文件列表回调函数
-    private static void GetFiles(byte[] filesname) {
+    private static void GetFiles(byte[] filesname)
+    {
         String s1 = null;
         s1 = new String(filesname);
         EventBus.getDefault().post(s1, "GetFiles");      //调用第三方库来发消息。
