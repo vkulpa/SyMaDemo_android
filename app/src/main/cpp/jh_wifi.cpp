@@ -6105,8 +6105,9 @@ Java_com_joyhonest_wifination_wifination_naGetControlType(JNIEnv *env, jclass ty
 
 
 void F_ProcessDecordData(uint8_t *data, int32_t nLen, int width, int height, int nColor) {
-#if 1
 
+
+#if 1
     //LOGE("w = %d h = %d", width, height);
     if (m_FFMpegPlayer.m_codecCtx == NULL ||
         m_FFMpegPlayer.m_decodedFrame == NULL) {
@@ -6284,7 +6285,7 @@ Java_com_joyhonest_wifination_wifination_naSetAdjFps(JNIEnv *env, jclass type, j
 
 #endif
 
-
+bool   bSentRevBMP = false;
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naGkASetRecordResolution(JNIEnv *env, jclass type, jboolean b720p) {
@@ -6322,4 +6323,13 @@ Java_com_joyhonest_wifination_JH_1GLSurfaceView_naDecordRelease(JNIEnv *env, jcl
 JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naSetGKA_1SentCmdByUDP(JNIEnv *env, jclass type, jboolean bUdp) {
     bGKACmd_UDP = bUdp;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetRevBmp(JNIEnv *env, jclass type, jboolean b) {
+
+    bSentRevBMP = b;
+    // TODO
+
 }

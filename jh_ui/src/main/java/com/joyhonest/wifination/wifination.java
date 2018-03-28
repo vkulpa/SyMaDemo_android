@@ -4,34 +4,21 @@ package com.joyhonest.wifination;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.media.MediaCodecInfo;
-import android.media.MediaCodecList;
-import android.os.Build;
 import android.util.Log;
 
 
-import com.joyhonest.jh_ui.JH_App;
-import com.joyhonest.jh_ui.R;
+
 
 import org.simple.eventbus.EventBus;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.nio.ByteBuffer;
-import java.util.ArrayList;
-import java.util.List;
+
 
 /**
  * Created by aivenlau on 16/7/13.
+ *
  */
 
 
@@ -232,6 +219,9 @@ public class wifination {
 
     public static native void naSetAdjFps(boolean b); //对应国科IC，有些早期固件不支持调整FPS，所以需要增加这一条命令
 
+
+    public static native  void naSetRevBmp(boolean b); //是否把解码到的图像发送到JAVA，有APP自己来显示而不是通过SDK内部来渲染显示
+
     /**
      * OpenGL ES 2.0
      */
@@ -406,15 +396,12 @@ public class wifination {
         //其中，i:bit00-bit15   为图像宽度
         //      i:bit16-bit31  为图像高度
         // 图像数据保存在mDirectBuffer中，格式为ARGB_8888
-        // Bitmap bmp = Bitmap.createBitmap(i&0xFFFF,(i&0xFFFF0000)>>16,Bitmap.Config.ARGB_8888);
-        //ByteBuffer buf = wifination.mDirectBuffer;
-        //buf.rewind();
-        //bmp.copyPixelsFromBuffer(buf);    //
-        //   Log.e("revice:"," W="+(i&0xFFFF)+"  H= "+((i&0xFFFF0000)>>16));
-        /*
-        Integer iw=i;
-        EventBus.getDefault().post(iw, "ReviceBMP");
-        */
+        Bitmap bmp = Bitmap.createBitmap(i&0xFFFF,(i&0xFFFF0000)>>16,Bitmap.Config.ARGB_8888);
+        ByteBuffer buf = wifination.mDirectBuffer;
+        buf.rewind();
+        bmp.copyPixelsFromBuffer(buf);    //
+        //Integer iw=i;
+        EventBus.getDefault().post(bmp, "ReviceBMP");
     }
 
 

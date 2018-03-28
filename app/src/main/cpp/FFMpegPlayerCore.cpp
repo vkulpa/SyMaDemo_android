@@ -3314,72 +3314,53 @@ void C_FFMpegPlayer::F_SendFrame(uint8_t *buffer, int nLen) {
 #endif
 
 bool blocked = false;
+
+extern  bool bSentRevBMP;
+
 extern AVFrame *gl_Frame;
 extern int64_t  nRecStartTime;
 void C_FFMpegPlayer::F_DispSurface() {
 
-
-#if 1
-    if (gl_Frame != NULL)
+    if(bSentRevBMP)
     {
-        if((nSDStatus & bit1_LocalRecording) && !bRealRecording)
+        if(Rgbabuffer!=NULL)
         {
-            bRealRecording = true;
-            nRecStartTime = av_gettime()/1000;
-
+            libyuv::I420ToBGRA(pFrameYUV->data[0], pFrameYUV->linesize[0],
+                               pFrameYUV->data[1], pFrameYUV->linesize[1],
+                               pFrameYUV->data[2], pFrameYUV->linesize[2],
+                               Rgbabuffer, pFrameYUV->width * 4,
+                               pFrameYUV->width, pFrameYUV->height);
+            F_SentRevBmp(pFrameYUV->width + pFrameYUV->height * 0x10000);
         }
 
-        gl_Frame->width = pFrameYUV->width;
-        gl_Frame->height = pFrameYUV->height;
+    } else {
 
-        gl_Frame->linesize[0] = pFrameYUV->linesize[0];
-        gl_Frame->linesize[1] = pFrameYUV->linesize[1];
-        gl_Frame->linesize[2] = pFrameYUV->linesize[2];
+        if (gl_Frame != NULL) {
+            if ((nSDStatus & bit1_LocalRecording) && !bRealRecording) {
+                bRealRecording = true;
+                nRecStartTime = av_gettime() / 1000;
+
+            }
+
+            gl_Frame->width = pFrameYUV->width;
+            gl_Frame->height = pFrameYUV->height;
+
+            gl_Frame->linesize[0] = pFrameYUV->linesize[0];
+            gl_Frame->linesize[1] = pFrameYUV->linesize[1];
+            gl_Frame->linesize[2] = pFrameYUV->linesize[2];
 
 
-        libyuv::I420Copy(pFrameYUV->data[0], pFrameYUV->linesize[0],
-                         pFrameYUV->data[1], pFrameYUV->linesize[1],
-                         pFrameYUV->data[2], pFrameYUV->linesize[2],
-                         gl_Frame->data[0], pFrameYUV->linesize[0],
-                         gl_Frame->data[1], pFrameYUV->linesize[1],
-                         gl_Frame->data[2], pFrameYUV->linesize[2],
-                         pFrameYUV->width, pFrameYUV->height);
+            libyuv::I420Copy(pFrameYUV->data[0], pFrameYUV->linesize[0],
+                             pFrameYUV->data[1], pFrameYUV->linesize[1],
+                             pFrameYUV->data[2], pFrameYUV->linesize[2],
+                             gl_Frame->data[0], pFrameYUV->linesize[0],
+                             gl_Frame->data[1], pFrameYUV->linesize[1],
+                             gl_Frame->data[2], pFrameYUV->linesize[2],
+                             pFrameYUV->width, pFrameYUV->height);
 
-    }
-#else
-    if (nativeWindow == NULL) {
-        return;
-    }
-    if(pFrameRGB==NULL)
-        return;
-    //int64_t  dp = av_gettime()/1000;
-    if (ANativeWindow_lock(nativeWindow, &windowBuffer, 0) == 0 )
-    {
-        // 获取stride
-        uint8_t *dst = (uint8_t *) windowBuffer.bits;
-        int dstStride = windowBuffer.stride * 4;
-        uint8_t *src = (uint8_t *) (pFrameRGB->data[0]);
-        int srcStride = pFrameRGB->linesize[0];
-        //memcpy(dst,src,nDisplayHeight*srcStride);
-        // 由于window的stride和帧的stride不同,因此需要逐行复制
-        int h;
-        for (h = 0; h < nDisplayHeight; h++) {
-            memcpy(dst + h * dstStride, src + h * srcStride, srcStride);
         }
-
-        ANativeWindow_unlockAndPost(nativeWindow);
-        if(bReleaseSurface)
-        {
-            bReleaseSurface = false;
-            ANativeWindow_release(nativeWindow);
-            nativeWindow = NULL;
-        }
-
-
     }
-    //int64_t  dp1 = av_gettime()/1000;
-    //LOGE(" DPPP == %d",(int)(dp1-dp));
-#endif
+
 }
 
 
