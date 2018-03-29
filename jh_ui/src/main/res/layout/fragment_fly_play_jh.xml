@@ -29,7 +29,7 @@
             android:id="@+id/button01"
             android:layout_width="40dp"
             android:layout_height="34dp"
-            android:background="@mipmap/remote_control_fly_jh"
+            android:background="@mipmap/remote_control_fly_jh_b"
             android:gravity="center_horizontal"/>
 
         <com.joyhonest.jh_fly.MySwitch
@@ -66,7 +66,7 @@
             android:layout_alignParentBottom="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true"
-            android:background="@mipmap/folder_fly_jh"/>
+            android:background="@mipmap/folder_fly_jh_b"/>
 
     </LinearLayout>
 
@@ -91,7 +91,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignStart="@+id/button11"
         android:layout_marginTop="45dp"
-        android:background="@mipmap/stop_nor_fly_jh"/>
+        android:background="@mipmap/stop_nor_fly_jh_b"/>
 
     <Button
         android:id="@+id/button11"
@@ -100,7 +100,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="23dp"
-        android:background="@mipmap/keyup_dn_fly_jh"
+        android:background="@mipmap/keyup_dn_fly_jh_b"
         />
 
     <TextView
@@ -126,6 +126,11 @@
             android:layout_marginBottom="20dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
+            <Button
+                android:id="@+id/button_more"
+                android:layout_width="30dp"
+                android:layout_height="20dp"
+                android:background="@mipmap/more_fly_jh"/>
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -166,20 +171,16 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:gravity="center">
-
                     <Button
-                        android:id="@+id/button07"
+                        android:id="@+id/button09"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
-                        android:background="@mipmap/gsensor_icon_fly_jh"/>
+                        android:background="@mipmap/vr_fly_jh"/>
+
                 </LinearLayout>
             </LinearLayout>
 
-            <Button
-                android:id="@+id/button_more"
-                android:layout_width="30dp"
-                android:layout_height="20dp"
-                android:background="@mipmap/more_fly_jh"/>
+
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -193,10 +194,11 @@
                     android:layout_weight="1"
                     android:gravity="center">
                     <Button
-                        android:id="@+id/button08"
+                        android:id="@+id/button07"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
-                        android:background="@mipmap/path_icon_fly_jh"/>
+                        android:background="@mipmap/gsensor_icon_fly_jh"/>
+
                 </LinearLayout>
 
                 <LinearLayout
@@ -204,12 +206,12 @@
                     android:layout_height="0dp"
                     android:layout_weight="1"
                     android:gravity="center">
-
                     <Button
-                        android:id="@+id/button09"
+                        android:id="@+id/button08"
                         android:layout_width="30dp"
                         android:layout_height="30dp"
-                        android:background="@mipmap/vr_fly_jh"/>
+                        android:background="@mipmap/path_icon_fly_jh"/>
+
                 </LinearLayout>
 
                 <LinearLayout

@@ -607,8 +607,24 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
 
         if ((nStatus & JH_App.LocalRecording) != 0) {
+            if((JH_App.nSdStatus & JH_App.LocalRecording)==0)
+            {
+                JH_App.nSdStatus |= JH_App.LocalRecording;
+                    if(flyPlayFragment!=null)
+                    {
+                        flyPlayFragment.F_DispPhoto_Record();
+                    }
+            }
             JH_App.nSdStatus |= JH_App.LocalRecording;
         } else {
+            if((JH_App.nSdStatus & JH_App.LocalRecording)!=0)
+            {
+                JH_App.nSdStatus &= ((JH_App.LocalRecording ^ 0xFFFF) & 0xFFFF);
+                if(flyPlayFragment!=null)
+                {
+                    flyPlayFragment.F_DispPhoto_Record();
+                }
+            }
             JH_App.nSdStatus &= ((JH_App.LocalRecording ^ 0xFFFF) & 0xFFFF);
         }
 
@@ -1404,6 +1420,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
     public boolean bDeleteing = false;
 
+
     private static class MyThread_Delete extends Thread {
 
 
@@ -1431,16 +1448,16 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
                         if (file.isFile() && file.exists()) {
                             file.delete();
                         }
+
                         try {
                             Thread.sleep(100);
                         } catch (InterruptedException e) {
 
                         }
+
+
                     } else {
-                        File file = new File(data.sPhonePath);
-                        if (file.isFile() && file.exists()) {
-                            file.delete();
-                        }
+                        JH_App.DeleteImage(data.sPhonePath);
                     }
                     data.bNeedDelete = true;
                 }
@@ -1489,12 +1506,6 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
                             @Override
                             public void run() {
                                 mThreadActivityRef.get().browFilesFragment.F_UpdateLisetViewData();
-                                /*
-                                if (JH_App.bBrowSD)
-                                    mThreadActivityRef.get().Select_Video_Photo_Fragment.F_Update_number(JH_App.mSD_PhotosList.size(), JH_App.mSD_VideosList.size());
-                                else
-                                    mThreadActivityRef.get().Select_Video_Photo_Fragment.F_Update_number(JH_App.mLocal_PhotosList.size(), JH_App.mLocal_VideosList.size());
-                                    */
                             }
                         });
                         break;
@@ -1514,9 +1525,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             mThreadActivityRef.get().runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    // mThreadActivityRef.get().browFilesFragment.F_ResetSelect();
-                    // mThreadActivityRef.get().browFilesFragment.F_UpdateLisetViewData();
                     mThreadActivityRef.get().browFilesFragment.F_DispInit();
+
 
                 }
             });

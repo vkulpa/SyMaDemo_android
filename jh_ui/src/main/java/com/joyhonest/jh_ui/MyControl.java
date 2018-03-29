@@ -79,6 +79,18 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         RockeRightA.F_ReasetDir();
     }
 
+    public void F_SetFlyRecord(boolean b)
+    {
+        if(RockeLeft!=null)
+        {
+            RockeLeft.F_SetFlyRecord(b);
+        }
+        if(RockeRight!=null)
+        {
+            RockeRight.F_SetFlyRecord(b);
+        }
+    }
+
 
     public void F_SetDispText(boolean b) {
         if (b) {
@@ -200,7 +212,8 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
     Bitmap background;
     Bitmap cirBmp;
 
-    public void F_SetImage(int nBackgroud, int nCir) {
+    public void F_SetImage(int nBackgroud, int nCir)
+    {
         background = BitmapFactory.decodeResource(this.getContext().getResources(), nBackgroud);
         cirBmp = BitmapFactory.decodeResource(this.getContext().getResources(), nCir);
         RockeLeftA.F_SetImage(background, cirBmp);
@@ -755,6 +768,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
     public class MyRockeViewA extends View {
 
         public boolean bFlyType = true;
+        public boolean isbFlyType_recording = false;
 
         public boolean bDisText = true;
         public boolean bPath = false;
@@ -867,6 +881,25 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             invalidate();
         }
 
+        public  void F_SetFlyRecord(boolean b)
+        {
+            isbFlyType_recording=b;
+            if(isbFlyType_recording)
+            {
+                upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh);
+                downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh);
+                leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh);
+                rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh);
+            }
+            else {
+                upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh_b);
+                downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh_b);
+                leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh_b);
+                rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh_b);
+            }
+            invalidate();
+        }
+
         private void init(boolean ba) {
 
             setWillNotDraw(false);
@@ -880,10 +913,19 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                 leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_jh);
                 rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_jh);
             } else {
-                upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh);
-                downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh);
-                leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh);
-                rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh);
+                if(isbFlyType_recording)
+                {
+                    upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh);
+                    downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh);
+                    leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh);
+                    rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh);
+                }
+                else {
+                    upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh_b);
+                    downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh_b);
+                    leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh_b);
+                    rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh_b);
+                }
             }
 
 

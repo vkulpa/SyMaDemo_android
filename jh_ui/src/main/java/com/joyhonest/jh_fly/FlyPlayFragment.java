@@ -102,7 +102,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         Location_TxtView = (TextView) view.findViewById(R.id.Location_TxtView);
         Location_TxtView.setText("");
         myControl = (MyControl) view.findViewById(R.id.myControl);
-        myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
+        myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
         myControl.F_SetDispText(false);
 
         Record_Time_TextCtrl = (TextView) view.findViewById(R.id.Record_textView);
@@ -284,27 +284,24 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     }
 
     public void F_Disp3DUI() {
-        if (JH_App.bVR) {
+        if (JH_App.bVR)
+        {
             boolean b = bControlUI;
-
             bControlUI = false;
             F_DispUI();
             bControlUI = b;
             sentHander.removeCallbacksAndMessages(null);
             sentHander.post(sentRunnable);
-
             Fly_Camera_Btn.setVisibility(View.INVISIBLE);
-            //  Photo_Record_Select_Btn.setVisibility(View.INVISIBLE);
             myswitch.setVisibility(View.INVISIBLE);
             Photo_Record_Start_Btn.setVisibility(View.INVISIBLE);
             Record_Time_TextCtrl.setVisibility(View.INVISIBLE);
             Floder_Btn.setVisibility(View.INVISIBLE);
 
-
-        } else {
+        }
+        else {
             F_DispUI();
             Fly_Camera_Btn.setVisibility(View.VISIBLE);
-            //   Photo_Record_Select_Btn.setVisibility(View.VISIBLE);
             myswitch.setVisibility(View.VISIBLE);
             Photo_Record_Start_Btn.setVisibility(View.VISIBLE);
             Record_Time_TextCtrl.setVisibility(View.VISIBLE);
@@ -350,7 +347,15 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                 @Override
                 public void run() {
                     JH_App.bStop = false;
-                    StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
+                    if((JH_App.nSdStatus & JH_App.LocalRecording) !=0)
+                    {
+                        StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
+                    }
+                    else
+                    {
+                        StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+                    }
+
                 }
             }, 500);
         }
@@ -361,7 +366,15 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh);
+                    if((JH_App.nSdStatus & JH_App.LocalRecording)!=0)
+                    {
+                        UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh);
+                    }
+                    else
+                    {
+                        UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh_b);
+                    }
+
                 }
             }, 300);
         }
@@ -471,13 +484,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         if (v == Return_Btn) {
             EventBus.getDefault().post("exit", "Exit");
         }
-            /*
-            if(v==Photo_Record_Select_Btn)
-            {
-                bPhoto = !bPhoto;
-                F_DispPhoto_Record();
-            }
-            */
+
         if (v == Floder_Btn) {
             // wifination.naSetVideoSurface(null);
             Integer nFragment = JH_Fly_Setting.Brow_Select_Fragment;
@@ -505,7 +512,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                         //  JH_App.F_Save2ToGallery(getActivity(), str,true);
                     }
                 };
-                handler.postDelayed(runnable, 1000);
+                handler.postDelayed(runnable, 500);
 
             } else {
                 if ((JH_App.nSdStatus & JH_App.Status_Connected) == 0) {
@@ -515,12 +522,13 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
                 if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
                     wifination.naStopRecord_All();
+                    Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_record_icon_fly_jh);
                     // JH_App.F_Save2ToGallery(getActivity(), strRecordFilename,false);
                 } else {
                     strRecordFilename = JH_App.F_GetSaveName(false);
                     wifination.naStartRecord(strRecordFilename, wifination.TYPE_BOTH_PHONE_SD);
-                   // JH_App.nRecTime = System.currentTimeMillis() / 1000;
                     Record_Time_TextCtrl.setText("00:00");
+                    Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_recording_icon_fly_jh);
                 }
             }
         }
@@ -547,9 +555,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     public void F_DispRecorTime() {
         if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
             int sec =wifination.naGetRecordTime()/1000;
-            //long sec = System.currentTimeMillis() / 1000;
-            //sec = sec - JH_App.nRecTime;
-            int nMin = (int) (sec / 60);
+            int nMin = (sec / 60);
             if (nMin > 99)
                 nMin = 0;
             int nSec = (int) (sec % 60);
@@ -582,13 +588,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     public void F_DispRcordIcon(Boolean bRecordding) {
         if (bRecordding) {
-            // But_Record.setBackgroundResource(R.mipmap.video_sel_jh);
-            //F_DispPhoto_Record();
             Record_Time_TextCtrl.setVisibility(View.VISIBLE);
 
         } else {
-            // But_Record.setBackgroundResource(R.mipmap.video_nor_jh);
-            //F_DispPhoto_Record();
             Record_Time_TextCtrl.setVisibility(View.INVISIBLE);
         }
     }
@@ -598,18 +600,51 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         F_DispPhoto_Record();
     }
 
-    private void F_DispPhoto_Record() {
+
+
+    public void F_DispPhoto_Record() {
+
         if (bPhoto) {
-            // Photo_Record_Select_Btn.setBackgroundResource(R.mipmap.photo_icon_a_fly_jh);
-            //myswitch.F_SetPhoto(bPhoto);
             Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_icon_fly_jh);
             Record_Time_TextCtrl.setVisibility(View.INVISIBLE);
         } else {
-            // Photo_Record_Select_Btn.setBackgroundResource(R.mipmap.record_icon_fly_jh);
-            //myswitch.F_SetPhoto(bPhoto);
-            Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_record_icon_fly_jh);
-            if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0)
+
+            if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
                 Record_Time_TextCtrl.setVisibility(View.VISIBLE);
+                Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_recording_icon_fly_jh);
+                myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
+                myControl.F_SetFlyRecord(true);
+                if(bControlUI) {
+                    Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh);
+                }
+                else
+                {
+                    Fly_Camera_Btn.setBackgroundResource(R.mipmap.no_remote_fly_jh);
+                }
+
+
+                Floder_Btn.setBackgroundResource(R.mipmap.folder_fly_jh);
+                StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
+                UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh);
+            }
+            else
+            {
+                Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_record_icon_fly_jh);
+                myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
+                myControl.F_SetFlyRecord(false);
+
+                if(bControlUI) {
+                    Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh_b);
+                }
+                else
+                {
+                    Fly_Camera_Btn.setBackgroundResource(R.mipmap.no_remote_fly_jh_b);
+                }
+
+                Floder_Btn.setBackgroundResource(R.mipmap.folder_fly_jh_b);
+                StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+                UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh_b);
+            }
         }
     }
 
@@ -631,7 +666,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         F_DispSpeedIcon();
         F_DispGSensorIcon();
         if (bControlUI) {
-            Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh);
+            Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh_b);
 
 
             UpDn_Btn.setVisibility(View.VISIBLE);
@@ -704,6 +739,140 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         X_ADJ2 = myControl.F_GetLeftRightAdj();
         Y_ADJ2 = myControl.F_GetForwardBackAdj();
 
+
+
+        if (X2 > 0x70 && X2 < 0x90) {
+            X2 = 0x80;
+        }
+
+        if (Y2 > 0x70 && Y2 < 0x90) {
+            Y2 = 0x80;
+        }
+
+        if (X1 > (0x80 - 0x25) && X1 < (0x80 + 0x25)) {
+            X1 = 0x80;
+        }
+        i = 0;
+
+
+        if (Y2 > 0x80) {
+            Y2 -= 0x80;
+        } else if (Y2 < 0x80) {
+            Y2 = 0x80 - Y2;
+            Y2 += 0x80;
+            if (Y2 > 0xFF) {
+                Y2 = 0xFF;
+            }
+        }
+
+        if (X1 > 0x80) {
+
+        } else if (X1 < 0x80) {
+            X1 = 0x80 - X1;
+            if (X1 > 0x7F) {
+                X1 = 0x7F;
+            }
+        }
+
+        if (X2 > 0x80) {
+        } else if (X2 < 0x80) {
+            X2 = 0x80 - X2;
+            if (X2 > 0x7F) {
+                X2 = 0x7F;
+            }
+        }
+
+
+        cmd[0] = (byte) Y1;   //油门
+        cmd[1] = (byte) Y2;
+        cmd[2] = (byte) X1;
+        cmd[3] = (byte) X2;
+
+        cmd[4] = 0x20;          //油门微调  这里没有。
+
+        int da = Y_ADJ2 - 0x80;
+        if (da < 0)               // 后调
+        {
+            da = 0 - da;
+            da += 0x20;
+            if (da > 0x3F) {
+                da = 0x3F;
+            }
+        } else if (da > 0) {
+            if (da > 0x1F)
+                da = 0x1F;
+        } else {
+            da = 0x00;
+        }
+
+
+        cmd[5] = (byte) da;       //前后微调
+        if (JH_App.bHiSpeed)
+            cmd[5] |= 0x80;          //高速模式
+
+        cmd[5] |= 0x40;
+
+
+        da = X_ADJ1 - 0x80;          //旋转微调
+        if (da < 0) {
+            da = 0 - da;
+            if (da > 0x1F) {
+                da = 0x1F;
+            }
+        } else if (da > 0) {
+            da += 0x20;
+            if (da > 0x3F)
+                da = 0x3F;
+        } else {
+            da = 0x20;
+        }
+
+
+        cmd[6] = (byte) da;
+
+
+        da = X_ADJ2 - 0x80;
+        if (da < 0) {
+
+            da = 0 - da;
+            if (da > 0x1F) {
+                da = 0x1F;
+            }
+        } else if (da > 0) {
+            da += 0x20;
+            if (da > 0x3F)
+                da = 0x3F;
+        } else {
+            da = 0x20;
+        }
+
+        cmd[7] = (byte) da;        //平移
+
+        if (JH_App.bUp) {
+            cmd[7] |= 0x40;
+        }
+        if (JH_App.bHeadLess) {
+            cmd[7] |= 0x80;
+        }
+
+        cmd[8] = 0;
+
+        if (JH_App.bStop) {
+            cmd[8] |= 0x10;
+        }
+        if (JH_App.bAdj) {
+            cmd[8] |= 0x20;
+        }
+
+        if (JH_App.bDn) {
+            cmd[8] |= 0x08;
+        }
+        cmd[9] = (byte) (((cmd[0] ^ cmd[1] ^ cmd[2] ^ cmd[3] ^ cmd[4] ^ cmd[5] ^ cmd[6] ^ cmd[7] ^ cmd[8]) & 0xFF) + 0x55);
+        wifination.naSentCmd(cmd, 10);
+        //Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2);
+
+
+        /*
 
         int da = X_ADJ1 - 0x80;          //旋转微调
         da += 32;
@@ -813,5 +982,6 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         wifination.naFillFlyCmdByC(1);
         // wifination.naSentCmd(fly_cmd.cmd, 15);
         //  Log.e("SentCmd","Sent OK!");
+        */
     }
 }

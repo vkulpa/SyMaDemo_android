@@ -102,8 +102,6 @@ public class SplashActivity extends AppCompatActivity
                 }
                 JH_App.bInitDispCtrol=true;
                 Intent mainIntent = new Intent(SplashActivity.this, Fly_PlayActivity.class);
-                //Intent mainIntent = new Intent(SplashActivity.this, MapTestActivity.class);
-
                 startActivity(mainIntent);
             }
         });

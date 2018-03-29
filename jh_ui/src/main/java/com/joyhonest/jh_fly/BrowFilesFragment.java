@@ -150,7 +150,7 @@ public class BrowFilesFragment extends Fragment implements View.OnClickListener,
             }
             button_all.setVisibility(View.VISIBLE);
             button_selected.setVisibility(View.VISIBLE);
-            button_trash_2.setVisibility(View.VISIBLE);
+           // button_trash_2.setVisibility(View.VISIBLE);
             button_trash.setVisibility(View.VISIBLE);
             textView_all.setVisibility(View.VISIBLE);
         } else {

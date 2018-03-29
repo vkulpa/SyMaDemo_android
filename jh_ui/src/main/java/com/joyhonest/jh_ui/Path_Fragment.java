@@ -257,12 +257,12 @@ public class Path_Fragment extends Fragment {
         //    return;
         if (!JH_App.bisPathMode)
             return;
-
+/*
         if (JH_App.nType == JH_App.nStyle_fly) {
             F_SetCmd_Fly();
             return;
         }
-
+*/
         int i = 0;
         int X1, Y1, X2, Y2, X_ADJ2, Y_ADJ2, X_ADJ1;
         int X2_bak;

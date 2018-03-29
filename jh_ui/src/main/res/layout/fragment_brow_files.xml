@@ -60,7 +60,7 @@
                 android:layout_toLeftOf="@+id/center1"
                 android:layout_toStartOf="@+id/center1"
                 android:background="@mipmap/phone_2_fly_jh"
-                />
+                android:visibility="invisible"/>
 
             <Space
                 android:id="@+id/center1"
@@ -77,7 +77,8 @@
                 android:layout_marginStart="50dp"
                 android:layout_toEndOf="@+id/center1"
                 android:layout_toRightOf="@+id/center1"
-                android:background="@mipmap/sd_fly_jh"/>
+                android:background="@mipmap/sd_fly_jh"
+                android:visibility="invisible"/>
 
             <TextView
                 android:id="@+id/textView2"
@@ -109,7 +110,8 @@
                 android:layout_marginRight="8dp"
                 android:layout_toLeftOf="@+id/button_trash"
                 android:layout_toStartOf="@+id/button_trash"
-                android:background="@mipmap/tra_icon_fly_jh"/>
+                android:background="@mipmap/tra_icon_fly_jh"
+                android:visibility="invisible"/>
 
             <Button
                 android:id="@+id/button_trash"
