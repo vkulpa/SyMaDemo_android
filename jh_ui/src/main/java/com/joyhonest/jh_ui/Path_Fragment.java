@@ -118,7 +118,7 @@ public class Path_Fragment extends Fragment {
         @Override
         public void run() {
             F_SentCmd();
-            sentHander.postDelayed(this, 15);
+            sentHander.postDelayed(this, 20);
         }
     };
 

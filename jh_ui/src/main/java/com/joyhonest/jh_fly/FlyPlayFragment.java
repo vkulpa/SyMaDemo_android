@@ -17,12 +17,15 @@ import android.widget.TextView;
 
 import com.joyhonest.jh_ui.JH_App;
 import com.joyhonest.jh_ui.MyControl;
+import com.joyhonest.jh_ui.PlayActivity;
 import com.joyhonest.jh_ui.R;
 import com.joyhonest.jh_ui.Storage;
 import com.joyhonest.wifination.fly_cmd;
 import com.joyhonest.wifination.wifination;
 
 import org.simple.eventbus.EventBus;
+
+import java.lang.ref.WeakReference;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -31,7 +34,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     public static boolean bTestMode = false;
 
-    private MyControl myControl;
+    public MyControl myControl;
     private Button Fly_Camera_Btn;
     private Button Photo_Record_Select_Btn;
     private MySwitch myswitch;
@@ -42,10 +45,10 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     private Button Speed_Btn;
     private Button Adj_Btn;
-    private Button Gsensor_Btn;
-
-    private Button Path_Btn;
     private Button VR_Btn;
+
+    private Button Gsensor_Btn;
+    private Button Path_Btn;
     private Button HeadLess_Btn;
 
 
@@ -78,6 +81,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     private boolean bMenuHide;
 
+    private LinearLayout tool_1_layout;
+    private LinearLayout tool_2_layout;
+
 
     public FlyPlayFragment() {
         // Required empty public constructor
@@ -90,6 +96,12 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
         View view = inflater.inflate(R.layout.fragment_fly_play_jh, container, false);
         view.findViewById(R.id.rooglayout).setBackgroundColor(0x00010000);
+
+
+        tool_1_layout = (LinearLayout)view.findViewById(R.id.tool_1_layout);
+        tool_2_layout = (LinearLayout)view.findViewById(R.id.tool_2_layout);
+        tool_1_layout.setVisibility(View.VISIBLE);
+        tool_1_layout.setVisibility(View.GONE);
 
         rect_layout = (LinearLayout) view.findViewById(R.id.rect_layout);
 
@@ -215,14 +227,11 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     private void F_DispMore() {
         if (bMore) {
-            Path_Btn.setVisibility(View.VISIBLE);
-            VR_Btn.setVisibility(View.VISIBLE);
-            HeadLess_Btn.setVisibility(View.VISIBLE);
-
+            tool_1_layout.setVisibility(View.GONE);
+            tool_2_layout.setVisibility(View.VISIBLE);
         } else {
-            Path_Btn.setVisibility(View.INVISIBLE);
-            VR_Btn.setVisibility(View.INVISIBLE);
-            HeadLess_Btn.setVisibility(View.INVISIBLE);
+            tool_1_layout.setVisibility(View.VISIBLE);
+            tool_2_layout.setVisibility(View.GONE);
         }
     }
 
@@ -290,8 +299,11 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             bControlUI = false;
             F_DispUI();
             bControlUI = b;
-            sentHander.removeCallbacksAndMessages(null);
-            sentHander.post(sentRunnable);
+
+                sentHander.removeCallbacksAndMessages(null);
+            if(b) {
+                sentHander.post(sentRunnable);
+            }
             Fly_Camera_Btn.setVisibility(View.INVISIBLE);
             myswitch.setVisibility(View.INVISIBLE);
             Photo_Record_Start_Btn.setVisibility(View.INVISIBLE);
@@ -316,6 +328,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     private void F_DispAllMenu(boolean bDisp) {
         if (bDisp) {
             Layout_LeftMenu.setVisibility(View.VISIBLE);
+            bMore = false;
             F_DispMore();
         } else {
             Layout_LeftMenu.setVisibility(View.INVISIBLE);
@@ -330,9 +343,13 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if (Layout_Menu == v) {
+        if (Layout_Menu == v)
+        {
+            if(!bControlUI)
+                return;
             if (JH_App.bVR)
                 return;
+
             bMenuHide = false;
             F_DispAllMenu(true);
         }
@@ -342,6 +359,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         }
         if (v == StopFly_Btn) {
             JH_App.bStop = true;
+            JH_App.bUp = false;
+            JH_App.bDn = false;
             StopFly_Btn.setBackgroundResource(R.mipmap.stop_sel_fly_jh);
             new Handler().postDelayed(new Runnable() {
                 @Override
@@ -362,7 +381,15 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
         if (v == UpDn_Btn) {
             JH_App.bUp = !JH_App.bUp;
+            JH_App.bDn = false;
             UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_sel_fly_jh);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    JH_App.bUp = !JH_App.bUp;
+                }
+            },150);
+            JH_App.bUp = !JH_App.bUp;
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
@@ -606,7 +633,14 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
         if (bPhoto) {
             Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_icon_fly_jh);
-            Record_Time_TextCtrl.setVisibility(View.INVISIBLE);
+            if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0)
+            {
+                Record_Time_TextCtrl.setVisibility(View.VISIBLE);
+            }
+            else
+            {
+                Record_Time_TextCtrl.setVisibility(View.INVISIBLE);
+            }
         } else {
 
             if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
@@ -650,10 +684,13 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     public void F_StartStopSentCmd(boolean bStart) {
         if (bStart) {
+
+            //new MyThread_SentCmd(this).start();
             sentHander.removeCallbacksAndMessages(null);
             sentHander.post(sentRunnable);
         } else {
             sentHander.removeCallbacksAndMessages(null);
+            //bCanSentCmd = false;
         }
     }
 
@@ -669,14 +706,18 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh_b);
 
 
+
             UpDn_Btn.setVisibility(View.VISIBLE);
             myControl.setVisibility(View.VISIBLE);
             StopFly_Btn.setVisibility(View.VISIBLE);
 
 
+            /*
             Speed_Btn.setVisibility(View.VISIBLE);
             Adj_Btn.setVisibility(View.VISIBLE);
             Gsensor_Btn.setVisibility(View.VISIBLE);
+
+            */
             More_Btn.setVisibility(View.VISIBLE);
             F_DispMore();
 
@@ -686,11 +727,16 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         } else {
 
             Fly_Camera_Btn.setBackgroundResource(R.mipmap.no_remote_fly_jh);
+
             UpDn_Btn.setVisibility(View.INVISIBLE);
             myControl.setVisibility(View.INVISIBLE);
             StopFly_Btn.setVisibility(View.INVISIBLE);
-            More_Btn.setVisibility(View.INVISIBLE);
 
+            More_Btn.setVisibility(View.INVISIBLE);
+            tool_1_layout.setVisibility(View.INVISIBLE);
+            tool_2_layout.setVisibility(View.INVISIBLE);
+
+            /*
             Speed_Btn.setVisibility(View.INVISIBLE);
             Adj_Btn.setVisibility(View.INVISIBLE);
             Gsensor_Btn.setVisibility(View.INVISIBLE);
@@ -698,6 +744,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             Path_Btn.setVisibility(View.INVISIBLE);
             VR_Btn.setVisibility(View.INVISIBLE);
             HeadLess_Btn.setVisibility(View.INVISIBLE);
+            */
 
             F_StartStopSentCmd(false);
         }
@@ -705,13 +752,45 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     }
 
+/*
+    public  boolean  bCanSentCmd = true;
+    private static class MyThread_SentCmd extends Thread {
+
+
+        WeakReference<FlyPlayFragment> mThreadActivityRef;
+
+        public MyThread_SentCmd(FlyPlayFragment activity) {
+            mThreadActivityRef = new WeakReference<FlyPlayFragment>(
+                    activity);
+        }
+        @Override
+        public void run() {
+            mThreadActivityRef.get().bCanSentCmd = true;
+            while(mThreadActivityRef.get().bCanSentCmd)
+            {
+                mThreadActivityRef.get().F_SentCmd();
+                try
+                {
+                    sleep(20);
+                }
+                catch (InterruptedException e)
+                {
+                    ;
+                }
+            }
+            Log.e("Exit","Exit Sent Cmd");
+
+        }
+    }
+*/
+
 
     private Handler sentHander = new Handler();
     private Runnable sentRunnable = new Runnable() {
         @Override
         public void run() {
             F_SentCmd();
-            sentHander.postDelayed(this, 35);
+            sentHander.postDelayed(this, 20);
         }
     };
 
@@ -721,6 +800,47 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         if (!bControlUI) {
             return;
         }
+
+
+/*
+Data0：油门数据（00-FF）
+Data1：前进后退数据（00-FF）（前进：0-7F；后退：80-FF；没有动作：00或80）
+Data2：左右转弯数据（00-FF）（左转：0-7F；右转：80-FF；没有动作：00或80）
+Data3：左右平移数据（00-FF）（左移：0-7F；右移：80-FF；没有动作：00或80）
+
+Data4（Bit0-Bit5）：油门微调（00-3F）（上调：0-1F；下调：20-3F；没有动作：00或20）
+Data4（Bit6）：Bit6=1 翻滚功能	；Bit6=0 没有翻滚功能
+Data4（Bit7）：Bit7=0 不是Flow Me功能
+
+Data5（Bit0-Bit5）：前后微调（00-3F）（前调：0-1F；后调：20-3F；没有动作：00或20）
+Data5（Bit6）：Bit6=1 Mode1标志；Bit6=0 Mode2标志
+Data5（Bit7）：Bit7=1 快档标志	；Bit7=0 慢档标志；
+Data5（Bit7）与Data8(Bit3)配合使用：
+Data5（Bit7）：Data8(Bit3) = 00  ：慢档标志；
+Data5（Bit7）：Data8(Bit3) = 01  ：中速档标志；
+Data5（Bit7）：Data8(Bit3) = 10  ：快档标志；
+
+Data6（Bit0-Bit5）：转弯微调（00-3F）（左调：0-1F；右调：20-3F；没有动作：00或20）
+Data6（Bit6）：Bit6=1拍照；Bit6=0 拍照功能无效
+Data6（Bit7）：Bit7=1录像；Bit7=0 录像功能无效
+
+Data7（Bit0-Bit5）：平移微调（00-3F）（左调：0-1F；右调：20-3F；没有动作：00或20）
+Data7（Bit6）：Bit6=1 一键起飞；Bit6=0 一键起飞无效
+Data7（Bit7）：Bit7=1 无头模式；Bit7=0 有头模式
+
+Data8：（Bit2- Bit0）保留未用
+当Data4（Bit6）=1时：Data8(Bit6), Data8(Bit7) = (00：前翻，01：后翻，10：左翻，11：右翻)
+当Data4（Bit6）=0时：Data8(Bit7)=1 镜头下调，Data8(Bit7)=0 镜头下调无效
+当Data4（Bit6）=0时：Data8(Bit6)=1 镜头上调，Data8(Bit6)=0 镜头上调无效
+Data8(Bit5)=1 水平校正，Data8(Bit5)=0无效
+Data8(Bit4)=1 一键急停，Data8(Bit4)=0无效
+Data8(Bit3)=1 中速档标志，Data8(Bit3)=0无效
+
+
+Data9：Data0- Data8异或后，再加0X55
+
+ */
+
         //if(myControl.getVisibility()!=View.VISIBLE)
         //    return;
         if (JH_App.bisPathMode)
@@ -869,7 +989,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         }
         cmd[9] = (byte) (((cmd[0] ^ cmd[1] ^ cmd[2] ^ cmd[3] ^ cmd[4] ^ cmd[5] ^ cmd[6] ^ cmd[7] ^ cmd[8]) & 0xFF) + 0x55);
         wifination.naSentCmd(cmd, 10);
-        //Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2);
+        Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2);
 
 
         /*

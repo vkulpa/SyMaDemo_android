@@ -5,6 +5,7 @@ import android.animation.ObjectAnimator;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -27,6 +28,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.VideoView;
 
+import com.joyhonest.jh_fly.Fly_PlayActivity;
 import com.joyhonest.wifination.JH_GLSurfaceView;
 import com.joyhonest.wifination.MyThumb;
 import com.joyhonest.wifination.jh_dowload_callback;
@@ -154,9 +156,22 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     private Runnable RssiRunable;
     private byte[] mData = null;
 
+    private  boolean  bGoFly=false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        if(JH_App.F_GetWifiType()==wifination.IC_GPH264A)
+        {
+            bGoFly = true;
+            Intent mainIntent = new Intent(PlayActivity.this, Fly_PlayActivity.class);
+            startActivity(mainIntent);
+            finish();
+            return;
+        }
+        bGoFly = false;
+
         setContentView(R.layout.activity_play_jh);
         MyControl.bFlyType = false;
         wifination.F_AdjBackGround(this, R.mipmap.loginbackground_jh);
@@ -488,6 +503,8 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
+        if(bGoFly)
+            return;
         JH_App.checkDeviceHasNavigationBar(this);
 
 /*
@@ -505,6 +522,8 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         super.onPause();
+        if(bGoFly)
+            return;
         if(main_fragment!=null)
         {
             main_fragment.myControl.F_ReasetAll();
@@ -525,6 +544,8 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if(bGoFly)
+            return;
         wifination.naStop();
         wifination.release();
         EventBus.getDefault().unregister(this);

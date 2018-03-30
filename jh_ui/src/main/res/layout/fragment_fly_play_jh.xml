@@ -126,107 +126,127 @@
             android:layout_marginBottom="20dp"
             android:gravity="center_horizontal"
             android:orientation="vertical">
+
             <Button
                 android:id="@+id/button_more"
                 android:layout_width="30dp"
                 android:layout_height="20dp"
                 android:background="@mipmap/more_fly_jh"/>
-
             <LinearLayout
+
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:orientation="vertical">
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:visibility="visible">
 
                 <LinearLayout
-                    android:id="@+id/rect_layout"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
+                    android:id="@+id/tool_1_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center">
+                    android:orientation="vertical"
+                    android:visibility="gone">
 
-                    <Button
-                        android:id="@+id/button05"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:background="@mipmap/speed_low_fly_jh"
-                        />
+                    <LinearLayout
+                        android:id="@+id/rect_layout"
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <Button
+                            android:id="@+id/button05"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@mipmap/speed_low_fly_jh"
+                            />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <Button
+                            android:id="@+id/button06"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@mipmap/adj_fly_jh"/>
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center">
+                        <Button
+                            android:id="@+id/button09"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@mipmap/vr_fly_jh"/>
+
+                    </LinearLayout>
                 </LinearLayout>
 
                 <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
+                    android:id="@+id/tool_2_layout"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center">
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    >
 
-                    <Button
-                        android:id="@+id/button06"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:background="@mipmap/adj_fly_jh"/>
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <Button
+                            android:id="@+id/button07"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@mipmap/gsensor_icon_fly_jh"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <Button
+                            android:id="@+id/button08"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@mipmap/path_icon_fly_jh"/>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="0dp"
+                        android:layout_weight="1"
+                        android:gravity="center">
+
+                        <Button
+                            android:id="@+id/button0A"
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:background="@mipmap/headless_fly_jh"/>
+                    </LinearLayout>
                 </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center">
-                    <Button
-                        android:id="@+id/button09"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:background="@mipmap/vr_fly_jh"/>
-
-                </LinearLayout>
             </LinearLayout>
 
 
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                >
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center">
-                    <Button
-                        android:id="@+id/button07"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:background="@mipmap/gsensor_icon_fly_jh"/>
 
-                </LinearLayout>
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center">
-                    <Button
-                        android:id="@+id/button08"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:background="@mipmap/path_icon_fly_jh"/>
 
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1"
-                    android:gravity="center">
-
-                    <Button
-                        android:id="@+id/button0A"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
-                        android:background="@mipmap/headless_fly_jh"/>
-                </LinearLayout>
-            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 
@@ -238,12 +258,12 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="30dp"
         android:background="@drawable/round_back_select_jh"
+        android:elevation="20dp"
         android:gravity="center"
         android:text="snapshot"
         android:textColor="#FF000000"
         android:textStyle="bold"
         android:visibility="visible"
-        android:elevation="20dp"
         tools:ignore="HardcodedText"/>
 
 

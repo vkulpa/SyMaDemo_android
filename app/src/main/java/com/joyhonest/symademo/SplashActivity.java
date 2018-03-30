@@ -79,7 +79,7 @@ public class SplashActivity extends AppCompatActivity
             }
         });
 
-
+/*
 
         UI2_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,7 +105,7 @@ public class SplashActivity extends AppCompatActivity
                 startActivity(mainIntent);
             }
         });
-
+*/
 
     }
 

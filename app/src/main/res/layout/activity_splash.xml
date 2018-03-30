@@ -21,9 +21,10 @@
         android:id="@+id/but_Start"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/button_sima"
-        android:layout_toStartOf="@+id/ver_textView"
-        android:text="界面 1 Start"/>
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="71dp"
+        android:text=" Start "/>
 
     <Button
         android:id="@+id/button_sima"
@@ -33,6 +34,7 @@
         android:layout_marginBottom="50dp"
         android:layout_marginEnd="25dp"
         android:layout_toStartOf="@+id/switch2"
+        android:visibility="gone"
         android:text="界面 2 Start"/>
 
     <TextView

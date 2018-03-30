@@ -76,7 +76,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     private RelativeLayout Fragment_Layout;
     //private SurfaceHolder surfaceHolder;
     //private SurfaceView surfaceView = null;
-    private HandlerThread thread1;
+    public HandlerThread thread1;
     private Handler openHandler;
 
     private Handler RssiHander;
@@ -88,8 +88,9 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     private BrowFilesFragment browFilesFragment;
     private DispVideo_Fragment dispVideo_fragment;
     private DispPhoto_Fragment dispPhoto_Fragment;
+    private FlyPathFragment    flyPathFragment;
 
-    private Path_Fragment path_fragment;
+    //private Path_Fragment path_fragment;
 
 
     private Fragment mActiveFragment = null;
@@ -164,7 +165,13 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         int nPhoto = Integer.parseInt(sType);
         if (nPhoto == 0) {
             JH_App.F_Save2ToGallery(sName, true);
-            flyPlayFragment.F_DispMessage("snapshot");
+            if(mActiveFragment == flyPathFragment)
+            {
+                flyPathFragment.F_DispMessage("snapshot");
+            }
+            if(mActiveFragment == flyPlayFragment) {
+                flyPlayFragment.F_DispMessage("snapshot");
+            }
         } else {
             JH_App.F_Save2ToGallery(sName, false);
         }
@@ -240,8 +247,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         if (flyPlayFragment != null) {
             flyPlayFragment.F_StopSentCmd();
         }
-        if (path_fragment != null)
-            path_fragment.F_StopPaht();
+        if (flyPathFragment != null)
+            flyPathFragment.F_StopPaht();
         F_CancelDownLoad();
         JH_App.bHeadLess = false;
         JH_App.bVR = false;
@@ -251,11 +258,17 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     }
 
 
+
+
     @Override
     protected void onPause() {
         super.onPause();
         //sendCmdHandle.removeCallbacksAndMessages(null);
-        Exit2Spalsh("");
+        //Exit2Spalsh("");
+        if(flyPlayFragment!=null)
+        {
+            flyPlayFragment.myControl.F_ReasetAll();
+        }
 
     }
 
@@ -333,10 +346,10 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             ft.hide(dispPhoto_Fragment);
         }
 
-        if (path_fragment != null) {
-            ObjectAnimator.ofFloat(path_fragment.getView(), "Y", 0, 0).setDuration(1).start();
-            ObjectAnimator.ofFloat(path_fragment.getView(), "X", 0, 0).setDuration(1).start();
-            ft.hide(path_fragment);
+        if (flyPathFragment != null) {
+            ObjectAnimator.ofFloat(flyPathFragment.getView(), "Y", 0, 0).setDuration(1).start();
+            ObjectAnimator.ofFloat(flyPathFragment.getView(), "X", 0, 0).setDuration(1).start();
+            ft.hide(flyPathFragment);
         }
 
 
@@ -459,7 +472,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         mActiveFragment = fragment;
 
 
-        JH_App.bisPathMode = mActiveFragment == path_fragment;
+        JH_App.bisPathMode = (mActiveFragment == flyPathFragment);
 
 
     }
@@ -527,7 +540,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         browFilesFragment = new BrowFilesFragment();
         dispVideo_fragment = new DispVideo_Fragment();
         dispPhoto_Fragment = new DispPhoto_Fragment();
-        path_fragment = new Path_Fragment();
+
+        flyPathFragment = new FlyPathFragment();
 
         FragmentTransaction transaction = mFragmentMan.beginTransaction();
         transaction.add(R.id.Fragment_Layout, flyPlayFragment);
@@ -535,7 +549,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         transaction.add(R.id.Fragment_Layout, browFilesFragment);
         transaction.add(R.id.Fragment_Layout, dispVideo_fragment);
         transaction.add(R.id.Fragment_Layout, dispPhoto_Fragment);
-        transaction.add(R.id.Fragment_Layout, path_fragment);
+        transaction.add(R.id.Fragment_Layout, flyPathFragment);
 
         transaction.commit();
 
@@ -676,8 +690,14 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
     @Subscriber(tag = "SwitchChanged")
     private void SwitchChanged(boolean b) {
-        if (flyPlayFragment != null) {
+        if(mActiveFragment == flyPlayFragment)
+        {
             flyPlayFragment.F_SetPhoto(b);
+        }
+
+        if(mActiveFragment ==flyPathFragment)
+        {
+            flyPathFragment.F_SetPhoto(b);
         }
     }
 
@@ -1356,8 +1376,9 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
     @Subscriber(tag = "GotoPath")
     private void GotoPath(String str) {
-        F_SetView(path_fragment);
-        path_fragment.F_SttartPath();
+        F_SetView(flyPathFragment);
+        flyPathFragment.F_DispOpenEye(true);
+        flyPathFragment.F_StartPath();
 
     }
 
@@ -1368,7 +1389,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             return;
         }
         if (mActiveFragment == flyPlayFragment) {
-            if (JH_App.bVR) {
+            if (JH_App.bVR)
+            {
                 JH_App.bVR = false;
                 flyPlayFragment.F_Disp3DUI();
                 flyPlayFragment.F_DispUI();
