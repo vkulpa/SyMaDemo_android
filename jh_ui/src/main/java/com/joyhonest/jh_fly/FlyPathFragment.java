@@ -513,7 +513,7 @@ Data9：Data0- Data8异或后，再加0X55
             cmd[9] = (byte) (((cmd[0] ^ cmd[1] ^ cmd[2] ^ cmd[3] ^ cmd[4] ^ cmd[5] ^ cmd[6] ^ cmd[7] ^ cmd[8]) & 0xFF) + 0x55);
 
             wifination.naSentCmd(cmd, 10);
-            Log.e("Cmd:  ","Sent Path  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2);
+         //   Log.e("Cmd:  ","Sent Path  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2);
             /*
             if(Y2!=0x80 || X2!=0x80) {
                 String str = String.format("X2=%02X  Y2=%02X", X2, Y2);
