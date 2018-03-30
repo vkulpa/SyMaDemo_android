@@ -28,6 +28,8 @@ public class MySwitch extends RelativeLayout {
     private Bitmap bmpRight;
     private ImageView img;
 
+    public  boolean  bMenu=false;
+
     int firstX = 0;
     int firstY = 0;
     boolean bLeft = true;
@@ -50,16 +52,22 @@ public class MySwitch extends RelativeLayout {
     private int nWidth = 0;
     private int nHeght = 0;
 
+    public  void  F_SetMenu(boolean b)
+    {
+        bMenu = b;
+        if(bMenu)
+            img.setBackgroundResource(R.mipmap.left_menu_icon_fly_jh);
+        else
+            img.setBackgroundResource(R.mipmap.photo_icon_a_fly_jh);
+
+    }
+
     private void F_Init() {
         bLeft = true;
-        //bmpRight = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.record_icon_fly_jh);
-        //bmpLeft = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.photo_icon_a_fly_jh);
         ImageView imgb = new ImageView(getContext());
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(-1, -1);
         imgb.setBackgroundResource(R.mipmap.switch_back_1_fly_jh);
         this.addView(imgb);
         img = new ImageView(getContext());
-        params = new RelativeLayout.LayoutParams(-1, -1);
         img.setBackgroundResource(R.mipmap.photo_icon_a_fly_jh);
         this.addView(img);
     }
@@ -108,38 +116,39 @@ public class MySwitch extends RelativeLayout {
 
             }
 
+            SwitchMesage  msg = new SwitchMesage(this,bLeft);
 
-            EventBus.getDefault().post(bLeft, "SwitchChanged");
+
+            EventBus.getDefault().post(msg, "SwitchChanged");
 
         }
 
-        //    if (MotionEvent.ACTION_UP == action) {
 
         return true;
-        //return super.onTouchEvent(event);
     }
 
 
     private void F_DispIcon() {
-        if (nOp == 1) {
-            img.setBackgroundResource(R.mipmap.photo_icon_a_fly_jh);
+        if (nOp == 1)
+        {
+            if(bMenu)
+            {
+                img.setBackgroundResource(R.mipmap.left_menu_icon_fly_jh);
+            }
+            else
+                img.setBackgroundResource(R.mipmap.photo_icon_a_fly_jh);
             ObjectAnimator.ofFloat(img, "X", nWidth - (nHeght), 0).setDuration(200).start();
         }
         if (nOp == 2) {
-            img.setBackgroundResource(R.mipmap.record_icon_fly_jh);
+            if(bMenu)
+            {
+                img.setBackgroundResource(R.mipmap.right_menu_icon_fly_jh);
+            }
+            else
+                img.setBackgroundResource(R.mipmap.record_icon_fly_jh);
             ObjectAnimator.ofFloat(img, "X", 0, nWidth - (nHeght)).setDuration(200).start();
         }
 
-        /*
-        if(bLeft)
-        {
-            img.setBackgroundResource(R.mipmap.photo_icon_a_fly_jh);
-        }
-        else
-        {
-            img.setBackgroundResource(R.mipmap.record_icon_fly_jh);
-        }
-        */
     }
 
     public void F_SetPhoto(boolean b) {

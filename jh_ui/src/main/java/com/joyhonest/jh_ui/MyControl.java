@@ -247,6 +247,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
         nCentWidth = dip2px(context, 10);
         nRockWidth = dip2px(context, 60);
+
         RockeLeftA = new MyRockeViewA(context, background, cirBmp, bFlyType);
         RockeRightA = new MyRockeViewA(context, background, cirBmp, bFlyType);
 
@@ -268,6 +269,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         leftView = new MyPrivView(context);
 
         params1 = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+
         params2 = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         params3 = new LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
@@ -283,19 +285,18 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         leftView.setBackgroundColor(0x01000000);
 
 
-
-
         params2.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
-
-        params2.setMargins(-1, topPx, -1, botPx);
-
-        //params2.setMargins(-1, 0, -1, 0);
+       // params2.setMargins(-1, topPx, -1, botPx);
+        params2.setMargins(-1, -1, -1, -1);
         this.addView(RockeLeft, params2);
+        //RockeLeft.setBackgroundColor(0xFFFF0000);
+
 
         params3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
-        params3.setMargins(-1, topPx, -1, botPx);
+       // params3.setMargins(-1, topPx, -1, botPx);
+        params3.setMargins(-1, -1, -1, -1);
         this.addView(RockeRight, params3);
-
+        //RockeRight.setBackgroundColor(0xFF00FF00);
 
         RockeLeft.bLeft = true;
         RockeRight.bLeft = false;
@@ -311,6 +312,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
         int width = MeasureSpec.getSize(widthMeasureSpec);
+        int WW = width;
         int height = MeasureSpec.getSize(heightMeasureSpec);
         setMeasuredDimension(width, height);
         int sdd = width;
@@ -323,24 +325,18 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         width /= 2;
 
         nRockWidth = width;
-        params2.width = nRockWidth;
+
+        params2.width = WW/2;
         RockeLeftA.setLayoutParams(params2);
 
-        params3.width = nRockWidth;
+        params3.width = WW/2;
         RockeRightA.setLayoutParams(params3);
-        pathView.setLayoutParams(params1);
 
         params_leftview.width=nRockWidth;
         leftView.setLayoutParams(params_leftview);
 
-
     }
 
-    @Override
-    protected void onSizeChanged(int width, int height, int oldw, int oldh) {
-
-
-    }
 
 
     public void F_SetAdjType1(boolean bType1) {
@@ -953,10 +949,12 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         @Override
         protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
             super.onMeasure(widthMeasureSpec, heightMeasureSpec);
+            /*
             int widthSize = MeasureSpec.getSize(widthMeasureSpec);
             int heightSize = MeasureSpec.getSize(heightMeasureSpec);
-            int size = Math.min(widthSize, heightSize);
-            setMeasuredDimension(size, size);
+           // int size = Math.min(widthSize, heightSize);
+           // setMeasuredDimension(size, size);
+           */
         }
 
         private void DrawCir(Canvas canvas) {
@@ -1068,25 +1066,30 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                 dx20 = Storage.dip2px(getContext(), 28);
                 dx5 = Storage.dip2px(getContext(), (28 - 14) / 2);
                 dx14 = Storage.dip2px(getContext(), 14);
+
+                int dxA = Storage.dip2px(getContext(), 20);
+
+
                 if (bVbarRight) {
                     int dd2 = Storage.dip2px(getContext(), 5);
                     dx2 = Storage.dip2px(getContext(), 5);
                     dx20 = Storage.dip2px(getContext(), 24);
                     dx5 = Storage.dip2px(getContext(), 10);
                     dx20A = Storage.dip2px(getContext(), 12);
-                    upRect.left = centx + Radius;
+
+                    upRect.left = centx + Radius + dxA;
                     upRect.top = centy - Radius + dx5;
                     if (bFlyType) {
-                        upRect.left = centx + Radius + dd2;
+                        upRect.left = centx + Radius + dd2 + dxA;
                         upRect.top = centy - (Radius * (2 / 3.0f));
                     }
                     upRect.right = upRect.left + dx20;
                     upRect.bottom = upRect.top + dx20A;
                     canvas.drawBitmap(upBmp, null, upRect, null);
-                    downRect.left = centx + Radius;
+                    downRect.left = centx + Radius+dxA;
                     downRect.bottom = centy + Radius - dx2;
                     if (bFlyType) {
-                        downRect.left = centx + Radius + dd2;
+                        downRect.left = centx + Radius + dd2 + dxA;
                         downRect.bottom = centy + (Radius * (2 / 3.0f));//-dx20A;
                     }
                     downRect.top = downRect.bottom - dx20A;
@@ -1326,9 +1329,11 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
                 dd2 = Storage.dip2px(getContext(), 5);
 
+                int dxA = Storage.dip2px(getContext(), 20);
+
 
                 leftRect.left = centx - Radius + dx5;
-                leftRect.top = centy + Radius;
+                leftRect.top = centy + Radius+dxA;
                 if (bFlyType) {
                     leftRect.top += dd2;
                     leftRect.left = centx - (Radius * (2 / 3.0f));
@@ -1338,7 +1343,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                 canvas.drawBitmap(leftBmp, null, leftRect, null);
 
                 rightRect.left = centx + Radius - dx20A - dx5;
-                rightRect.top = centy + Radius;
+                rightRect.top = centy + Radius+dxA;
                 if (bFlyType) {
                     rightRect.top += dd2;
                     rightRect.left = centx + (Radius * (2 / 3.0f)) - dx20A;
@@ -1471,12 +1476,81 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         protected void onSizeChanged(int width, int height, int oldw, int oldh) {
             int bPitch;
 
+
+
             int dsb = Storage.dip2px(getContext(), 45);
+
+
+
             if (bPath)
+            {
                 dsb = Storage.dip2px(getContext(), 50);
+            }
             else {
-                if (bFlyType) {
+                if (bFlyType)
+                {
+                    dsb = Storage.dip2px(getContext(), 50);
+                } else {
                     dsb = Storage.dip2px(getContext(), 45);
+                }
+            }
+
+            int dsb1 = (dsb) * 2;
+            int size = Math.min(width, height);
+
+            CirRadius = (int) ((width * 0.11)/2);// / 12f);   //标点的半径
+            Radius = (int)(CirRadius*2*4)/2;//(size - dsb1) / 2;           //摇杆背景的半径
+            Radius_VV = Radius - CirRadius;
+            Radius_V1 = Radius_VV;
+            Radius_VV = Radius_VV * Radius_VV;
+
+            if (bFlyType) {
+                centy = height / 2;
+                if (bLeft) {
+                    centx = (int) (width * 0.61);
+                } else {
+                    centx = (int) (width * 0.39);
+                }
+            }
+            else
+            {
+                centy = height / 2;
+                if (bLeft) {
+                    centx = (int) (width * 0.45);
+                } else {
+                    centx = (int) (width * 0.55);
+                }
+            }
+
+
+
+
+            /*
+            if (bFlyType) {
+                if (bLayoutLeft) {
+                    centx = Radius;
+                } else {
+                    centx = width - Radius;
+                }
+            }
+            */
+
+
+
+            cirPoint.x = centx;
+            cirPoint.y = centy;
+            F_ReasetEngine();
+
+            /*
+
+            if (bPath)
+            {
+                dsb = Storage.dip2px(getContext(), 50);
+            }
+            else {
+                if (bFlyType)
+                {
+                    dsb = Storage.dip2px(getContext(), 50);
                 } else {
                     dsb = Storage.dip2px(getContext(), 45);
                 }
@@ -1493,13 +1567,14 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             Radius_VV = Radius_VV * Radius_VV;
 
             bPitch = 0;
-            if (bLeft) {
+            if (bLeft)
+            {
+                ;
             } else {
                 bPitch = 0 - bPitch;
             }
 
             centx = width / 2 + bPitch;
-
             if (bFlyType) {
                 if (bLayoutLeft) {
                     centx = Radius;
@@ -1512,6 +1587,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             cirPoint.x = centx;
             cirPoint.y = centy;
             F_ReasetEngine();
+            */
 
         }
 

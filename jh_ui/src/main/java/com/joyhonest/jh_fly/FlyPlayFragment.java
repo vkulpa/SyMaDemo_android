@@ -12,6 +12,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
 
@@ -37,7 +38,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     public MyControl myControl;
     private Button Fly_Camera_Btn;
     private Button Photo_Record_Select_Btn;
-    private MySwitch myswitch;
+    public MySwitch myswitch;
+    private MySwitch button_leftRight;
     private Button Photo_Record_Start_Btn;
     private Button Floder_Btn;
     private Button Return_Btn;
@@ -55,10 +57,10 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     private Button Finger_Btn;
     private Button StopFly_Btn;
     private Button UpDn_Btn;
-    private Button More_Btn;
+    //private Button More_Btn;
 
 
-    private boolean bMore;
+    //private boolean bMore;
 
 
     private TextView Record_Time_TextCtrl;
@@ -69,9 +71,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
 
     private TextView Location_TxtView;
-    private LinearLayout Layout_LeftMenu;
+    //private LinearLayout Layout_LeftMenu;
 
-    private LinearLayout Layout_Menu;
+    private RelativeLayout Menu_Layout;
 
     private LinearLayout rect_layout;
 
@@ -84,6 +86,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     private LinearLayout tool_1_layout;
     private LinearLayout tool_2_layout;
 
+
+
+    private LinearLayout tool_menu;
 
     public FlyPlayFragment() {
         // Required empty public constructor
@@ -101,15 +106,17 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         tool_1_layout = (LinearLayout)view.findViewById(R.id.tool_1_layout);
         tool_2_layout = (LinearLayout)view.findViewById(R.id.tool_2_layout);
         tool_1_layout.setVisibility(View.VISIBLE);
-        tool_1_layout.setVisibility(View.GONE);
+        tool_2_layout.setVisibility(View.GONE);
+        tool_menu = (LinearLayout)view.findViewById(R.id.tool_menu);
+        tool_menu.setVisibility(View.INVISIBLE);
 
         rect_layout = (LinearLayout) view.findViewById(R.id.rect_layout);
 
         snapshot = (TextView) view.findViewById(R.id.snapshot);
         snapshot.setVisibility(View.INVISIBLE);
 
-        Layout_LeftMenu = (LinearLayout) view.findViewById(R.id.Layout_LeftMenu);
-        Layout_Menu = (LinearLayout) view.findViewById(R.id.Menu_Layout);
+      //  Layout_LeftMenu = (LinearLayout) view.findViewById(R.id.Layout_LeftMenu);
+        Menu_Layout = (RelativeLayout) view.findViewById(R.id.Menu_Layout);
 
         Location_TxtView = (TextView) view.findViewById(R.id.Location_TxtView);
         Location_TxtView.setText("");
@@ -123,6 +130,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         Fly_Camera_Btn = (Button) view.findViewById(R.id.button01);
         //Photo_Record_Select_Btn = (Button)view.findViewById(R.id.button02);
         myswitch = (MySwitch) view.findViewById(R.id.button02);
+        button_leftRight = (MySwitch) view.findViewById(R.id.button_leftRight);
         Photo_Record_Start_Btn = (Button) view.findViewById(R.id.button03);
         Floder_Btn = (Button) view.findViewById(R.id.button04);
         Return_Btn = (Button) view.findViewById(R.id.return_btn);
@@ -142,10 +150,11 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         StopFly_Btn = (Button) view.findViewById(R.id.button10);
         UpDn_Btn = (Button) view.findViewById(R.id.button11);
 
-        More_Btn = (Button) view.findViewById(R.id.button_more);
+      //  More_Btn = (Button) view.findViewById(R.id.button_more);
+        button_leftRight.F_SetMenu(true);
 
 
-        More_Btn.setOnClickListener(this);
+       // More_Btn.setOnClickListener(this);
         Fly_Camera_Btn.setOnClickListener(this);
         //  Photo_Record_Select_Btn.setOnClickListener(this);
         Photo_Record_Start_Btn.setOnClickListener(this);
@@ -164,17 +173,20 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         Path_Btn.setOnClickListener(this);
         VR_Btn.setOnClickListener(this);
         HeadLess_Btn.setOnClickListener(this);
-        Layout_Menu.setOnClickListener(this);
-        bMore = false;
+        Menu_Layout.setOnClickListener(this);
+     //   bMore = false;
 
 
         F_DispUI();
+
+        F_DispToolMenu(true,true);
+
         F_SetLocaiotn("");
         Location_TxtView.setTextColor(0xFFFF0000);
-        F_DispMore();
+        //F_DispMore();
 
         bMenuHide = true;
-        Layout_LeftMenu.setVisibility(View.INVISIBLE);
+     //   Layout_LeftMenu.setVisibility(View.INVISIBLE);
 
         F_DispAllMenu(false);
 
@@ -225,6 +237,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         }, 500);
     }
 
+    /*
     private void F_DispMore() {
         if (bMore) {
             tool_1_layout.setVisibility(View.GONE);
@@ -234,6 +247,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             tool_2_layout.setVisibility(View.GONE);
         }
     }
+    */
 
 
     public void F_SetLocaiotn(String str) {
@@ -325,13 +339,39 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     }
 
+
+    void F_DispToolMenu(boolean bDisp,boolean bInit)
+    {
+        if(bDisp)
+        {
+             if(bInit)
+             {
+                 Menu_Layout.setVisibility(View.VISIBLE);
+                 tool_menu.setVisibility(View.INVISIBLE);
+             }
+             else
+             {
+                 Menu_Layout.setVisibility(View.INVISIBLE);
+                 tool_menu.setVisibility(View.VISIBLE);
+             }
+        }
+        else
+        {
+            Menu_Layout.setVisibility(View.INVISIBLE);
+            tool_menu.setVisibility(View.INVISIBLE);
+        }
+
+    }
+
     private void F_DispAllMenu(boolean bDisp) {
+
         if (bDisp) {
-            Layout_LeftMenu.setVisibility(View.VISIBLE);
-            bMore = false;
-            F_DispMore();
+            Menu_Layout.setVisibility(View.INVISIBLE);
+            tool_menu.setVisibility(View.VISIBLE);
         } else {
-            Layout_LeftMenu.setVisibility(View.INVISIBLE);
+            tool_menu.setVisibility(View.INVISIBLE);
+            Menu_Layout.setVisibility(View.INVISIBLE);
+          //  Layout_LeftMenu.setVisibility(View.INVISIBLE);
         }
 
     }
@@ -343,20 +383,22 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if (Layout_Menu == v)
+        if (Menu_Layout == v)
         {
             if(!bControlUI)
                 return;
+
             if (JH_App.bVR)
                 return;
-
             bMenuHide = false;
             F_DispAllMenu(true);
         }
+        /*
         if (v == More_Btn) {
             bMore = !bMore;
             F_DispMore();
         }
+        */
         if (v == StopFly_Btn) {
             JH_App.bStop = true;
             JH_App.bUp = false;
@@ -446,10 +488,14 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         if (v == Fly_Camera_Btn) {
             bControlUI = !bControlUI;
             F_DispUI();
+
             if (bControlUI) {
                 bMenuHide = true;
-                bMore = false;
-                F_DispAllMenu(false);
+                F_DispToolMenu(true,true);
+            }
+            else
+            {
+                F_DispToolMenu(false,false);
             }
 
                 /*
@@ -627,6 +673,20 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         F_DispPhoto_Record();
     }
 
+    public void F_SetMenuLeftRight(boolean b) {
+        if(b)
+        {
+            tool_1_layout.setVisibility(View.VISIBLE);
+            tool_2_layout.setVisibility(View.GONE);
+        }
+        else
+        {
+            tool_1_layout.setVisibility(View.GONE);
+            tool_2_layout.setVisibility(View.VISIBLE);
+        }
+
+    }
+
 
 
     public void F_DispPhoto_Record() {
@@ -705,22 +765,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         if (bControlUI) {
             Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh_b);
 
-
-
             UpDn_Btn.setVisibility(View.VISIBLE);
             myControl.setVisibility(View.VISIBLE);
             StopFly_Btn.setVisibility(View.VISIBLE);
-
-
-            /*
-            Speed_Btn.setVisibility(View.VISIBLE);
-            Adj_Btn.setVisibility(View.VISIBLE);
-            Gsensor_Btn.setVisibility(View.VISIBLE);
-
-            */
-            More_Btn.setVisibility(View.VISIBLE);
-            F_DispMore();
-
 
             F_StartStopSentCmd(true);
 
@@ -732,19 +779,10 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             myControl.setVisibility(View.INVISIBLE);
             StopFly_Btn.setVisibility(View.INVISIBLE);
 
-            More_Btn.setVisibility(View.INVISIBLE);
-            tool_1_layout.setVisibility(View.INVISIBLE);
-            tool_2_layout.setVisibility(View.INVISIBLE);
 
-            /*
-            Speed_Btn.setVisibility(View.INVISIBLE);
-            Adj_Btn.setVisibility(View.INVISIBLE);
-            Gsensor_Btn.setVisibility(View.INVISIBLE);
 
-            Path_Btn.setVisibility(View.INVISIBLE);
-            VR_Btn.setVisibility(View.INVISIBLE);
-            HeadLess_Btn.setVisibility(View.INVISIBLE);
-            */
+
+
 
             F_StartStopSentCmd(false);
         }

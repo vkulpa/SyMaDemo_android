@@ -45,7 +45,7 @@
             android:name="android.max_aspect"
             android:value="2.1"/>
         <!-- 定位需要的服务 使用2.0的定位需要加上这个 -->
-        <service android:name="com.amap.api.location.APSService"/>
+        <!--service android:name="com.amap.api.location.APSService"/ -->
         <meta-data
             android:name="com.amap.api.v2.apikey"
             android:value="b6049061ecd36d4ebb21c24920b78326"/>

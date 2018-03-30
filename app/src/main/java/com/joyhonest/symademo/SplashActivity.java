@@ -1,15 +1,15 @@
 package com.joyhonest.symademo;
 
 
-import android.annotation.SuppressLint;
+
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
-import android.media.MediaFormat;
+
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,12 +20,10 @@ import android.widget.TextView;
 
 
 import com.joyhonest.jh_fly.Fly_PlayActivity;
-import com.joyhonest.jh_fly.MapTestActivity;
 import com.joyhonest.jh_ui.JH_App;
 import com.joyhonest.jh_ui.PlayActivity;
 
-import java.io.IOException;
-import java.nio.ByteBuffer;
+
 
 
 public class SplashActivity extends AppCompatActivity
@@ -41,9 +39,8 @@ public class SplashActivity extends AppCompatActivity
         setContentView(R.layout.activity_splash);
 
         JH_App.init(getApplicationContext(),null,null,null,null);
-     //   JH_App.bInitDispCtrol=false;
         JH_App.checkDeviceHasNavigationBar(this);
-       // JH_App.GetFilesA("/proc/sys/net/ipv4",null,false);
+
 
         TextView ver_textView = (TextView)findViewById(R.id.ver_textView);
         ver_textView.setText(getAppVersionName(this));
@@ -74,12 +71,16 @@ public class SplashActivity extends AppCompatActivity
                 }
                 JH_App.bInitDispCtrol=true;
 
+              int df =   ContextCompat.checkSelfPermission(getApplicationContext(),
+                        Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
                 Intent mainIntent = new Intent(SplashActivity.this, PlayActivity.class);
+                //Intent mainIntent = new Intent(SplashActivity.this, Fly_PlayActivity.class);
                 startActivity(mainIntent);
             }
         });
 
-/*
+
 
         UI2_button.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,7 +106,7 @@ public class SplashActivity extends AppCompatActivity
                 startActivity(mainIntent);
             }
         });
-*/
+
 
     }
 

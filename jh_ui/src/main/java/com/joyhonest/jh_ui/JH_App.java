@@ -209,6 +209,8 @@ public class JH_App {
     {
         File f = new File(JH_App.sLocalVideo);
         File[] files  = f.listFiles();// 列出所有文件
+        if(files == null)
+            return;
         String fileName=" ";
         for(File  file : files)
         {

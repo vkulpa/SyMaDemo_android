@@ -1,5 +1,6 @@
 package com.joyhonest.jh_fly;
 
+import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -19,6 +20,7 @@ import android.location.LocationManager;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.Settings;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -38,6 +40,7 @@ import com.joyhonest.jh_ui.MyControl;
 import com.joyhonest.jh_ui.MyFilesItem;
 import com.joyhonest.jh_ui.MyItemData;
 import com.joyhonest.jh_ui.Path_Fragment;
+import com.joyhonest.jh_ui.PermissionAsker;
 import com.joyhonest.jh_ui.PlayActivity;
 import com.joyhonest.jh_ui.R;
 import com.joyhonest.wifination.JH_Tools;
@@ -103,12 +106,43 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             JH_App.F_OpenStream();
         }
     };
-
+    private  PermissionAsker  mAsker;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_fly_play_jh);
+
+
+        mAsker=new PermissionAsker(10,new Runnable() {
+            @Override
+            public void run() {
+                setContentView(R.layout.activity_fly_play_jh);
+                F_Init();
+            }
+        }, new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(Fly_PlayActivity.this, "The necessary permission denied, the application exit",
+                        Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }).askPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+
+
+
+
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        mAsker.onRequestPermissionsResult(grantResults);
+    }
+
+    private  void F_Init()
+    {
         EventBus.getDefault().register(this);
         MyControl.bFlyType = true;
         // locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -150,8 +184,6 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
         F_InitFragment();
 //        JH_Tools.InitEncoder(1280,720,25,(int)(1000*1000*4));//
-
-
     }
 
 
@@ -309,11 +341,18 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        EventBus.getDefault().unregister(this);
-        openHandler.removeCallbacksAndMessages(null);
-        RssiHander.removeCallbacksAndMessages(null);
-        flyPlayFragment.F_StopSentCmd();
-        thread1.quit();
+
+        if(openHandler!=null) {
+
+            wifination.naStop();
+            wifination.release();
+            EventBus.getDefault().unregister(this);
+
+            openHandler.removeCallbacksAndMessages(null);
+            RssiHander.removeCallbacksAndMessages(null);
+            flyPlayFragment.F_StopSentCmd();
+            thread1.quit();
+        }
     }
 
     private void hideFragments(FragmentTransaction ft) {
@@ -689,15 +728,21 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     }
 
     @Subscriber(tag = "SwitchChanged")
-    private void SwitchChanged(boolean b) {
+    private void SwitchChanged(SwitchMesage b) {
         if(mActiveFragment == flyPlayFragment)
         {
-            flyPlayFragment.F_SetPhoto(b);
+            if(b.mySwitch == flyPlayFragment.myswitch)
+                flyPlayFragment.F_SetPhoto(b.bLeft);
+            else
+            {
+
+                flyPlayFragment.F_SetMenuLeftRight(b.bLeft);
+            }
         }
 
         if(mActiveFragment ==flyPathFragment)
         {
-            flyPathFragment.F_SetPhoto(b);
+            flyPathFragment.F_SetPhoto(b.bLeft);
         }
     }
 

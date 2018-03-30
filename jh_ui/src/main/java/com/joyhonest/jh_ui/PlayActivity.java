@@ -1,6 +1,7 @@
 package com.joyhonest.jh_ui;
 
 
+import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.app.Fragment;
 import android.app.FragmentManager;
@@ -17,6 +18,7 @@ import android.os.HandlerThread;
 //import android.support.v4.app.Fragment;
 //import android.support.v4.app.FragmentManager;
 //import android.support.v4.app.FragmentTransaction;
+import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
@@ -26,6 +28,7 @@ import android.widget.ImageView;
 import android.widget.MediaController;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.VideoView;
 
 import com.joyhonest.jh_fly.Fly_PlayActivity;
@@ -158,9 +161,14 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
     private  boolean  bGoFly=false;
 
+    private PermissionAsker mAsker;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+
 
         if(JH_App.F_GetWifiType()==wifination.IC_GPH264A)
         {
@@ -172,7 +180,32 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         }
         bGoFly = false;
 
-        setContentView(R.layout.activity_play_jh);
+
+        mAsker=new PermissionAsker(10,new Runnable() {
+            @Override
+            public void run() {
+                setContentView(R.layout.activity_play_jh);
+                F_Init();
+            }
+        }, new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(PlayActivity.this, "The necessary permission denied, the application exit",
+                        Toast.LENGTH_SHORT).show();
+                finish();
+            }
+        }).askPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        mAsker.onRequestPermissionsResult(grantResults);
+    }
+
+    private void F_Init()
+    {
         MyControl.bFlyType = false;
         wifination.F_AdjBackGround(this, R.mipmap.loginbackground_jh);
         JH_App.checkDeviceHasNavigationBar(this);
@@ -546,14 +579,16 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         super.onDestroy();
         if(bGoFly)
             return;
-        wifination.naStop();
-        wifination.release();
-        EventBus.getDefault().unregister(this);
+        if(openHandler!=null) {
+            wifination.naStop();
+            wifination.release();
+            EventBus.getDefault().unregister(this);
 
-        openHandler.removeCallbacksAndMessages(null);
-        //  sendCmdHandle.removeCallbacksAndMessages(null);
-        RssiHander.removeCallbacksAndMessages(null);
-        thread1.quit();
+            openHandler.removeCallbacksAndMessages(null);
+            //  sendCmdHandle.removeCallbacksAndMessages(null);
+            RssiHander.removeCallbacksAndMessages(null);
+            thread1.quit();
+        }
         /*
         FragmentTransaction transaction = mFragmentMan.beginTransaction();
         transaction.remove(Select_Video_Photo_Fragment);
