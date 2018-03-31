@@ -108,6 +108,11 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     };
     private  PermissionAsker  mAsker;
 
+
+
+    private Handler   myHandler;
+    private Runnable   myRunnable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -128,11 +133,6 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             }
         }).askPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
-
-
-
-
-
     }
 
     @Override
@@ -143,6 +143,15 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
     private  void F_Init()
     {
+        JH_App.bFlying = false;
+        myHandler = new Handler();
+        myRunnable=new Runnable() {
+            @Override
+            public void run() {
+                myHandler.postDelayed(this,20);
+            }
+        };
+        //myHandler.post(myRunnable);
         EventBus.getDefault().register(this);
         MyControl.bFlyType = true;
         // locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
@@ -341,6 +350,10 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if(myHandler!=null)
+        {
+            myHandler.removeCallbacksAndMessages(null);
+        }
 
         if(openHandler!=null) {
 
@@ -580,6 +593,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         dispVideo_fragment = new DispVideo_Fragment();
         dispPhoto_Fragment = new DispPhoto_Fragment();
 
+
+
         flyPathFragment = new FlyPathFragment();
 
         FragmentTransaction transaction = mFragmentMan.beginTransaction();
@@ -605,8 +620,9 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        dispVideo_fragment.F_SetBackImg(R.mipmap.return_icon_black_fly_jh);
                         F_SetView(flyPlayFragment);
-                        JH_App.openGPSSettings();
+                     //   JH_App.openGPSSettings();
                     }
                 }, 20);
             }

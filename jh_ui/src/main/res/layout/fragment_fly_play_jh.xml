@@ -75,12 +75,12 @@
 
     <Button
         android:id="@+id/return_btn"
-        android:layout_width="30dp"
+        android:layout_width="32dp"
         android:layout_height="26dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"
         android:layout_alignParentTop="true"
-        android:layout_marginRight="8dp"
+        android:layout_marginRight="15dp"
         android:layout_marginTop="5dp"
         android:background="@mipmap/return_icon_fly_jh"/>
 
@@ -163,7 +163,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:visibility="gone">
+                    android:visibility="visible">
 
                     <LinearLayout
                         android:id="@+id/rect_layout"
@@ -213,7 +213,7 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:orientation="vertical"
-                    android:visibility="visible"
+                    android:visibility="gone"
                     >
 
                     <LinearLayout

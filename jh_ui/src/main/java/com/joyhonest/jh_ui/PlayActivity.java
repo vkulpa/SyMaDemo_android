@@ -169,7 +169,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
 
 
-
+/*
         if(JH_App.F_GetWifiType()==wifination.IC_GPH264A)
         {
             bGoFly = true;
@@ -178,8 +178,8 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             finish();
             return;
         }
+*/
         bGoFly = false;
-
 
         mAsker=new PermissionAsker(10,new Runnable() {
             @Override
@@ -273,6 +273,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         dispVideo_fragment = new DispVideo_Fragment();
         path_fragment = new Path_Fragment();
 
+
         FragmentTransaction transaction = mFragmentMan.beginTransaction();
         transaction.add(R.id.Fragment_Layout, Select_Video_Photo_Fragment);
         transaction.add(R.id.Fragment_Layout, Grid_fragment);
@@ -298,6 +299,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
+                        dispVideo_fragment.F_SetBackImg(R.mipmap.return_nor_1_jh);
                         F_SetView(main_fragment);
                     }
                 }, 20);

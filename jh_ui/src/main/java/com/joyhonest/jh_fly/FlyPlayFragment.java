@@ -1,6 +1,7 @@
 package com.joyhonest.jh_fly;
 
 
+import android.animation.ObjectAnimator;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.app.Fragment;
@@ -81,7 +82,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     private TextView snapshot;
 
 
-    private boolean bMenuHide;
+
 
     private LinearLayout tool_1_layout;
     private LinearLayout tool_2_layout;
@@ -89,6 +90,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
 
     private LinearLayout tool_menu;
+
+
+
 
     public FlyPlayFragment() {
         // Required empty public constructor
@@ -101,6 +105,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
         View view = inflater.inflate(R.layout.fragment_fly_play_jh, container, false);
         view.findViewById(R.id.rooglayout).setBackgroundColor(0x00010000);
+
+
+        view.findViewById(R.id.button_more_b).setOnClickListener(this);
 
 
         tool_1_layout = (LinearLayout)view.findViewById(R.id.tool_1_layout);
@@ -179,16 +186,15 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
         F_DispUI();
 
-        F_DispToolMenu(true,true);
+        //F_DispToolMenu(true,true);
+
+        bDispMenu1=true;
+        bDispMenu2=false;
+        F_DispAllMenu();
 
         F_SetLocaiotn("");
         Location_TxtView.setTextColor(0xFFFF0000);
-        //F_DispMore();
-
-        bMenuHide = true;
-     //   Layout_LeftMenu.setVisibility(View.INVISIBLE);
-
-        F_DispAllMenu(false);
+      //  F_DispAllMenu(false);
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -314,19 +320,30 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             F_DispUI();
             bControlUI = b;
 
-                sentHander.removeCallbacksAndMessages(null);
-            if(b) {
+            sentHander.removeCallbacksAndMessages(null);
+            if(bControlUI)
+            {
                 sentHander.post(sentRunnable);
             }
+            boolean b1= bDispMenu1;
+            boolean b2 = bDispMenu2;
+            bDispMenu1 = false;
+            bDispMenu2=false;
+            F_DispAllMenu();
+            bDispMenu2 = b2;
+            bDispMenu1 = b1;
+
             Fly_Camera_Btn.setVisibility(View.INVISIBLE);
             myswitch.setVisibility(View.INVISIBLE);
             Photo_Record_Start_Btn.setVisibility(View.INVISIBLE);
             Record_Time_TextCtrl.setVisibility(View.INVISIBLE);
             Floder_Btn.setVisibility(View.INVISIBLE);
-
         }
-        else {
+        else
+            {
             F_DispUI();
+            F_DispAllMenu();
+
             Fly_Camera_Btn.setVisibility(View.VISIBLE);
             myswitch.setVisibility(View.VISIBLE);
             Photo_Record_Start_Btn.setVisibility(View.VISIBLE);
@@ -339,7 +356,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     }
 
-
+/*
     void F_DispToolMenu(boolean bDisp,boolean bInit)
     {
         if(bDisp)
@@ -362,18 +379,44 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         }
 
     }
+    */
 
-    private void F_DispAllMenu(boolean bDisp) {
+    boolean      bDispMenu1=true;
+    boolean      bDispMenu2=false;
 
-        if (bDisp) {
-            Menu_Layout.setVisibility(View.INVISIBLE);
-            tool_menu.setVisibility(View.VISIBLE);
-        } else {
-            tool_menu.setVisibility(View.INVISIBLE);
-            Menu_Layout.setVisibility(View.INVISIBLE);
-          //  Layout_LeftMenu.setVisibility(View.INVISIBLE);
+
+    private void F_DispAllMenu() {
+        int wScreen = myControl.getWidth();
+        int nLeft = Storage.dip2px(getActivity(), 54);
+        if(bDispMenu1)
+        {
+            if(bDispMenu2)
+            {
+                Menu_Layout.setVisibility(View.INVISIBLE);
+                tool_menu.setVisibility(View.VISIBLE);
+
+                ObjectAnimator.ofFloat(tool_menu, "X", (wScreen + 10), wScreen - nLeft).setDuration(500).start();
+            }
+            else
+            {
+                Menu_Layout.setVisibility(View.VISIBLE);
+                tool_menu.setVisibility(View.INVISIBLE);
+            }
         }
-
+        else
+        {
+            if(bDispMenu2)
+            {
+                Menu_Layout.setVisibility(View.INVISIBLE);
+                tool_menu.setVisibility(View.VISIBLE);
+                ObjectAnimator.ofFloat(tool_menu, "X", wScreen - nLeft, (wScreen + 10)).setDuration(500).start();
+            }
+            else
+            {
+                Menu_Layout.setVisibility(View.INVISIBLE);
+                tool_menu.setVisibility(View.INVISIBLE);
+            }
+        }
     }
 
     int ixxxx = 0;
@@ -383,15 +426,18 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     @Override
     public void onClick(View v) {
-        if (Menu_Layout == v)
+        if (Menu_Layout == v || v.getId()==R.id.button_more_b)
         {
             if(!bControlUI)
                 return;
 
             if (JH_App.bVR)
                 return;
-            bMenuHide = false;
-            F_DispAllMenu(true);
+
+            bDispMenu1=true;
+            bDispMenu2=true;
+            F_DispAllMenu();
+
         }
         /*
         if (v == More_Btn) {
@@ -422,19 +468,28 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         }
 
         if (v == UpDn_Btn) {
-            JH_App.bUp = !JH_App.bUp;
+
+            JH_App.bFlying =!JH_App.bFlying;
+            if(JH_App.bFlying)
+            {
+                JH_App.bUp = true;
+                JH_App.bDn = false;
+            }
+            else
+            {
+                JH_App.bUp=false;
+                JH_App.bDn=true;
+            }
+            /*
+            JH_App.bUp = true;
             JH_App.bDn = false;
+            */
             UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_sel_fly_jh);
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
-                    JH_App.bUp = !JH_App.bUp;
-                }
-            },150);
-            JH_App.bUp = !JH_App.bUp;
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
+                    JH_App.bUp=false;
+                    JH_App.bDn=false;
                     if((JH_App.nSdStatus & JH_App.LocalRecording)!=0)
                     {
                         UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh);
@@ -445,7 +500,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                     }
 
                 }
-            }, 300);
+            }, 500);
         }
         if (v == Path_Btn) {
             EventBus.getDefault().post("abc", "GotoPath");
@@ -453,7 +508,6 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         if (v == VR_Btn) {
             JH_App.bVR = !JH_App.bVR;
             F_Disp3DUI();
-
             ((Fly_PlayActivity) getActivity()).F_RefSurface();
         }
 
@@ -479,6 +533,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                 @Override
                 public void run() {
                     JH_App.bAdj = false;
+                    myControl.F_SetLeftRightAdj(0x80);
+                    myControl.F_SetForwardBackAdj(0x80);
+                    myControl.F_SetRotateAdj(0x80);
                     Adj_Btn.setBackgroundResource(R.mipmap.adj_fly_jh);
 
                 }
@@ -490,67 +547,17 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             F_DispUI();
 
             if (bControlUI) {
-                bMenuHide = true;
-                F_DispToolMenu(true,true);
+                bDispMenu1=true;
+                bDispMenu2=false;
+                F_DispAllMenu();
             }
             else
             {
-                F_DispToolMenu(false,false);
+                bDispMenu1=false;
+                F_DispAllMenu();
             }
 
-                /*
-                ixxxx=2;
-                cmd[0]=(byte)ixxxx;
-                cmd[1]=(byte)(ixxxx>>8);
-                cmd[2]=(byte)(ixxxx>>16);
-                cmd[3]=(byte)(ixxxx>>24);
-                cmd[4] = (byte)(cmd[5]^cmd[6]^cmd[7]^cmd[8]^cmd[9]);
-                cmd[5] = (byte)0x99;
-                wifination.naSentCmd(cmd,6);
 
-                ixxxx = 1;
-                cmd[0]=(byte)ixxxx;
-                cmd[1]=(byte)(ixxxx>>8);
-                cmd[2]=(byte)(ixxxx>>16);
-                cmd[3]=(byte)(ixxxx>>24);
-                cmd[4] = 0x66;
-                cmd[5] = 0x00;
-                cmd[10] = (byte)(cmd[5]^cmd[6]^cmd[7]^cmd[8]^cmd[9]);
-                wifination.naSentCmd(cmd,10);
-
-
-                ixxxx = 0;
-                cmd[0]=(byte)ixxxx;
-                cmd[1]=(byte)(ixxxx>>8);
-                cmd[2]=(byte)(ixxxx>>16);
-                cmd[3]=(byte)(ixxxx>>24);
-                cmd[10] = (byte)(cmd[5]^cmd[6]^cmd[7]^cmd[8]^cmd[9]);
-                wifination.naSentCmd(cmd,6);
-
-                ixxxx=3;
-                cmd[0]=(byte)ixxxx;
-                cmd[1]=(byte)(ixxxx>>8);
-                cmd[2]=(byte)(ixxxx>>16);
-                cmd[3]=(byte)(ixxxx>>24);
-                cmd[4] = 0x66;
-                cmd[5] = 0x00;
-                cmd[6] = (byte)0xAA;
-                cmd[7] = 0x55;
-                cmd[8] = (byte)0xAA;
-                cmd[9] = (byte)0x99;
-
-
-                wifination.naSentCmd(cmd,10);
-
-                ixxxx = 4;
-                cmd[0]=(byte)ixxxx;
-                cmd[1]=(byte)(ixxxx>>8);
-                cmd[2]=(byte)(ixxxx>>16);
-                cmd[3]=(byte)(ixxxx>>24);
-                cmd[4] = (byte)(cmd[5]^cmd[6]^cmd[7]^cmd[8]^cmd[9]);
-                cmd[5] = (byte)0x99;
-                wifination.naSentCmd(cmd,6);
-*/
 
 
         }
@@ -745,7 +752,6 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     public void F_StartStopSentCmd(boolean bStart) {
         if (bStart) {
 
-            //new MyThread_SentCmd(this).start();
             sentHander.removeCallbacksAndMessages(null);
             sentHander.post(sentRunnable);
         } else {
@@ -823,10 +829,12 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 */
 
 
+    private int  nTestTemp;
     private Handler sentHander = new Handler();
     private Runnable sentRunnable = new Runnable() {
         @Override
         public void run() {
+            nTestTemp++;
             F_SentCmd();
             sentHander.postDelayed(this, 20);
         }
@@ -960,7 +968,7 @@ Data9：Data0- Data8异或后，再加0X55
             if (da > 0x1F)
                 da = 0x1F;
         } else {
-            da = 0x00;
+            da = 0x20;
         }
 
 
@@ -968,7 +976,7 @@ Data9：Data0- Data8异或后，再加0X55
         if (JH_App.bHiSpeed)
             cmd[5] |= 0x80;          //高速模式
 
-        cmd[5] |= 0x40;
+        //cmd[5] |= 0x40;
 
 
         da = X_ADJ1 - 0x80;          //旋转微调
@@ -1027,7 +1035,7 @@ Data9：Data0- Data8异或后，再加0X55
         }
         cmd[9] = (byte) (((cmd[0] ^ cmd[1] ^ cmd[2] ^ cmd[3] ^ cmd[4] ^ cmd[5] ^ cmd[6] ^ cmd[7] ^ cmd[8]) & 0xFF) + 0x55);
         wifination.naSentCmd(cmd, 10);
-       // Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2);
+      //  Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2+"temp="+nTestTemp);
 
 
         /*

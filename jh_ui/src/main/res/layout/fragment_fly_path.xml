@@ -70,7 +70,7 @@
 
     <Button
         android:id="@+id/return_btn"
-        android:layout_width="30dp"
+        android:layout_width="32dp"
         android:layout_height="26dp"
         android:layout_alignParentEnd="true"
         android:layout_alignParentRight="true"

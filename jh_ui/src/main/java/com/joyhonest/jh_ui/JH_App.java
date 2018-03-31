@@ -172,6 +172,8 @@ public class JH_App {
 
 
 
+    public  static  boolean bFlying = false;
+
     public static int  nAdjRota = 0x80;
     public static int  nAdjLeftRight=0x80;
     public static int  nAdjForwardBack=0x80;

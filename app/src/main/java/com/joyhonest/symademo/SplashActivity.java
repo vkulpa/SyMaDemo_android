@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 
+import android.os.Handler;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -33,6 +34,10 @@ public class SplashActivity extends AppCompatActivity
     Switch   SyMa_Switch;
     Switch   Type_Switch;
 
+
+    //Handler   handler;
+    Runnable  runnable;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -49,6 +54,20 @@ public class SplashActivity extends AppCompatActivity
         UI2_button = (Button)findViewById(R.id.button_sima);
         SyMa_Switch = (Switch)findViewById(R.id.switch1);
         Type_Switch = (Switch)findViewById(R.id.switch2);
+
+        /*
+        handler = new Handler();
+        runnable = new Runnable() {
+            @Override
+            public void run() {
+                Log.v("TEST","0000000------------");
+                handler.postDelayed(this,20);
+            }
+        };
+
+        handler.post(runnable);
+        */
+
         UI1_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v)
@@ -77,6 +96,7 @@ public class SplashActivity extends AppCompatActivity
                 Intent mainIntent = new Intent(SplashActivity.this, PlayActivity.class);
                 //Intent mainIntent = new Intent(SplashActivity.this, Fly_PlayActivity.class);
                 startActivity(mainIntent);
+              //  handler.removeCallbacksAndMessages(null);
             }
         });
 
@@ -102,6 +122,7 @@ public class SplashActivity extends AppCompatActivity
                     JH_App.b720P = true;
                 }
                 JH_App.bInitDispCtrol=true;
+               // handler.removeCallbacksAndMessages(null);
                 Intent mainIntent = new Intent(SplashActivity.this, Fly_PlayActivity.class);
                 startActivity(mainIntent);
             }

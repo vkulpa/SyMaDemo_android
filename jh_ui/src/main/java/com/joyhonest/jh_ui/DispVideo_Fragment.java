@@ -79,12 +79,17 @@ public class DispVideo_Fragment extends Fragment {
     }
 
 
+    public  void F_SetBackImg(int id)
+    {
+        backBut.setBackgroundResource(id);
+    }
+
     public void F_Play(String str) {
 
         File file = new File(str);
 //判断文件夹是否存在,如果不存在则创建文件夹
         if (!file.exists()) {
-            JH_App.F_DispMesate("文件不存在。。。");
+            JH_App.F_DispMesate("file is not exist。。。");
             return;
         }
 
