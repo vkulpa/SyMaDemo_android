@@ -2099,6 +2099,18 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
             }
         }
 #endif
+        if (m_decodedFrame != NULL) {
+
+            if (m_decodedFrame->key_frame != 0) {
+                av_frame_copy(frame_SnapBuffer, pFrameYUV);
+            }
+        }
+
+        if (m_bSaveSnapshot) {
+            {
+                EncodeSnapshot();
+            }
+        }
         PlatformDisplay();
     }
     av_packet_unref(&packet);

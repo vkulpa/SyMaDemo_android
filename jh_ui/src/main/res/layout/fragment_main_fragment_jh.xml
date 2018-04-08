@@ -189,7 +189,6 @@
         android:layout_width="55dp"
         android:layout_height="35dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginStart="16dp"
         android:layout_marginTop="8dp"
         android:background="@mipmap/photo_nor_jh"
         app:layout_constraintLeft_toLeftOf="parent"
