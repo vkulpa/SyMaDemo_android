@@ -10,6 +10,7 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.PointerIcon;
 import android.view.View;
 import android.widget.RelativeLayout;
 
@@ -26,8 +27,21 @@ public class MyControl_A extends RelativeLayout {
     private int nRectW = 1;
     private int nRectH = 1;
 
+
+
     private Rect rectleft;
     private Rect rectright;
+
+
+    private  Bitmap bmp1;
+    private  Bitmap bmp2;
+
+
+    public void  F_SetBackFly(Bitmap bmp1,Bitmap bmp2)
+    {
+        this.bmp1 = bmp1;
+        this.bmp2 = bmp2;
+    }
 
     public MyControl_A(Context context, AttributeSet attrs) {
         super(context, attrs);

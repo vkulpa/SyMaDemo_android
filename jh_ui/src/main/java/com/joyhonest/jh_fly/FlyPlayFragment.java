@@ -128,7 +128,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         Location_TxtView = (TextView) view.findViewById(R.id.Location_TxtView);
         Location_TxtView.setText("");
         myControl = (MyControl) view.findViewById(R.id.myControl);
-        myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
+       // myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
+        myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
         myControl.F_SetDispText(false);
 
         Record_Time_TextCtrl = (TextView) view.findViewById(R.id.Record_textView);
@@ -276,10 +277,13 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     public void F_DispGSensorIcon() {
 
-        if (Gsensor_Btn != null) {
-            if (JH_App.bSensor) {
+        if (Gsensor_Btn != null)
+        {
+
+            if (JH_App.bSensor)
+            {
                 myControl.F_SetMode(1);
-                Gsensor_Btn.setBackgroundResource(R.mipmap.gsensor_icon_sel_fly_jh);
+             //   Gsensor_Btn.setBackgroundResource(R.mipmap.gsensor_icon_sel_fly_jh);
                 int org = getActivity().getWindowManager().getDefaultDisplay().getRotation();
 
                 if (Surface.ROTATION_270 == org) {
@@ -289,9 +293,10 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                 }
             } else {
                 myControl.F_SetMode(0);
-                Gsensor_Btn.setBackgroundResource(R.mipmap.gsensor_icon_fly_jh);
+              //  Gsensor_Btn.setBackgroundResource(R.mipmap.gsensor_icon_fly_jh);
                 getActivity().setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
             }
+
         }
     }
 
@@ -460,7 +465,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                     }
                     else
                     {
-                        StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+                       // StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+                        StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
                     }
 
                 }
@@ -496,7 +502,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                     }
                     else
                     {
-                        UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh_b);
+                       // UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh_b);
+                        UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh);
                     }
 
                 }
@@ -515,7 +522,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             JH_App.bHiSpeed = !JH_App.bHiSpeed;
             F_DispSpeedIcon();
         }
-        if (v == Gsensor_Btn) {
+        if (v == Gsensor_Btn)
+        {
             JH_App.bSensor = !JH_App.bSensor;
             F_DispGSensorIcon();
 
@@ -713,7 +721,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
                 Record_Time_TextCtrl.setVisibility(View.VISIBLE);
                 Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_recording_icon_fly_jh);
-                myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
+                //myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
                 myControl.F_SetFlyRecord(true);
                 if(bControlUI) {
                     Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh);
@@ -731,20 +739,27 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             else
             {
                 Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_record_icon_fly_jh);
-                myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
+                //myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
+               // myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
                 myControl.F_SetFlyRecord(false);
 
                 if(bControlUI) {
-                    Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh_b);
+                    //Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh_b);
+                    Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh);
                 }
                 else
                 {
-                    Fly_Camera_Btn.setBackgroundResource(R.mipmap.no_remote_fly_jh_b);
+                    //Fly_Camera_Btn.setBackgroundResource(R.mipmap.no_remote_fly_jh_b);
+                    Fly_Camera_Btn.setBackgroundResource(R.mipmap.no_remote_fly_jh);
                 }
 
-                Floder_Btn.setBackgroundResource(R.mipmap.folder_fly_jh_b);
-                StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
-                UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh_b);
+                //Floder_Btn.setBackgroundResource(R.mipmap.folder_fly_jh_b);
+                //StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+                //UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh_b);
+                Floder_Btn.setBackgroundResource(R.mipmap.folder_fly_jh);
+                StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
+                UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh);
+
             }
         }
     }
@@ -769,7 +784,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         F_DispSpeedIcon();
         F_DispGSensorIcon();
         if (bControlUI) {
-            Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh_b);
+            //Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh_b);
+            Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh);
 
             UpDn_Btn.setVisibility(View.VISIBLE);
             myControl.setVisibility(View.VISIBLE);
@@ -1035,7 +1051,7 @@ Data9：Data0- Data8异或后，再加0X55
         }
         cmd[9] = (byte) (((cmd[0] ^ cmd[1] ^ cmd[2] ^ cmd[3] ^ cmd[4] ^ cmd[5] ^ cmd[6] ^ cmd[7] ^ cmd[8]) & 0xFF) + 0x55);
         wifination.naSentCmd(cmd, 10);
-      //  Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2+"temp="+nTestTemp);
+        Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2+"  temp="+nTestTemp);
 
 
         /*

@@ -186,13 +186,9 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
                 @Override
                 public void run() {
                     JH_App.bStop = false;
-                    //if((JH_App.nSdStatus & JH_App.LocalRecording) !=0)
-                    //{
-                    //    StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
-                    //}
-                    //else
                     {
-                        StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+                      //  StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+                        StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
                     }
 
                 }
@@ -306,10 +302,12 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
         }
         else {
                 Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_record_icon_fly_jh);
-                myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
+                //myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
+                myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
                 myControl.F_SetFlyRecord(false);
                 F_DispOpenEye(bOpenEye);
-                StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+                //StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+            StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
         }
     }
 

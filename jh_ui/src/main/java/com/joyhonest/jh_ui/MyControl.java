@@ -212,6 +212,9 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
     Bitmap background;
     Bitmap cirBmp;
 
+
+
+
     public void F_SetImage(int nBackgroud, int nCir)
     {
         background = BitmapFactory.decodeResource(this.getContext().getResources(), nBackgroud);
@@ -289,7 +292,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
        // params2.setMargins(-1, topPx, -1, botPx);
         params2.setMargins(-1, -1, -1, -1);
         this.addView(RockeLeft, params2);
-        //RockeLeft.setBackgroundColor(0xFFFF0000);
+       // RockeLeft.setBackgroundColor(0x50FF0000);
 
 
         params3.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
@@ -598,12 +601,25 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
             RockeRight.F_SetType(nType);
             RockeRight.F_SetVLR(true);
-
-        } else if (nMode == 1)      //正常左手模式+重力
+            if(bFlyType)
+            {
+                RockeRight.F_SetImage(background);
+            }
+        }
+        else if (nMode == 1)      //正常左手模式+重力
         {
+
 
             RockeLeft = RockeLeftA;
             RockeRight = RockeRightA;
+
+            if(bFlyType)
+            {
+             //   Bitmap bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_back_fly_jh_fig);
+             //   RockeRight.F_SetImage(bmp);
+
+            }
+
             int nType = 0;
             nType |= MyRockeViewA.TYPE_No_ADJY;
             if (bHoldHeight)
@@ -761,8 +777,9 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
     }
 
 
-    public class MyRockeViewA extends View {
+    public class MyRockeViewA extends RelativeLayout {
 
+        private MyRipple  myRipple;
         public boolean bFlyType = true;
         public boolean isbFlyType_recording = false;
 
@@ -795,8 +812,10 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         public int Radius_VV;
         public int Radius_V1;
         private Point cirPoint;
+        private Point touchPoint;
         private Point cirPointB;
         private Bitmap backBmp;
+        private Bitmap backBmp1;
         private Bitmap cirBmp;
         private Bitmap upBmp;
         private Bitmap downBmp;
@@ -832,12 +851,17 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
         private boolean bVbarRight = true;
 
+        private  boolean  bTouched=false;
+
         public int centx;
         public int centy;
         public int nType;
         //public boolean bLimitHeight = false;
 
         private Activity activity;
+
+
+        private RelativeLayout.LayoutParams ripple_params;
 
 
         public MyRockeViewA(Context context, AttributeSet attrs, int defStyle) {
@@ -871,6 +895,12 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
         }
 
+        public void F_SetImage(Bitmap back)
+        {
+            backBmp = back;
+            invalidate();
+        }
+
         public void F_SetImage(Bitmap back, Bitmap cir) {
             backBmp = back;//BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_back_jh);
             cirBmp = cir;//BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_jh);
@@ -888,10 +918,16 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                 rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh);
             }
             else {
-                upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh_b);
-                downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh_b);
-                leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh_b);
-                rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh_b);
+
+                upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh);
+                downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh);
+                leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh);
+                rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh);
+
+                //upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh_b);
+                //downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh_b);
+                //leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh_b);
+                //rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh_b);
             }
             invalidate();
         }
@@ -899,6 +935,15 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         private void init(boolean ba) {
 
             setWillNotDraw(false);
+
+            touchPoint = new Point(-1,-1);
+            myRipple = new MyRipple(getContext());
+            ripple_params = new RelativeLayout.LayoutParams(76, 76);
+            this.addView(myRipple,ripple_params);
+
+
+
+            myRipple.setVisibility(INVISIBLE);
             if (ba) {
                 backBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_back_jh);
                 cirBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_jh);
@@ -917,10 +962,15 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                     rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh);
                 }
                 else {
-                    upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh_b);
-                    downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh_b);
-                    leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh_b);
-                    rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh_b);
+                    //upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh_b);
+                    //downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh_b);
+                    //leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh_b);
+                    //rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh_b);
+
+                    upBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.up_fly_jh);
+                    downBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.down_fly_jh);
+                    leftBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.left_fly_jh);
+                    rightBmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.right_fly_jh);
                 }
             }
 
@@ -936,10 +986,17 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             rightRect = new RectF();
             adjx = adjy = 0x80;
 
-
-            PathSpeed1_Bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.tra1_1_jh);
-            PathSpeed2_Bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.tra1_2_jh);
-            PathSpeed3_Bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.tra1_3_jh);
+            if(bFlyType)
+            {
+                PathSpeed1_Bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.tra1_1_fly);
+                PathSpeed2_Bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.tra1_2_fly);
+                PathSpeed3_Bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.tra1_3_fly);
+            }
+            else {
+                PathSpeed1_Bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.tra1_1_jh);
+                PathSpeed2_Bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.tra1_2_jh);
+                PathSpeed3_Bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.tra1_3_jh);
+            }
 
             CirRadius = -1;
 
@@ -959,19 +1016,34 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
         private void DrawCir(Canvas canvas) {
             if ((nType & TYPE_Acceleration_NoDispX) != 0) {
-                RectF dstRect = new RectF(centx - CirRadius, cirPoint.y - CirRadius, centx + CirRadius, cirPoint.y + CirRadius);
-                canvas.drawBitmap(cirBmp, null, dstRect, null);
+                    RectF dstRect = new RectF(centx - CirRadius, cirPoint.y - CirRadius, centx + CirRadius, cirPoint.y + CirRadius);
+                    canvas.drawBitmap(cirBmp, null, dstRect, null);
                 return;
             }
             if ((nType & TYPE_Acceleration_NoDispY) != 0) {
-                RectF dstRect = new RectF(cirPoint.x - CirRadius, centy - CirRadius, cirPoint.x + CirRadius, centy + CirRadius);
-                canvas.drawBitmap(cirBmp, null, dstRect, null);
+                    RectF dstRect = new RectF(cirPoint.x - CirRadius, centy - CirRadius, cirPoint.x + CirRadius, centy + CirRadius);
+                    canvas.drawBitmap(cirBmp, null, dstRect, null);
                 return;
             }
-
             {
-                RectF dstRect = new RectF(cirPoint.x - CirRadius, cirPoint.y - CirRadius, cirPoint.x + CirRadius, cirPoint.y + CirRadius);
-                canvas.drawBitmap(cirBmp, null, dstRect, null);
+                if(bFlyType)
+                {
+
+                    if((nType & TYPE_X_Acceleration)!=0 || (nType &TYPE_Y_Acceleration)!=0 )
+                    {
+                         return;
+                    }
+                    else
+                    {
+                        RectF dstRect = new RectF(cirPoint.x - CirRadius, cirPoint.y - CirRadius, cirPoint.x + CirRadius, cirPoint.y + CirRadius);
+                        canvas.drawBitmap(cirBmp, null, dstRect, null);
+                    }
+                }
+                else
+                {
+                    RectF dstRect = new RectF(cirPoint.x - CirRadius, cirPoint.y - CirRadius, cirPoint.x + CirRadius, cirPoint.y + CirRadius);
+                    canvas.drawBitmap(cirBmp, null, dstRect, null);
+                }
             }
         }
 
@@ -1079,17 +1151,26 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
                     upRect.left = centx + Radius + dxA;
                     upRect.top = centy - Radius + dx5;
-                    if (bFlyType) {
-                        upRect.left = centx + Radius + dd2 + dxA;
+
+
+
+                    if (bFlyType)
+                    {
+                        upRect.left = centx + Radius+ dd2;// + dxA;
                         upRect.top = centy - (Radius * (2 / 3.0f));
+
                     }
                     upRect.right = upRect.left + dx20;
                     upRect.bottom = upRect.top + dx20A;
+
+
+
                     canvas.drawBitmap(upBmp, null, upRect, null);
-                    downRect.left = centx + Radius+dxA;
+                    downRect.left = upRect.left;//centx + Radius+dxA;
                     downRect.bottom = centy + Radius - dx2;
                     if (bFlyType) {
-                        downRect.left = centx + Radius + dd2 + dxA;
+                        //downRect.left = centx + Radius + dd2 + dxA;
+                        //downRect.left = centx + Radius + dd2 + dxA;
                         downRect.bottom = centy + (Radius * (2 / 3.0f));//-dx20A;
                     }
                     downRect.top = downRect.bottom - dx20A;
@@ -1132,35 +1213,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                     p.setTextAlign(Paint.Align.CENTER);
                     canvas.drawText(s, xxxx, baseLineY, p);
                     canvas.rotate(90, xxxx, centy);
-/*
-                    RectF dstRect = new RectF();
-                    dstRect.left = centx + Radius + dx2 + dx5;
-                    dstRect.top = upRect.bottom + dx5;
-                    dstRect.right = dstRect.left + dx14;
-                    dstRect.bottom = downRect.top - dx5;
-                    canvas.drawBitmap(v_BarBmp, null, dstRect, null);
-                    //NinePatch ninePatch = new NinePatch(v_BarBmp, v_BarBmp.getNinePatchChunk(), null);
-                    //ninePatch.draw(canvas, dstRect);
-                    float step;
-                    adjh = (int) dstRect.height();
-                    step = (adjh - HH) / 128.0f;
-                    int ch = adjh / 2;
-                    int cnt;
-                    ch -= (HH / 2);
-                    if (adjy < 0x80) {
-                        int tp = 0x80 - adjy;
-                        ch += (int) (tp * step);
-                    } else if (adjy > 0x80) {
-                        int tp = adjy - 0x80;
-                        ch -= (int) (tp * step);
-                    }
-                    cnt = ch;
-                    dstRect.left -= dx5;
-                    dstRect.top = cnt + dstRect.top;
-                    dstRect.right = dstRect.left + WW;//upRect.left+dx20;
-                    dstRect.bottom = dstRect.top + HH;
-                    canvas.drawBitmap(thmbH_Bmp, null, dstRect, null);
-                    */
+
                 } else {
                     /*
                      dx2 = Storage.dip2px(getContext(), 5);
@@ -1334,8 +1387,9 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
                 leftRect.left = centx - Radius + dx5;
                 leftRect.top = centy + Radius+dxA;
-                if (bFlyType) {
-                    leftRect.top += dd2;
+                if (bFlyType)
+                {
+                    leftRect.top = centy + Radius+dd2;
                     leftRect.left = centx - (Radius * (2 / 3.0f));
                 }
                 leftRect.right = leftRect.left + dx20A;
@@ -1343,9 +1397,9 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                 canvas.drawBitmap(leftBmp, null, leftRect, null);
 
                 rightRect.left = centx + Radius - dx20A - dx5;
-                rightRect.top = centy + Radius+dxA;
+                rightRect.top = leftRect.top;//centy + Radius+dxA;
                 if (bFlyType) {
-                    rightRect.top += dd2;
+                    //rightRect.top += dd2;
                     rightRect.left = centx + (Radius * (2 / 3.0f)) - dx20A;
                 }
                 rightRect.right = rightRect.left + dx20A;
@@ -1448,9 +1502,34 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             Paint p = new Paint();
             p.setAntiAlias(true);
             int nSize = Storage.dip2px(getContext(), 15);
-
             RectF dstRect = new RectF(centx - Radius, centy - Radius, centx + Radius, centy + Radius);
-            canvas.drawBitmap(backBmp, null, dstRect, null);
+            if(bFlyType)
+            {
+                if((nType & TYPE_X_Acceleration)!=0 || (nType &TYPE_Y_Acceleration)!=0 )
+                {
+                    if(bTouched)
+                    {
+                        canvas.drawBitmap(backBmp, null, dstRect, null);
+                    }
+                    else
+                    {
+                        Bitmap bb = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_back_fly_jh_fig);
+                        canvas.drawBitmap(bb, null, dstRect, null);
+                    }
+                }
+                else
+                {
+                    canvas.drawBitmap(backBmp, null, dstRect, null);
+                }
+            }
+            else
+            {
+                canvas.drawBitmap(backBmp, null, dstRect, null);
+            }
+
+
+
+
 
             p.setColor(Color.RED);
             p.setTextSize(nSize);
@@ -1475,16 +1554,11 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         @Override
         protected void onSizeChanged(int width, int height, int oldw, int oldh) {
             int bPitch;
-
-
-
             int dsb = Storage.dip2px(getContext(), 45);
-
-
 
             if (bPath)
             {
-                dsb = Storage.dip2px(getContext(), 50);
+                    dsb = Storage.dip2px(getContext(), 50);
             }
             else {
                 if (bFlyType)
@@ -1498,18 +1572,37 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             int dsb1 = (dsb) * 2;
             int size = Math.min(width, height);
 
-            CirRadius = (int) ((width * 0.11)/2);// / 12f);   //标点的半径
+            int pitch = Storage.dip2px(getContext(), 70+25);
+
+            CirRadius = (int) ((size * 0.12)/2);// / 12f);   //标点的半径
             Radius = (int)(CirRadius*2*4)/2;//(size - dsb1) / 2;           //摇杆背景的半径
             Radius_VV = Radius - CirRadius;
             Radius_V1 = Radius_VV;
             Radius_VV = Radius_VV * Radius_VV;
 
-            if (bFlyType) {
+
+           // ripple_params =(LayoutParams)myRipple.getLayoutParams();// LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+            ripple_params.width = 200;//(int)(CirRadius*1.2);
+            ripple_params.height =200;// (int)(CirRadius*1.2);
+            myRipple.post(new Runnable() {
+                @Override
+                public void run() {
+                    myRipple.setLayoutParams(ripple_params);
+                }
+            });
+
+
+
+
+            if (bFlyType)
+            {
                 centy = height / 2;
-                if (bLeft) {
-                    centx = (int) (width * 0.61);
-                } else {
-                    centx = (int) (width * 0.39);
+                if (bLeft)
+                {
+                    centx = (int)(pitch+Radius);
+                }
+                else {
+                    centx = (int) (width - (Radius+pitch));
                 }
             }
             else
@@ -1685,7 +1778,8 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
 
             if (rect.contains(x, y) && !bCanMoved) {
-                if (MotionEvent.ACTION_UP == action) {
+                if (MotionEvent.ACTION_UP == action)
+                {
                     Integer n = 0x80 + 0;
                     adjy += 1;
                     if (adjy > 0x80 + 32)
@@ -1772,8 +1866,6 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
             int dx = x - centx;
             int dy = y - centy;
-            //  int nPointX = x;
-            //  int nPointY = y;
 
 
             RectF dstRect = new RectF(centx - Radius_V1, centy - Radius_V1, centx + Radius_V1, centy + Radius_V1);
@@ -1781,27 +1873,48 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             int da = dx * dx + dy * dy;
             cirPointB.x = cirPoint.x;
             cirPointB.y = cirPoint.y;
-            switch (action) {
+            switch (action)
+            {
                 case MotionEvent.ACTION_DOWN:
-                    //if (d <= Radius_V)
+                    bTouched = true;
                     bCanMoved = false;
-                    if (dstRect.contains(x, y)) {
+                    if (dstRect.contains(x, y))
+                    {
                         if ((nType & TYPE_X_Acceleration) == 0 || (nType & TYPE_Y_Acceleration) == 0)
                             bCanMoved = true;
+
+                        if(bFlyType)
+                        {
+                            if ((nType & TYPE_X_Acceleration) != 0 && (nType & TYPE_Y_Acceleration) != 0)
+                            {
+                                if(myRipple.getVisibility()!=VISIBLE) {
+                                    myRipple.resetWave();
+                                    myRipple.setVisibility(VISIBLE);
+                                }
+                            }
+                        }
                     }
+
 
                 case MotionEvent.ACTION_MOVE:
 
-                    if (!bCanMoved && !dstRect.contains(x, y)) {
-                        return true;// super.onTouchEvent(event);
+                    if (!bCanMoved && !dstRect.contains(x, y))
+                    {
+                        return true;
                     }
                     bCanMoved = true;
-                    if (da <= Radius_VV) {
+                    if (da <= Radius_VV)
+                    {
                         if ((nType & TYPE_X_Acceleration) == 0)
                             cirPoint.x = x;
                         if ((nType & TYPE_Y_Acceleration) == 0)
                             cirPoint.y = y;
-                    } else {
+
+                        touchPoint.x = x;
+                        touchPoint.y = y;
+                    }
+                    else
+                        {
                         da = (int) Math.sqrt(da);
                         x = dx * Radius_V1 / da;
                         y = dy * Radius_V1 / da;
@@ -1812,65 +1925,56 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                             cirPoint.x = x;
                         if ((nType & TYPE_Y_Acceleration) == 0)
                             cirPoint.y = y;
+                        touchPoint.x = x;
+                        touchPoint.y = y;
 
                     }
-                /*
-                if(nTypeA==1)
-                {
-                    cirPoint.y = cirPointB.y;
-                }
-                if(nTypeA==2)
-                {
-                    cirPoint.x = cirPointB.x;
-                }
-                */
+                    if(bFlyType)
+                    {
+                        if ((nType & TYPE_X_Acceleration) != 0 && (nType & TYPE_Y_Acceleration) != 0)
+                        {
+
+
+                            myRipple.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    int left = touchPoint.x -ripple_params.width/2;
+                                    int top =  touchPoint.y-ripple_params.height/2;
+                                    ripple_params.leftMargin=left;
+                                    ripple_params.topMargin=top;
+                                    myRipple.setLayoutParams(ripple_params);
+                                }
+                            });
+                        }
+                    }
 
                     invalidate();
                     return true;
                 case MotionEvent.ACTION_UP:
                     bCanMoved = false;
+                    bTouched = false;
+                    if(myRipple.getVisibility()==VISIBLE)
+                    {
+                         new Handler().postDelayed(new Runnable() {
+                             @Override
+                             public void run() {
+                                  if(!bTouched)
+                                    myRipple.setVisibility(INVISIBLE);
+                             }
+                         },600);
+                    }
+
                     if ((nType & TYPE_RestCentX) != 0 & (nType & TYPE_X_Acceleration) == 0) {
                         cirPoint.x = centx;
                     }
                     if ((nType & TYPE_RestCentY) != 0 & (nType & TYPE_Y_Acceleration) == 0) {
                         cirPoint.y = centy;
                     }
+                 //   touchPoint.x = x;
+                 //   touchPoint.y = y;
                     invalidate();
-                /*
-                if (nType == Type_Engine)
-                {
-                    cirPoint.x = centx;
-                    if (bLimitHeight) {
-                        cirPoint.y = centy;
-                    }
-                    invalidate();
-                    return true;
-                }
-                else if (nType == TYPE_Direction_Manual) {
-                    cirPoint.x = centx;
-                    cirPoint.y = centy;
-
-                    invalidate();
-                    return true;
-                }
-                else {
-                    if (nTypeA == 1) {
-                        cirPoint.x = centx;
-                    }
-                    if (nTypeA == 2) {
-                        cirPoint.y = centy;
-                    }
-                    if (nTypeA == 3)
-                    {
-
-                    }
-
-                    invalidate();
-                }
-                */
                     break;
             }
-            // return super.onTouchEvent(event);
             return true;
         }
 
@@ -1897,8 +2001,23 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         public int F_GetX() {
             int x = 0;
             float dx;//= (Radius_V1*2)/(255.0f);
+            Point  point = new Point(0,0);
+            point.x =  cirPoint.x;
+            if(bFlyType)
+            {
+                if ( (nType & TYPE_Y_Acceleration) != 0 ||
+                        (nType & TYPE_Y_Acceleration) != 0 )
+                {
+                    if(!bTouched)
+                    {
+                        return 0x80;
+                    }
+
+                }
+            }
+
             int zx = centx - Radius_V1;
-            int xx = cirPoint.x - zx;
+            int xx = point.x - zx;
             dx = ((float) xx) / (Radius_V1 * 2);
             dx *= 256;
             x = (int) dx;
@@ -1927,28 +2046,32 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         }
 
         public int F_GetY() {
-        /*
-        int y = cirPoint.y - centy;
 
-        y = 0xFF - (y * 0x7F / Radius_V1 + 0x7F);
-        if (y < 5) {
-            y = 0;
-        }
-        if (y >= 0x7F && y <= 0x81)
-            y = 0x80;
-        if(y>0xff)
-        {
-            y=0xff;
-        }
-        if(y<0)
-        {
-            y = 0;
-        }
-        */
             int y = 0;
             float dy;//= (Radius_V1*2)/(255.0f);
+
+
+            Point point = new Point(0,0);
+            point.y =cirPoint.y;
+
+
+            if(bFlyType)
+            {
+                if ( (nType & TYPE_Y_Acceleration) != 0 ||
+                        (nType & TYPE_Y_Acceleration) != 0 )
+                {
+                    if(!bTouched)
+                    {
+                        return 0x80;
+                    }
+                }
+            }
+
             int zy = centy + Radius_V1;
-            int yy = zy - cirPoint.y;
+            int yy = zy - point.y;
+
+
+
             dy = ((float) yy) / (Radius_V1 * 2);
             dy *= 256;
             y = (int) dy;
@@ -2040,11 +2163,18 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         }
 
         public void F_Calculator_Acceleration(int y, int x, int z) {
-            //if((nType & TYPE_X_Acceleration)!=0)
             if ((nType & TYPE_X_Acceleration) == 0 && (nType & TYPE_Y_Acceleration) == 0)
                 return;
+            if(!bTouched)
+            {
 
-            Log.e("acceleration", "X:" + x + "   Y=" + y);
+                cirPoint.x = centx;
+                cirPoint.y = centy;
+                return;
+
+            }
+
+        //    Log.e("acceleration", "X:" + x + "   Y=" + y);
             x *= 0.8;
             y *= 0.8;
             if (x != 0 || y != 0) {
@@ -2059,19 +2189,18 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                     y = y * r / da;
 
                 }
+
                 Activity activitya = (Activity) this.getContext();
                 JH_App.F_GetOrg(activitya);
                 if ((nType & TYPE_X_Acceleration) != 0) {
                     if (JH_App.nOrg == ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE) {
                         cirPoint.x = centx - x;
                     } else
-
                     {
                         cirPoint.x = centx + x;
                     }
                 }
                 if ((nType & TYPE_Y_Acceleration) != 0) {
-
                     if (JH_App.nOrg == ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE) {
                         cirPoint.y = centy - y;
                     } else

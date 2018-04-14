@@ -88,7 +88,7 @@
         android:layout_alignParentTop="true"
         android:layout_alignStart="@+id/button11"
         android:layout_marginTop="45dp"
-        android:background="@mipmap/stop_nor_fly_jh_b"/>
+        android:background="@mipmap/stop_nor_fly_jh"/>
 
     <Button
         android:id="@+id/button11"
@@ -97,7 +97,7 @@
         android:layout_alignParentBottom="true"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="23dp"
-        android:background="@mipmap/keyup_dn_fly_jh_b"
+        android:background="@mipmap/keyup_dn_fly_jh"
         android:visibility="invisible"
         />
 
