@@ -3,18 +3,20 @@ package com.joyhonest.jh_ui;
 import java.util.ArrayList;
 import java.util.List;
 
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Paint.Style;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.animation.CycleInterpolator;
 import android.view.animation.Interpolator;
 
 public class MyRipple extends View {
-    private final static int FPS = 1000 / 40;
+    private final static int FPS = 1000 / 80;
     private float mMaxWaveAreaRadius;
     private float mWaveIntervalSize;
     private float mStirStep;// 波移动的步幅
@@ -39,6 +41,8 @@ public class MyRipple extends View {
     private float mFillWaveSourceShapeRadius;
     private final List<Wave> mWaves = new ArrayList<Wave>();
 
+    private Handler mHandler;
+
     public MyRipple(Context context, AttributeSet attrs) {
         super(context, attrs);
         init();
@@ -49,8 +53,20 @@ public class MyRipple extends View {
         init();
     }
 
+    private Runnable  mRunnable = new Runnable() {
+        @Override
+        public void run() {
+            stir();
+            invalidate();
+            mHandler.postDelayed(this,FPS);
+        }
+    };
     private void init() {
+        mHandler = new Handler();
         setWaveInfo(30f, 1f, 2f, 2f, Color.WHITE);
+
+
+
     }
 
     @Override
@@ -75,7 +91,7 @@ public class MyRipple extends View {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
-        stir();
+        //stir();
         for (Wave w : mWaves) {
             mWavePaint.setColor(w.color);
             mWavePaint.setStrokeWidth(w.width);
@@ -85,7 +101,16 @@ public class MyRipple extends View {
             canvas.drawCircle(mViewCenterX, mViewCenterY,
                     mFillWaveSourceShapeRadius, mWaveCenterShapePaint);
         }
-        postInvalidateDelayed(FPS);
+        /*
+        mHandler.removeCallbacksAndMessages(null);
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+               stir();
+                postInvalidate();
+            }
+        },FPS);
+        */
     }
 
     /**
@@ -116,42 +141,50 @@ public class MyRipple extends View {
 
     }
 
+
+    private  boolean  bPlaying = true;
+    private  boolean  bNeedClear = false;
+
+    public   void F_SetPlay(boolean b)
+    {
+        bPlaying=b;
+    }
+
     private Wave mLastRmoveWave;
 
     /**
      * 触发涌动传播
      */
     private void stir() {
-        Wave nearestWave = mWaves.isEmpty() ? null : mWaves.get(0);
-        if (nearestWave == null || nearestWave.radius >= mWaveIntervalSize)
-        {
-            Wave w = null;
-            if (mLastRmoveWave != null) {
-                w = mLastRmoveWave;
-                mLastRmoveWave = null;
-                w.reset();
-            } else {
-                w = new Wave();
-            }
-            mWaves.add(0, w);
-        }
-        float waveWidthIncrease = mWaveEndWidth - mWaveStartWidth;
-        int size = mWaves.size();
-        for (int i = 0; i < size; i++) {
-            Wave w = mWaves.get(i);
-            float rP = w.radius / mMaxWaveAreaRadius;
-            if (rP > 1f) {
-                rP = 1f;
-            }
-            w.width = mWaveStartWidth + rP * waveWidthIncrease;
-            w.radius += mStirStep;
-            float factor = interpolator.getInterpolation(rP);
-            w.color = mWaveColor & 0x00FFFFFF | ((int) (255 * factor) << 24);
-        }
-        Wave farthestWave = mWaves.get(size - 1);
-        if (farthestWave.radius > mMaxWaveAreaRadius + farthestWave.width / 2) {
-            mWaves.remove(size - 1);
-        }
+           if(!bNeedClear) {
+               Wave nearestWave = mWaves.isEmpty() ? null : mWaves.get(0);
+               if (nearestWave == null || nearestWave.radius >= mWaveIntervalSize) {
+                   Wave w = null;
+                   if (bPlaying) {
+                       if (mLastRmoveWave != null) {
+                           w = mLastRmoveWave;
+                           mLastRmoveWave = null;
+                           w.reset();
+                       } else {
+                           w = new Wave();
+                       }
+                       mWaves.add(0, w);
+                   }
+               }
+               float waveWidthIncrease = mWaveEndWidth - mWaveStartWidth;
+               int size = mWaves.size();
+               for (int i = 0; i < size; i++) {
+                   Wave w = mWaves.get(i);
+                   float rP = w.radius / mMaxWaveAreaRadius;
+                   if (rP > 1f) {
+                       rP = 1f;
+                   }
+                   w.width = mWaveStartWidth + rP * waveWidthIncrease;
+                   w.radius += mStirStep;
+                   float factor = interpolator.getInterpolation(rP);
+                   w.color = mWaveColor & 0x00FFFFFF | ((int) (255 * factor) << 24);
+               }
+           }
     }
 
     /**
@@ -165,8 +198,15 @@ public class MyRipple extends View {
     }
 
     public void resetWave() {
-        mWaves.clear();
-        postInvalidate();
+            mHandler.removeCallbacksAndMessages(null);
+            //bNeedClear = true;
+            mWaves.clear();
+            bNeedClear = false;
+            bPlaying = true;
+        mHandler.removeCallbacksAndMessages(null);
+        mHandler.post(mRunnable);
+            //postInvalidate();
+
     }
 
     /**

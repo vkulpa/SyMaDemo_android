@@ -779,6 +779,8 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
     public class MyRockeViewA extends RelativeLayout {
 
+        private  Handler   mHandler;
+
         private MyRipple  myRipple;
         public boolean bFlyType = true;
         public boolean isbFlyType_recording = false;
@@ -941,7 +943,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             ripple_params = new RelativeLayout.LayoutParams(76, 76);
             this.addView(myRipple,ripple_params);
 
-
+            mHandler = new Handler();
 
             myRipple.setVisibility(INVISIBLE);
             if (ba) {
@@ -1876,20 +1878,23 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             switch (action)
             {
                 case MotionEvent.ACTION_DOWN:
-                    bTouched = true;
+
                     bCanMoved = false;
                     if (dstRect.contains(x, y))
                     {
                         if ((nType & TYPE_X_Acceleration) == 0 || (nType & TYPE_Y_Acceleration) == 0)
                             bCanMoved = true;
 
-                        if(bFlyType)
-                        {
-                            if ((nType & TYPE_X_Acceleration) != 0 && (nType & TYPE_Y_Acceleration) != 0)
-                            {
-                                if(myRipple.getVisibility()!=VISIBLE) {
-                                    myRipple.resetWave();
-                                    myRipple.setVisibility(VISIBLE);
+                        if (da <= Radius_VV) {
+                            if (bFlyType) {
+                                if ((nType & TYPE_X_Acceleration) != 0 && (nType & TYPE_Y_Acceleration) != 0) {
+                                    bTouched = true;
+                                    mHandler.removeCallbacksAndMessages(null);
+                                    myRipple.F_SetPlay(true);
+                                    if (myRipple.getVisibility() != VISIBLE) {
+                                        myRipple.resetWave();
+                                        myRipple.setVisibility(VISIBLE);
+                                    }
                                 }
                             }
                         }
@@ -1955,13 +1960,17 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                     bTouched = false;
                     if(myRipple.getVisibility()==VISIBLE)
                     {
-                         new Handler().postDelayed(new Runnable() {
-                             @Override
-                             public void run() {
-                                  if(!bTouched)
-                                    myRipple.setVisibility(INVISIBLE);
-                             }
-                         },600);
+                        myRipple.F_SetPlay(false);
+                        mHandler.removeCallbacksAndMessages(null);
+                        /*
+                        mHandler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                myRipple.setVisibility(INVISIBLE);
+                            }
+                        },1000);
+                        */
+
                     }
 
                     if ((nType & TYPE_RestCentX) != 0 & (nType & TYPE_X_Acceleration) == 0) {
