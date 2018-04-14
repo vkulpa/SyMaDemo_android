@@ -2165,13 +2165,14 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         public void F_Calculator_Acceleration(int y, int x, int z) {
             if ((nType & TYPE_X_Acceleration) == 0 && (nType & TYPE_Y_Acceleration) == 0)
                 return;
-            if(!bTouched)
-            {
+            if(bFlyType) {
+                if (!bTouched) {
 
-                cirPoint.x = centx;
-                cirPoint.y = centy;
-                return;
+                    cirPoint.x = centx;
+                    cirPoint.y = centy;
+                    return;
 
+                }
             }
 
         //    Log.e("acceleration", "X:" + x + "   Y=" + y);

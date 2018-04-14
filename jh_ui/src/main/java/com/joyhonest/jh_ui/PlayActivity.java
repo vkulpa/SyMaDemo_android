@@ -180,6 +180,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         }
 */
         bGoFly = false;
+        wifination.naSetVrBackground(false);
 
         mAsker=new PermissionAsker(10,new Runnable() {
             @Override

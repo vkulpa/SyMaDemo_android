@@ -222,6 +222,10 @@ public class wifination {
 
     public static native  void naSetRevBmp(boolean b); //是否把解码到的图像发送到JAVA，有APP自己来显示而不是通过SDK内部来渲染显示
 
+    public static native  void naSetVrBackground(boolean b);
+
+    //-(void)naSetVrBackground:(BOOL)bWhite;
+
     /**
      * OpenGL ES 2.0
      */

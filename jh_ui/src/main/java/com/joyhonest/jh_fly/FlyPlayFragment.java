@@ -44,6 +44,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     private Button Photo_Record_Start_Btn;
     private Button Floder_Btn;
     private Button Return_Btn;
+    private Button Return_Btn1;
     private Button OneKeyReturn_Btn;
 
     private Button Speed_Btn;
@@ -142,6 +143,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         Photo_Record_Start_Btn = (Button) view.findViewById(R.id.button03);
         Floder_Btn = (Button) view.findViewById(R.id.button04);
         Return_Btn = (Button) view.findViewById(R.id.return_btn);
+        Return_Btn1= (Button) view.findViewById(R.id.return_btn1);
+        Return_Btn1.setVisibility(View.INVISIBLE);
 
         //OneKeyReturn_Btn = (Button)view.findViewById(R.id.button05);
 
@@ -168,6 +171,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         Photo_Record_Start_Btn.setOnClickListener(this);
         Floder_Btn.setOnClickListener(this);
         Return_Btn.setOnClickListener(this);
+        Return_Btn1.setOnClickListener(this);
 
         StopFly_Btn.setOnClickListener(this);
 
@@ -343,20 +347,36 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             Photo_Record_Start_Btn.setVisibility(View.INVISIBLE);
             Record_Time_TextCtrl.setVisibility(View.INVISIBLE);
             Floder_Btn.setVisibility(View.INVISIBLE);
+            Return_Btn.setBackgroundResource(R.mipmap.return_icon_black_fly_jh);
+            Fly_PlayActivity activity =(Fly_PlayActivity)getActivity();
+            RelativeLayout.LayoutParams  params =( RelativeLayout.LayoutParams )activity.glSurfaceView.getLayoutParams();
+            int tp = Storage.dip2px(activity, 40);
+            params.topMargin = tp;
+            activity.glSurfaceView.setLayoutParams(params);
+            Return_Btn1.setVisibility(View.VISIBLE);
+            Return_Btn1.setBackgroundResource(R.mipmap.return_icon_black_fly_jh);
+
         }
         else
             {
             F_DispUI();
             F_DispAllMenu();
+                Return_Btn1.setVisibility(View.INVISIBLE);
 
             Fly_Camera_Btn.setVisibility(View.VISIBLE);
             myswitch.setVisibility(View.VISIBLE);
             Photo_Record_Start_Btn.setVisibility(View.VISIBLE);
             Record_Time_TextCtrl.setVisibility(View.VISIBLE);
             Floder_Btn.setVisibility(View.VISIBLE);
+                Return_Btn.setBackgroundResource(R.mipmap.return_icon_fly_jh);
+                Fly_PlayActivity activity =(Fly_PlayActivity)getActivity();
+
+                RelativeLayout.LayoutParams  params =( RelativeLayout.LayoutParams )activity.glSurfaceView.getLayoutParams();
+                params.topMargin = 0;
+                activity.glSurfaceView.setLayoutParams(params);
         }
         wifination.naSet3D(JH_App.bVR);
-        wifination.F_AdjBackGround(getActivity(), R.mipmap.loginbackground_fly_jh);//R.mipmap.loginbackground_jh)
+      //  wifination.F_AdjBackGround(getActivity(), R.mipmap.loginbackground_fly_jh);//R.mipmap.loginbackground_jh)
 
 
     }
@@ -569,7 +589,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
 
         }
-        if (v == Return_Btn) {
+        if (v == Return_Btn || v==Return_Btn1) {
             EventBus.getDefault().post("exit", "Exit");
         }
 

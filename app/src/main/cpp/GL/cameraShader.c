@@ -21,34 +21,10 @@ drawFrame(void* ins)
 
 	//选择着色程序
 	glUseProgram(instance->pProgram);
-	//传入变换矩阵数据
-	//		1.初始化旋转矩阵
-	      // float * maMVPMatrixa = getRotateM(NULL, 0, 0, 0, 0, 1);
-//	//		2.初始化观察矩阵
-//	float * lookAtM = setLookAtM(NULL, 0,
-//								0, 0, 2,//float eyeX, float eyeY, float eyeZ,
-//								0, 0, 0,//float centerX, float centerY, float centerZ,
-//								0, 1, 0//float upX, float upY, float upZ
-//	);
-//	//		3.透视投影矩阵
-//	float radio = (float)instance->width / (float)instance->height;
-//	float * projM = frustumM(NULL, 0,
-//							-radio, radio,//float left, float right,
-//							-1, 1,//float bottom, float top,
-//							1, 4//float near, GLfloat far
-//	);
-//	//		3.2整合矩阵
-//	matrixMM4(maMVPMatrix, lookAtM);
-//	matrixMM4(maMVPMatrix, projM);
+    if(maMVPMatrix!=NULL) {
+		glUniformMatrix4fv(instance->maMVPMatrixHandle, 1, GL_FALSE, maMVPMatrix);
+	}
 
-//	4.传矩阵数据到顶点着色器
-    if(maMVPMatrix!=NULL)
-	    glUniformMatrix4fv(instance->maMVPMatrixHandle, 1, GL_FALSE, maMVPMatrix);
-//	//		5.释放
-	 //free(maMVPMatrixa);
-//	free(lookAtM);
-//	free(projM);
-	//传入顶点数据到着色器程序
 	glVertexAttribPointer(instance->maPositionHandle,
 						3,//GLint size X Y Z
 						GL_FLOAT,//GLenum type
@@ -75,7 +51,6 @@ drawFrame(void* ins)
 	//允许顶点数据数组
 	glEnableVertexAttribArray(instance->maPositionHandle);
 	glEnableVertexAttribArray(instance->maTexCoorHandle);
-
 	//绘制纹理矩形
 	glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 

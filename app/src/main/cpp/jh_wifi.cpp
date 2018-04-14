@@ -6272,7 +6272,6 @@ Java_com_joyhonest_wifination_wifination_naSetBackground(JNIEnv *env, jclass typ
     bool re = false;
     jbyte *data = env->GetByteArrayElements(data_, NULL);
     re = F_SetBackGroud(data, width, height);
-    LOGE_B("SetBackGround ok!");
     env->ReleaseByteArrayElements(data_, data, 0);
     return re;
 }
@@ -6332,4 +6331,14 @@ Java_com_joyhonest_wifination_wifination_naSetRevBmp(JNIEnv *env, jclass type, j
     bSentRevBMP = b;
     // TODO
 
+}
+
+
+bool  bWhitClolor = false;
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetVrBackground(JNIEnv *env, jclass type, jboolean b) {
+
+    // TODO
+    bWhitClolor = b;
 }

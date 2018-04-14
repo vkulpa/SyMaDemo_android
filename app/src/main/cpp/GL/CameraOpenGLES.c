@@ -214,6 +214,8 @@ extern pthread_mutex_t m_gl_lock;
 
 extern bool bGoble_3D;
 
+extern bool bWhitClolor;
+
 JNIEXPORT
 void
 Java_com_joyhonest_wifination_wifination_drawFrame(JNIEnv *env, jobject obj) //, jbyteArray yuvDatas, jint size)
@@ -223,6 +225,14 @@ Java_com_joyhonest_wifination_wifination_drawFrame(JNIEnv *env, jobject obj) //,
         return;
     if (gl_Frame == NULL) {
         return;
+    }
+
+    if(!bWhitClolor)
+    {
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    } else
+    {
+        glClearColor(0.95f, 0.95f, 0.95f, 1.0f);
     }
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -250,6 +260,7 @@ Java_com_joyhonest_wifination_wifination_drawFrame(JNIEnv *env, jobject obj) //,
         drawFrame(instance);
         glViewport(ww, hh/2, ww, hh);
         drawFrame(instance);
+
     }
     else
     {

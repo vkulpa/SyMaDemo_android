@@ -43,6 +43,7 @@ import com.joyhonest.jh_ui.Path_Fragment;
 import com.joyhonest.jh_ui.PermissionAsker;
 import com.joyhonest.jh_ui.PlayActivity;
 import com.joyhonest.jh_ui.R;
+import com.joyhonest.wifination.JH_GLSurfaceView;
 import com.joyhonest.wifination.JH_Tools;
 import com.joyhonest.wifination.MyThumb;
 import com.joyhonest.wifination.fly_cmd;
@@ -108,6 +109,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     };
     private  PermissionAsker  mAsker;
 
+    public JH_GLSurfaceView glSurfaceView;
 
 
     private Handler   myHandler;
@@ -116,6 +118,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        wifination.naSetVrBackground(true);
 
 
         mAsker=new PermissionAsker(10,new Runnable() {
@@ -144,6 +147,9 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     private  void F_Init()
     {
         JH_App.bFlying = false;
+
+        glSurfaceView = (JH_GLSurfaceView)findViewById(R.id.glSurfaceView);
+
         myHandler = new Handler();
         myRunnable=new Runnable() {
             @Override
