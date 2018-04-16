@@ -65,9 +65,6 @@
             android:id="@+id/button04"
             android:layout_width="40dp"
             android:layout_height="35dp"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentLeft="true"
-            android:layout_alignParentStart="true"
             android:background="@mipmap/folder_fly_jh"/>
 
     </LinearLayout>
