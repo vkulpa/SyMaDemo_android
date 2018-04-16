@@ -93,6 +93,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     private LinearLayout tool_menu;
 
 
+    private RelativeLayout  LayoutMask;
+    private Button           return_btn_b;
 
 
     public FlyPlayFragment() {
@@ -105,10 +107,16 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
 
         View view = inflater.inflate(R.layout.fragment_fly_play_jh, container, false);
+
+
+
         view.findViewById(R.id.rooglayout).setBackgroundColor(0x00010000);
 
 
         view.findViewById(R.id.button_more_b).setOnClickListener(this);
+
+        LayoutMask = (RelativeLayout)view.findViewById(R.id.LayoutMask);
+        return_btn_b =(Button)view.findViewById(R.id.return_btn_b);
 
 
         tool_1_layout = (LinearLayout)view.findViewById(R.id.tool_1_layout);
@@ -186,6 +194,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         VR_Btn.setOnClickListener(this);
         HeadLess_Btn.setOnClickListener(this);
         Menu_Layout.setOnClickListener(this);
+
+        LayoutMask.setOnClickListener(this);
+        return_btn_b.setOnClickListener(this);
      //   bMore = false;
 
 
@@ -464,6 +475,16 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             F_DispAllMenu();
 
         }
+        if(v == LayoutMask)
+        {
+            LayoutMask.setVisibility(View.GONE);
+            return;
+        }
+
+        if (v == Return_Btn || v==Return_Btn1 || v==return_btn_b) {
+            EventBus.getDefault().post("exit", "Exit");
+        }
+
         /*
         if (v == More_Btn) {
             bMore = !bMore;
@@ -589,9 +610,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
 
         }
-        if (v == Return_Btn || v==Return_Btn1) {
-            EventBus.getDefault().post("exit", "Exit");
-        }
+
 
         if (v == Floder_Btn) {
             // wifination.naSetVideoSurface(null);

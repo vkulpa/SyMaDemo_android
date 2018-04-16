@@ -2332,19 +2332,36 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             IconWidth = Storage.dip2pxF(this.getContext(), 20) / 2;
             nX2 = nY2 = 0x80;
             valueAnimator = null;
-            pathIcon = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.path_jh);
-            mPath = new Path();
+
             mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             mPaint.setAntiAlias(true);
             mPaint.setStyle(Paint.Style.STROKE);
-            mPaint.setStrokeWidth(Storage.dip2px(this.getContext(), 8));
-            mPaint.setColor(Color.BLACK);
+            imageView = new ImageView(this.getContext());
+
+
+
+
+            if(bFlyType)
+            {
+                pathIcon = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.path_icon);
+                imageView.setImageResource(R.mipmap.path_icon);
+                mPaint.setStrokeWidth(Storage.dip2px(this.getContext(), 4));
+                //mPaint.setColor(Color.WHITE);
+                mPaint.setColor(Color.argb(255,200 ,200,200));
+            }
+            else {
+                pathIcon = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.path_jh);
+                imageView.setImageResource(R.mipmap.path_jh);
+                mPaint.setStrokeWidth(Storage.dip2px(this.getContext(), 8));
+                mPaint.setColor(Color.BLACK);
+            }
+            mPath = new Path();
+
             pointArray = new ArrayList<Point>();
             mPath.reset();
             mCurrentPosition = new float[2];
             bNeedDrawIcon = false;
-            imageView = new ImageView(this.getContext());
-            imageView.setImageResource(R.mipmap.path_jh);
+
 
             LayoutParams param = new LayoutParams(
                     (int) IconWidth * 2, (int) IconWidth * 2);
