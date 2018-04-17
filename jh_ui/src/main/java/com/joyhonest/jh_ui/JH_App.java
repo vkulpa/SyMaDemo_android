@@ -146,6 +146,9 @@ public class JH_App {
     public static List<String> mDispList = null;
 
 
+
+    public static boolean   bFlyDisableAll=true;
+
     public static String sRemotePhoto = null;
     public static String sRemoteVideo = null;
     public static String sLocalPhoto = null;

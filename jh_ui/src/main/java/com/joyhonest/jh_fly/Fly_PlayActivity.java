@@ -119,7 +119,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         wifination.naSetVrBackground(true);
-
+        JH_App.bFlyDisableAll = true;
 
         mAsker=new PermissionAsker(10,new Runnable() {
             @Override
@@ -201,6 +201,15 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 //        JH_Tools.InitEncoder(1280,720,25,(int)(1000*1000*4));//
     }
 
+    @Subscriber(tag="NeedEnable_123")
+    private  void NeedEnable_123(String str)
+    {
+        if(mActiveFragment == flyPlayFragment)
+        {
+            JH_App.bFlyDisableAll=false;
+            flyPlayFragment.F_DispDisableAll();
+        }
+    }
 
     @Subscriber(tag = "SavePhotoOK")
     private void SavePhotoOK(String Sn) {
@@ -748,6 +757,14 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         }
 
     }
+    @Subscriber(tag ="MyControlTouched")
+    private  void MyControlTouched(String str)
+    {
+        if(mActiveFragment == flyPlayFragment)
+        {
+            flyPlayFragment.F_DispNoMoremenu();
+        }
+    }
 
     @Subscriber(tag = "SwitchChanged")
     private void SwitchChanged(SwitchMesage b) {
@@ -757,7 +774,10 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
                 flyPlayFragment.F_SetPhoto(b.bLeft);
             else
             {
-
+                if(b.bLeft)
+                {
+                    flyPlayFragment.F_SetNoGsensor();
+                }
                 flyPlayFragment.F_SetMenuLeftRight(b.bLeft);
             }
         }

@@ -32,6 +32,8 @@ import android.view.animation.PathInterpolator;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
+import com.joyhonest.wifination.JH_GLSurfaceView;
+
 import org.simple.eventbus.EventBus;
 import org.simple.eventbus.Subscriber;
 
@@ -73,10 +75,18 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
     LayoutParams params_leftview;
 
 
+    public  void  F_Invalidate()
+    {
+        RockeLeft.invalidate();
+        RockeRight.invalidate();
+    }
+
+
     public void F_ReasetAll()
     {
         RockeLeftA.F_ReasetDir();
         RockeRightA.F_ReasetDir();
+
     }
 
     public void F_SetFlyRecord(boolean b)
@@ -1017,14 +1027,25 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         }
 
         private void DrawCir(Canvas canvas) {
+            Paint paint = new Paint();
+            paint.setAntiAlias(true);
+            if(bFlyType) {
+                if(JH_App.bFlyDisableAll) {
+                    paint.setAlpha(51);
+                }
+                else
+                {
+                    paint.setAlpha(255);
+                }
+            }
             if ((nType & TYPE_Acceleration_NoDispX) != 0) {
                     RectF dstRect = new RectF(centx - CirRadius, cirPoint.y - CirRadius, centx + CirRadius, cirPoint.y + CirRadius);
-                    canvas.drawBitmap(cirBmp, null, dstRect, null);
+                    canvas.drawBitmap(cirBmp, null, dstRect, paint);
                 return;
             }
             if ((nType & TYPE_Acceleration_NoDispY) != 0) {
                     RectF dstRect = new RectF(cirPoint.x - CirRadius, centy - CirRadius, cirPoint.x + CirRadius, centy + CirRadius);
-                    canvas.drawBitmap(cirBmp, null, dstRect, null);
+                    canvas.drawBitmap(cirBmp, null, dstRect, paint);
                 return;
             }
             {
@@ -1038,19 +1059,35 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                     else
                     {
                         RectF dstRect = new RectF(cirPoint.x - CirRadius, cirPoint.y - CirRadius, cirPoint.x + CirRadius, cirPoint.y + CirRadius);
-                        canvas.drawBitmap(cirBmp, null, dstRect, null);
+                        canvas.drawBitmap(cirBmp, null, dstRect, paint);
                     }
                 }
                 else
                 {
                     RectF dstRect = new RectF(cirPoint.x - CirRadius, cirPoint.y - CirRadius, cirPoint.x + CirRadius, cirPoint.y + CirRadius);
-                    canvas.drawBitmap(cirBmp, null, dstRect, null);
+                    canvas.drawBitmap(cirBmp, null, dstRect, paint);
                 }
             }
         }
 
 
         private void DrawV_bar(Canvas canvas) {
+
+            // 创建画笔
+            Paint paint = new Paint();
+            paint.setAntiAlias(true);
+            paint.setStyle(Paint.Style.STROKE);
+
+            if(bFlyType) {
+                if(JH_App.bFlyDisableAll) {
+                    paint.setAlpha(51);
+                }
+                else
+                {
+                    paint.setAlpha(255);
+                }
+            }
+
             int dx20 = Storage.dip2px(getContext(), 20);
             int dx20A = Storage.dip2px(getContext(), 25);
             int dx5 = Storage.dip2px(getContext(), (20 - 16) / 2);
@@ -1167,7 +1204,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
 
 
-                    canvas.drawBitmap(upBmp, null, upRect, null);
+                    canvas.drawBitmap(upBmp, null, upRect, paint);
                     downRect.left = upRect.left;//centx + Radius+dxA;
                     downRect.bottom = centy + Radius - dx2;
                     if (bFlyType) {
@@ -1177,29 +1214,37 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                     }
                     downRect.top = downRect.bottom - dx20A;
                     downRect.right = downRect.left + dx20;
-                    canvas.drawBitmap(downBmp, null, downRect, null);
+                    canvas.drawBitmap(downBmp, null, downRect, paint);
                     int cir_r = Storage.dip2px(getContext(), 15) * 2;
                     int nsize = Storage.dip2px(getContext(), 15);
-                    // 创建画笔
-                    Paint p = new Paint();
-                    p.setAntiAlias(true);
-                    p.setStyle(Paint.Style.STROKE);
-                    if (bFlyType) {
-                        p.setColor(Color.WHITE);// 设置
-                        canvas.drawCircle(downRect.left + dx20 / 2, centy, cir_r / 2, p);
-                    } else {
-                        p.setColor(Color.BLACK);// 设置
-                        canvas.drawLine(upRect.right - dx20 / 2 + dd2, upRect.top - dd2, upRect.right + dd2, upRect.top - dd2, p);// 画线
-                        canvas.drawLine(upRect.right + dd2, upRect.top - dd2, upRect.right + dd2, centy - (cir_r / 2), p);// 画线
-                        canvas.drawLine(downRect.right - dx20 / 2 + dd2, downRect.bottom + dd2, downRect.right + dd2, downRect.bottom + dd2, p);// 画线
-                        canvas.drawLine(downRect.right + dd2, downRect.bottom + dd2, downRect.right + dd2, centy + (cir_r / 2), p);// 画线
-                        canvas.drawCircle(downRect.right + dd2, centy, cir_r / 2, p);
-                        p.setColor(Color.BLUE);
+
+
+
+                     if(!bFlyType){
+                         paint.setColor(Color.BLACK);// 设置
+                        canvas.drawLine(upRect.right - dx20 / 2 + dd2, upRect.top - dd2, upRect.right + dd2, upRect.top - dd2, paint);// 画线
+                        canvas.drawLine(upRect.right + dd2, upRect.top - dd2, upRect.right + dd2, centy - (cir_r / 2), paint);// 画线
+                        canvas.drawLine(downRect.right - dx20 / 2 + dd2, downRect.bottom + dd2, downRect.right + dd2, downRect.bottom + dd2, paint);// 画线
+                        canvas.drawLine(downRect.right + dd2, downRect.bottom + dd2, downRect.right + dd2, centy + (cir_r / 2), paint);// 画线
+                        canvas.drawCircle(downRect.right + dd2, centy, cir_r / 2, paint);
+                         paint.setColor(Color.BLUE);
                     }
-                    p.setTextSize(nsize);
-                    p.setStyle(Paint.Style.FILL);
+                    else
+                    {
+                        if(JH_App.bFlyDisableAll)
+                        {
+                            paint.setColor(Color.argb(51,255,255,255));// 设置
+                        }
+                        else {
+                            paint.setColor(Color.WHITE);// 设置
+                        }
+                    //    canvas.drawCircle(downRect.left + dx20 / 2, centy, cir_r / 2, p);
+                    }
+
+                    paint.setTextSize(nsize);
+                    paint.setStyle(Paint.Style.FILL);
                     //该方法即为设置基线上那个点究竟是left,center,还是right  这里我设置为center
-                    Paint.FontMetrics fontMetrics = p.getFontMetrics();
+                    Paint.FontMetrics fontMetrics = paint.getFontMetrics();
                     float top = fontMetrics.top;//为基线到字体上边框的距离,即上图中的top
                     float bottom = fontMetrics.bottom;//为基线到字体下边框的距离,即上图中的bottom
                     int baseLineY = (int) (centy - top / 2 - bottom / 2);//基线中间点的y轴计算公式
@@ -1212,8 +1257,8 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                     adj = 0 - adj;
                     s = "" + adj;
                     canvas.rotate(-90, (xxxx), centy);
-                    p.setTextAlign(Paint.Align.CENTER);
-                    canvas.drawText(s, xxxx, baseLineY, p);
+                    paint.setTextAlign(Paint.Align.CENTER);
+                    canvas.drawText(s, xxxx, baseLineY, paint);
                     canvas.rotate(90, xxxx, centy);
 
                 } else {
@@ -1274,6 +1319,21 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             int dx5 = Storage.dip2px(getContext(), (20 - 16) / 2);
             int dx14 = Storage.dip2px(getContext(), 14);
             int dx2 = Storage.dip2px(getContext(), 5);
+
+
+            Paint paint = new Paint();
+            paint.setAntiAlias(true);
+            paint.setColor(Color.BLACK);// 设置
+
+            if(bFlyType) {
+                if(JH_App.bFlyDisableAll) {
+                    paint.setAlpha(51);
+                }
+                else
+                {
+                    paint.setAlpha(255);
+                }
+            }
 
             if (bPath) {
                 dx14 = Storage.dip2px(getContext(), 6);
@@ -1396,7 +1456,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                 }
                 leftRect.right = leftRect.left + dx20A;
                 leftRect.bottom = leftRect.top + dx20;
-                canvas.drawBitmap(leftBmp, null, leftRect, null);
+                canvas.drawBitmap(leftBmp, null, leftRect, paint);
 
                 rightRect.left = centx + Radius - dx20A - dx5;
                 rightRect.top = leftRect.top;//centy + Radius+dxA;
@@ -1406,41 +1466,51 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                 }
                 rightRect.right = rightRect.left + dx20A;
                 rightRect.bottom = rightRect.top + dx20;
-                canvas.drawBitmap(rightBmp, null, rightRect, null);
+                canvas.drawBitmap(rightBmp, null, rightRect, paint);
 
                 int cir_r = Storage.dip2px(getContext(), 15) * 2;
                 int nsize = Storage.dip2px(getContext(), 15);
 
-                Paint p = new Paint();
-                p.setAntiAlias(true);
-                p.setColor(Color.BLACK);// 设置
+
+
                 if (!bFlyType) {
 
-                    canvas.drawLine(leftRect.left - dd2, leftRect.bottom - dx20 / 2 + dd2, leftRect.left - dd2, leftRect.bottom + dd2, p);
-                    canvas.drawLine(leftRect.left - dd2, leftRect.bottom + dd2, centx - (cir_r / 2), leftRect.bottom + dd2, p);
+                    canvas.drawLine(leftRect.left - dd2, leftRect.bottom - dx20 / 2 + dd2, leftRect.left - dd2, leftRect.bottom + dd2, paint);
+                    canvas.drawLine(leftRect.left - dd2, leftRect.bottom + dd2, centx - (cir_r / 2), leftRect.bottom + dd2, paint);
 
-                    canvas.drawLine(rightRect.right + dd2, rightRect.bottom - dx20 / 2 + dd2, rightRect.right + dd2, rightRect.bottom + dd2, p);
+                    canvas.drawLine(rightRect.right + dd2, rightRect.bottom - dx20 / 2 + dd2, rightRect.right + dd2, rightRect.bottom + dd2, paint);
 
-                    canvas.drawLine(rightRect.right + dd2, rightRect.bottom + dd2, centx + (cir_r / 2), rightRect.bottom + dd2, p);
-                    p.setStyle(Paint.Style.STROKE);
-                    canvas.drawCircle(centx, rightRect.bottom + dd2 / 2, cir_r / 2, p);
-                } else {
-                    p.setColor(Color.WHITE);// 设置
-                    p.setStyle(Paint.Style.STROKE);
-                    canvas.drawCircle(centx, rightRect.top + dx20 / 2, cir_r / 2, p);
+                    canvas.drawLine(rightRect.right + dd2, rightRect.bottom + dd2, centx + (cir_r / 2), rightRect.bottom + dd2, paint);
+                    paint.setStyle(Paint.Style.STROKE);
+                    canvas.drawCircle(centx, rightRect.bottom + dd2 / 2, cir_r / 2, paint);
                 }
+                /*
+                else
+                    {
+                        paint.setColor(Color.WHITE);// 设置
+                        paint.setStyle(Paint.Style.STROKE);
+                    //canvas.drawCircle(centx, rightRect.top + dx20 / 2, cir_r / 2, p);
+                }
+                */
+
 
 
                 if (!bFlyType)
-                    p.setColor(Color.BLUE);
-                else
-                    p.setColor(Color.WHITE);
-                p.setTextSize(nsize);
-                p.setStyle(Paint.Style.FILL);
+                    paint.setColor(Color.BLUE);
+                else {
+                    if(JH_App.bFlyDisableAll)
+                    {
+                        paint.setColor(Color.argb(51,255,255,255));// 设置
+                    }
+                    else
+                        paint.setColor(Color.WHITE);
+                }
+                paint.setTextSize(nsize);
+                paint.setStyle(Paint.Style.FILL);
                 //该方法即为设置基线上那个点究竟是left,center,还是right  这里我设置为center
 
 
-                Paint.FontMetrics fontMetrics = p.getFontMetrics();
+                Paint.FontMetrics fontMetrics = paint.getFontMetrics();
                 float top = fontMetrics.top;//为基线到字体上边框的距离,即上图中的top
                 float bottom = fontMetrics.bottom;//为基线到字体下边框的距离,即上图中的bottom
 
@@ -1453,8 +1523,8 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                 s = "" + adj;
 
 
-                p.setTextAlign(Paint.Align.CENTER);
-                canvas.drawText(s, centx, baseLineY, p);
+                paint.setTextAlign(Paint.Align.CENTER);
+                canvas.drawText(s, centx, baseLineY, paint);
 
 
 
@@ -1501,8 +1571,17 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
         @Override
         protected void onDraw(Canvas canvas) {
-            Paint p = new Paint();
-            p.setAntiAlias(true);
+            Paint paint = new Paint();
+            if(bFlyType) {
+                if(JH_App.bFlyDisableAll) {
+                    paint.setAlpha(51);
+                }
+                else
+                {
+                    paint.setAlpha(255);
+                }
+            }
+            paint.setAntiAlias(true);
             int nSize = Storage.dip2px(getContext(), 15);
             RectF dstRect = new RectF(centx - Radius, centy - Radius, centx + Radius, centy + Radius);
             if(bFlyType)
@@ -1511,40 +1590,34 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                 {
                     if(bTouched)
                     {
-                        canvas.drawBitmap(backBmp, null, dstRect, null);
+                        canvas.drawBitmap(backBmp, null, dstRect, paint);
                     }
                     else
                     {
                         Bitmap bb = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_back_fly_jh_fig);
-                        canvas.drawBitmap(bb, null, dstRect, null);
+                        canvas.drawBitmap(bb, null, dstRect, paint);
                     }
                 }
                 else
                 {
-                    canvas.drawBitmap(backBmp, null, dstRect, null);
+                    canvas.drawBitmap(backBmp, null, dstRect, paint);
                 }
             }
             else
             {
-                canvas.drawBitmap(backBmp, null, dstRect, null);
+                canvas.drawBitmap(backBmp, null, dstRect, paint);
             }
 
-
-
-
-
-            p.setColor(Color.RED);
-            p.setTextSize(nSize);
-            p.setStrokeWidth(1);
-            p.setStyle(Paint.Style.FILL);
-            p.setTextAlign(Paint.Align.CENTER);
-
-            canvas.drawText(Str1, centx, centy - Radius - 8, p);
+            paint.setColor(Color.RED);
+            paint.setTextSize(nSize);
+            paint.setStrokeWidth(1);
+            paint.setStyle(Paint.Style.FILL);
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText(Str1, centx, centy - Radius - 8, paint);
             canvas.rotate(-90, (centx - Radius - 10), centy);
-            p.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(Str2, (centx - Radius - 10), centy, p);
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText(Str2, (centx - Radius - 10), centy, paint);
             canvas.rotate(90, (centx - Radius - 10), centy);
-
             DrawCir(canvas);
             DrawH_bar(canvas);
             if ((nType & TYPE_No_ADJY) == 0) {
@@ -1710,7 +1783,22 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         public boolean onTouchEvent(MotionEvent event) {
 
             int dxp = Storage.dip2px(this.getContext(), 10);
-            int action = event.getAction();
+            int action = event.getAction() & event.ACTION_MASK;
+
+            if(bFlyType)
+            {
+                if(JH_App.bFlyDisableAll)
+                {
+                    if (MotionEvent.ACTION_UP == action)
+                    {
+                        EventBus.getDefault().post("abcc","NeedEnable_123");
+
+                    }
+                    return true;
+                }
+            }
+
+
             int x = (int) event.getX();
             int y = (int) event.getY();
             RectF rect = new RectF();
@@ -1898,6 +1986,11 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                                 }
                             }
                         }
+                    }
+
+                    if (da > Radius_VV)
+                    {
+                        EventBus.getDefault().post("abc","MyControlTouched");
                     }
 
 
@@ -2311,12 +2404,24 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
         @Subscriber(tag = "Send2_path")
         public void Send2_path(Integer n) {
-            if (n == 2) {
-                nDelaySet = 70;
-            } else if (n == 3) {
-                nDelaySet = 110;
-            } else {
-                nDelaySet = 50;  //40
+            if(bFlyType)
+            {
+                if (n == 2) {
+                    nDelaySet = 90;
+                } else if (n == 3) {
+                    nDelaySet = 110;
+                } else {
+                    nDelaySet = 70;  //40
+                }
+            }
+            else {
+                if (n == 2) {
+                    nDelaySet = 70;
+                } else if (n == 3) {
+                    nDelaySet = 110;
+                } else {
+                    nDelaySet = 50;  //40
+                }
             }
         }
 
@@ -2343,6 +2448,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
             if(bFlyType)
             {
+                nDelaySet = 70;
                 pathIcon = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.path_icon);
                 imageView.setImageResource(R.mipmap.path_icon);
                 mPaint.setStrokeWidth(Storage.dip2px(this.getContext(), 4));
@@ -2350,6 +2456,7 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
                 mPaint.setColor(Color.argb(255,200 ,200,200));
             }
             else {
+                nDelaySet = 50;
                 pathIcon = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.path_jh);
                 imageView.setImageResource(R.mipmap.path_jh);
                 mPaint.setStrokeWidth(Storage.dip2px(this.getContext(), 8));
