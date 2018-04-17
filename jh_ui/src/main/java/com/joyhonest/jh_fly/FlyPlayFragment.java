@@ -12,6 +12,7 @@ import android.view.Surface;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
@@ -75,7 +76,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     private boolean bPhoto = true;
 
 
-    private TextView Location_TxtView;
+  //  private TextView Location_TxtView;
     //private LinearLayout Layout_LeftMenu;
 
     private RelativeLayout Menu_Layout;
@@ -92,6 +93,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     private LinearLayout tool_2_layout;
 
 
+    public  ImageView     WifiSingle;
 
     private LinearLayout tool_menu;
 
@@ -118,6 +120,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
         button_more_b = (Button)view.findViewById(R.id.button_more_b);
 
+        WifiSingle = (ImageView)view.findViewById(R.id.WifiSingle);
 
 
         LayoutMask = (RelativeLayout)view.findViewById(R.id.LayoutMask);
@@ -139,8 +142,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
       //  Layout_LeftMenu = (LinearLayout) view.findViewById(R.id.Layout_LeftMenu);
         Menu_Layout = (RelativeLayout) view.findViewById(R.id.Menu_Layout);
 
-        Location_TxtView = (TextView) view.findViewById(R.id.Location_TxtView);
-        Location_TxtView.setText("");
+     //   Location_TxtView = (TextView) view.findViewById(R.id.Location_TxtView);
+     //   Location_TxtView.setText("");
         myControl = (MyControl) view.findViewById(R.id.myControl);
        // myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
         myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
@@ -214,8 +217,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         bDispMenu2=false;
         F_DispAllMenu();
 
-        F_SetLocaiotn("");
-        Location_TxtView.setTextColor(0xFFFF0000);
+     //   F_SetLocaiotn("");
+     //   Location_TxtView.setTextColor(0xFFFF0000);
       //  F_DispAllMenu(false);
 
         F_DispDisableAll();
@@ -245,6 +248,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         StopFly_Btn.setAlpha(nAlpha);
         button_more_b.setAlpha(nAlpha);
         UpDn_Btn.setAlpha(nAlpha);
+        WifiSingle.setAlpha(nAlpha);
         myControl.F_Invalidate();
 
     }
@@ -266,7 +270,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     private void F_Adj_rect() {
         int rect = Math.min(rect_layout.getWidth(), rect_layout.getHeight());
         int pitch = Storage.dip2px(getActivity(), 6);
-        int rr = Storage.dip2px(getActivity(), 40);
+        int rr = Storage.dip2px(getActivity(), 46);
         if (rect > rr) {
             rect = rr;
             rect -= pitch;
@@ -308,8 +312,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
 
     public void F_SetLocaiotn(String str) {
-        Location_TxtView.setVisibility(View.INVISIBLE);
-        Location_TxtView.setText(str);
+      //  Location_TxtView.setVisibility(View.INVISIBLE);
+       // Location_TxtView.setText(str);
     }
 
 
@@ -388,6 +392,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             bDispMenu2 = b2;
             bDispMenu1 = b1;
 
+            WifiSingle.setVisibility(View.INVISIBLE);
             Fly_Camera_Btn.setVisibility(View.INVISIBLE);
             myswitch.setVisibility(View.INVISIBLE);
             Photo_Record_Start_Btn.setVisibility(View.INVISIBLE);
@@ -402,6 +407,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             Return_Btn1.setVisibility(View.VISIBLE);
             Return_Btn1.setBackgroundResource(R.mipmap.return_icon_black_fly_jh);
 
+
         }
         else
             {
@@ -409,6 +415,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             F_DispAllMenu();
                 Return_Btn1.setVisibility(View.INVISIBLE);
 
+                WifiSingle.setVisibility(View.VISIBLE);
             Fly_Camera_Btn.setVisibility(View.VISIBLE);
             myswitch.setVisibility(View.VISIBLE);
             Photo_Record_Start_Btn.setVisibility(View.VISIBLE);
@@ -592,12 +599,15 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             JH_App.bUp = true;
             JH_App.bDn = false;
             */
-            UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_sel_fly_jh);
+            //UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_sel_fly_jh);
+            UpDn_Btn.setAlpha(0.4f);
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     JH_App.bUp=false;
                     JH_App.bDn=false;
+                    UpDn_Btn.setAlpha(1.0f);
+                    /*
                     if((JH_App.nSdStatus & JH_App.LocalRecording)!=0)
                     {
                         UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh);
@@ -607,6 +617,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                        // UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh_b);
                         UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh);
                     }
+                    */
 
                 }
             }, 500);

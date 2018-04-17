@@ -1,6 +1,7 @@
 package com.joyhonest.jh_fly;
 
 
+import android.media.Image;
 import android.os.Bundle;
 import android.app.Fragment;
 import android.os.Handler;
@@ -9,6 +10,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -44,7 +46,7 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
     private boolean bPhoto = true;
 
 
-    private TextView Location_TxtView;
+   // private TextView Location_TxtView;
     //private LinearLayout Layout_LeftMenu;
 
     //private LinearLayout Layout_Menu;
@@ -62,6 +64,9 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
     private  RelativeLayout  rootlayout;
     private  TextView Record_Time_TextCtrl;
 
+
+    public ImageView  WifiSingle;
+
     public FlyPathFragment() {
         // Required empty public constructor
     }
@@ -75,6 +80,9 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
 
         view.findViewById(R.id.rooglayout).setBackgroundColor(0x00010000);
 
+
+        WifiSingle = (ImageView)view.findViewById(R.id.WifiSingle);
+
         rootlayout = (RelativeLayout)view.findViewById(R.id.rooglayout);
         rootlayout.setBackgroundColor(0x00000000);
 
@@ -85,8 +93,8 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
 
 
 
-        Location_TxtView = (TextView) view.findViewById(R.id.Location_TxtView);
-        Location_TxtView.setText("");
+    //    Location_TxtView = (TextView) view.findViewById(R.id.Location_TxtView);
+     //   Location_TxtView.setText("");
         myControl = (MyControl) view.findViewById(R.id.myControl);
         myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
         myControl.F_SetDispText(false);
@@ -112,7 +120,7 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
 
         bPhoto = true;
 
-        Location_TxtView.setTextColor(0xFFFF0000);
+      //  Location_TxtView.setTextColor(0xFFFF0000);
 
 
 
