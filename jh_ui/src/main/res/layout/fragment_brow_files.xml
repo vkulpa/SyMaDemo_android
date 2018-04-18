@@ -17,38 +17,64 @@
             android:layout_height="100dp"
             android:orientation="horizontal">
 
-            <Button
-                android:id="@+id/button_all"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_alignLeft="@+id/textView2"
+            <RelativeLayout
+                android:id="@+id/Layout_Bar"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
                 android:layout_alignParentBottom="true"
-                android:layout_alignStart="@+id/textView2"
-                android:layout_marginBottom="10dp"
-                android:background="@mipmap/all_backgound_fly_jh"/>
+                android:background="#00000000">
 
-            <TextView
-                android:id="@+id/textView_all"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignBaseline="@+id/button_all"
-                android:layout_alignBottom="@+id/button_all"
-                android:layout_marginLeft="11dp"
-                android:layout_marginStart="11dp"
-                android:layout_toEndOf="@+id/button_all"
-                android:layout_toRightOf="@+id/button_all"
-                android:text="ALL"/>
+                <Button
+                    android:id="@+id/button_all"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginBottom="10dp"
+                    android:background="@mipmap/all_backgound_fly_jh"/>
 
-            <Button
-                android:id="@+id/button_selected"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_alignTop="@+id/button_all"
-                android:layout_marginLeft="11dp"
-                android:layout_marginStart="11dp"
-                android:layout_toEndOf="@+id/textView_all"
-                android:layout_toRightOf="@+id/textView_all"
-                android:background="@mipmap/all_backgound_fly_jh"/>
+                <TextView
+                    android:id="@+id/textView_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignBaseline="@+id/button_all"
+                    android:layout_alignBottom="@+id/button_all"
+                    android:layout_marginStart="11dp"
+                    android:layout_toEndOf="@+id/button_all"
+                    android:text="ALL"/>
+
+                <Button
+                    android:id="@+id/button_selected"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_alignTop="@+id/button_all"
+                    android:layout_marginStart="11dp"
+                    android:layout_toEndOf="@+id/textView_all"
+                    android:background="@mipmap/all_backgound_fly_jh"/>
+
+                <Button
+                    android:id="@+id/button_trash_2"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_alignTop="@+id/button_trash"
+                    android:layout_marginEnd="8dp"
+                    android:layout_toStartOf="@+id/button_trash"
+                    android:background="@mipmap/tra_icon_fly_jh"
+                    android:visibility="visible"/>
+
+                <Button
+                    android:id="@+id/button_trash"
+                    android:layout_width="35dp"
+                    android:layout_height="35dp"
+                    android:layout_alignBottom="@+id/button_all"
+                    android:layout_alignParentEnd="true"
+                    android:background="@mipmap/trash_fly_jh"/>
+
+            </RelativeLayout>
+
+
+
+
+
 
             <Button
                 android:id="@+id/button_phone"
@@ -101,27 +127,8 @@
                 android:layout_marginTop="5dp"
                 android:background="@mipmap/return_icon_black_fly_jh"/>
 
-            <Button
-                android:id="@+id/button_trash_2"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_alignTop="@+id/button_trash"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:layout_toLeftOf="@+id/button_trash"
-                android:layout_toStartOf="@+id/button_trash"
-                android:background="@mipmap/tra_icon_fly_jh"
-                android:visibility="invisible"/>
 
-            <Button
-                android:id="@+id/button_trash"
-                android:layout_width="35dp"
-                android:layout_height="35dp"
-                android:layout_alignEnd="@+id/return_button"
-                android:layout_alignRight="@+id/return_button"
-                android:layout_alignTop="@+id/button_all"
-                android:background="@mipmap/trash_fly_jh"
-                />
+
         </RelativeLayout>
 
 

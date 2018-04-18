@@ -2449,8 +2449,8 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             if(bFlyType)
             {
                 nDelaySet = 70;
-                pathIcon = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.path_icon);
-                imageView.setImageResource(R.mipmap.path_icon);
+                pathIcon = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.path_icon_fly);
+                imageView.setImageResource(R.mipmap.path_icon_fly);
                 mPaint.setStrokeWidth(Storage.dip2px(this.getContext(), 4));
                 //mPaint.setColor(Color.WHITE);
                 mPaint.setColor(Color.argb(255,200 ,200,200));

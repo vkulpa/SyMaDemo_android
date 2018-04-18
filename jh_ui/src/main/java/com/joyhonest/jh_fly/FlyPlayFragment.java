@@ -98,7 +98,11 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     private LinearLayout tool_menu;
 
 
-    private RelativeLayout  LayoutMask;
+
+    private  RelativeLayout  photo_mask;
+
+
+  //  private RelativeLayout  LayoutMask;
   //  private Button           return_btn_b;
 
 
@@ -113,7 +117,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
         View view = inflater.inflate(R.layout.fragment_fly_play_jh, container, false);
 
-
+        photo_mask = (RelativeLayout)view.findViewById(R.id.photo_mask);
+        photo_mask.setVisibility(View.GONE);
 
         view.findViewById(R.id.rooglayout).setBackgroundColor(0x00010000);
 
@@ -123,7 +128,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         WifiSingle = (ImageView)view.findViewById(R.id.WifiSingle);
 
 
-        LayoutMask = (RelativeLayout)view.findViewById(R.id.LayoutMask);
+      //  LayoutMask = (RelativeLayout)view.findViewById(R.id.LayoutMask);
       //  return_btn_b =(Button)view.findViewById(R.id.return_btn_b);
 
 
@@ -204,7 +209,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         HeadLess_Btn.setOnClickListener(this);
         Menu_Layout.setOnClickListener(this);
 
-        LayoutMask.setOnClickListener(this);
+      //  LayoutMask.setOnClickListener(this);
       //  return_btn_b.setOnClickListener(this);
      //   bMore = false;
 
@@ -540,6 +545,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             F_DispAllMenu();
 
         }
+        /*
         if(v == LayoutMask)
         {
             bDispMenu1=true;
@@ -547,6 +553,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             F_DispAllMenu();
             return;
         }
+        */
 
         if (v == Return_Btn || v==Return_Btn1 )//|| v==return_btn_b) {
         {
@@ -595,10 +602,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                 JH_App.bUp=false;
                 JH_App.bDn=true;
             }
-            /*
-            JH_App.bUp = true;
-            JH_App.bDn = false;
-            */
+
             //UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_sel_fly_jh);
             UpDn_Btn.setAlpha(0.4f);
             new Handler().postDelayed(new Runnable() {
@@ -651,15 +655,17 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         }
 
         if (v == Adj_Btn) {
+            myControl.F_SetLeftRightAdj(0x80);
+            myControl.F_SetForwardBackAdj(0x80);
+            myControl.F_SetRotateAdj(0x80);
             JH_App.bAdj = true;
+            JH_App.F_PlayCenter();
             Adj_Btn.setBackgroundResource(R.mipmap.adj_sel_fly_jh);
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
                     JH_App.bAdj = false;
-                    myControl.F_SetLeftRightAdj(0x80);
-                    myControl.F_SetForwardBackAdj(0x80);
-                    myControl.F_SetRotateAdj(0x80);
+
                     Adj_Btn.setBackgroundResource(R.mipmap.adj_fly_jh);
 
                 }
@@ -680,10 +686,6 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                 bDispMenu1=false;
                 F_DispAllMenu();
             }
-
-
-
-
         }
 
 
@@ -705,17 +707,29 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                 if (JH_App.bPhone_SNAP)
                     return;
                 JH_App.bPhone_SNAP = true;
+
                 final String str = JH_App.F_GetSaveName(true);
                 wifination.naSnapPhoto(str, wifination.TYPE_BOTH_PHONE_SD);
+
+                JH_App.F_PlayPhoto();
+                photo_mask.setVisibility(View.VISIBLE);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        photo_mask.setVisibility(View.GONE);
+                    }
+                },120);
+
+
+
                 Handler handler = new Handler();
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
                         JH_App.bPhone_SNAP = false;
-                        //  JH_App.F_Save2ToGallery(getActivity(), str,true);
                     }
                 };
-                handler.postDelayed(runnable, 500);
+                handler.postDelayed(runnable, 800);
 
             } else {
                 if ((JH_App.nSdStatus & JH_App.Status_Connected) == 0) {

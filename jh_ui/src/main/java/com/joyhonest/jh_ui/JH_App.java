@@ -244,6 +244,9 @@ public class JH_App {
                     soundPool.unload(music_mid);
                 if (music_adj > 0)
                     soundPool.unload(music_adj);
+                if(music_photo>0)
+                    soundPool.unload(music_photo);
+
             }
             return;
         }
@@ -477,8 +480,9 @@ public class JH_App {
         {
             soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
         }
-        music_mid = soundPool.load(mContext, R.raw.center, 1);
-        music_adj = soundPool.load(mContext, R.raw.anjian, 1);
+        music_mid = soundPool.load(mContext, R.raw.center_fly, 1);
+        music_adj = soundPool.load(mContext, R.raw.adjian_fly, 1);
+        music_photo = soundPool.load(mContext, R.raw.photo_m_fly, 1);
     }
 
 
@@ -557,7 +561,7 @@ public class JH_App {
     public static void F_PlayCenter() {
 
         if (music_mid < 0) {
-            music_mid = soundPool.load(mContext, R.raw.center, 1);
+            music_mid = soundPool.load(mContext, R.raw.center_fly, 1);
         }
         if (music_mid != -1)
             soundPool.play(music_mid, 1, 1, 0, 0, 1);
@@ -566,7 +570,7 @@ public class JH_App {
 
     public static void F_PlayAdj() {
         if (music_adj < 0) {
-            music_adj = soundPool.load(mContext, R.raw.anjian, 1);
+            music_adj = soundPool.load(mContext, R.raw.adjian_fly, 1);
         }
         if (music_adj != -1)
             soundPool.play(music_adj, 1, 1, 0, 0, 1);
@@ -575,13 +579,13 @@ public class JH_App {
 
     public static void F_PlayPhoto() {
 
-        if (music_photo != -1)
+        if (music_photo >0)
             soundPool.play(music_photo, 1, 1, 0, 0, 1);
     }
 
     public static void F_PlayButton() {
 
-        if (music_btn != -1)
+        if (music_btn >0)
             soundPool.play(music_btn, 1, 1, 0, 0, 1);
     }
 

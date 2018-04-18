@@ -16,6 +16,15 @@
 
     </com.joyhonest.jh_ui.MyControl>
 
+    <RelativeLayout
+        android:visibility="gone"
+        android:id="@+id/photo_mask"
+        android:background="#90FFFFFF"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+    </RelativeLayout>
+
     <ImageView
         android:id="@+id/WifiSingle"
         android:layout_width="wrap_content"

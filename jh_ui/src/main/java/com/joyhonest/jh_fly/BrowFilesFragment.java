@@ -47,6 +47,8 @@ public class BrowFilesFragment extends Fragment implements View.OnClickListener,
     private Button button_yes;
     private Button button_no;
 
+    private RelativeLayout  Layout_Bar;
+
 
     public BrowFilesFragment() {
         // Required empty public constructor
@@ -59,6 +61,11 @@ public class BrowFilesFragment extends Fragment implements View.OnClickListener,
         // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_brow_files, container, false);
         bSelectAll = false;
+
+
+        Layout_Bar = (RelativeLayout)view.findViewById(R.id.Layout_Bar);
+
+
         AlartView = (RelativeLayout) view.findViewById(R.id.AlartView);
         AlartView.setVisibility(View.INVISIBLE);
 
@@ -148,19 +155,53 @@ public class BrowFilesFragment extends Fragment implements View.OnClickListener,
             } else {
                 button_all.setBackgroundResource(R.mipmap.all_backgound_fly_jh);
             }
+
+            Layout_Bar.setVisibility(View.VISIBLE);
+            /*
+
             button_all.setVisibility(View.VISIBLE);
             button_selected.setVisibility(View.VISIBLE);
-           // button_trash_2.setVisibility(View.VISIBLE);
+            button_trash_2.setVisibility(View.VISIBLE);
             button_trash.setVisibility(View.VISIBLE);
             textView_all.setVisibility(View.VISIBLE);
+            */
         } else {
             bCannSelected = false;
+            Layout_Bar.setVisibility(View.INVISIBLE);
+            /*
             button_all.setVisibility(View.INVISIBLE);
             button_selected.setVisibility(View.INVISIBLE);
             button_trash_2.setVisibility(View.INVISIBLE);
             button_trash.setVisibility(View.INVISIBLE);
             textView_all.setVisibility(View.INVISIBLE);
+            */
         }
+    }
+
+
+    private void F_TranSelect2System()
+    {
+        String sFileName;
+            for (MyItemData data : JH_App.mGridList) {
+                if (data.bSelected)
+                {
+                    sFileName = data.sPhonePath;
+                    if(JH_App.bBrowPhoto)
+                    {
+                        JH_App.F_Save2ToGallery(sFileName, true);
+                    }
+                    else
+                    {
+                        JH_App.F_Save2ToGallery(sFileName, false);
+                    }
+                    data.bSelected = false;
+                    data.nSelectedStatus = 0;
+
+                }
+            }
+            F_DispInit();
+
+
     }
 
     @Override
@@ -190,6 +231,12 @@ public class BrowFilesFragment extends Fragment implements View.OnClickListener,
                 activity.F_GetFilesNumber();
                 //activity.F_FillFilesData();
             }
+        }
+
+        if(v==button_trash_2)
+        {
+            F_TranSelect2System();
+            JH_App.F_DispMesate("Download Finished!");
         }
 
         if (v == button_yes) {

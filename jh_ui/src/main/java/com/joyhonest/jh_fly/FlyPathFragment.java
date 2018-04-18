@@ -66,6 +66,7 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
 
 
     public ImageView  WifiSingle;
+    private  RelativeLayout  photo_mask;
 
     public FlyPathFragment() {
         // Required empty public constructor
@@ -79,7 +80,8 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
         View view =  inflater.inflate(R.layout.fragment_fly_path, container, false);
 
         view.findViewById(R.id.rooglayout).setBackgroundColor(0x00010000);
-
+        photo_mask = (RelativeLayout)view.findViewById(R.id.photo_mask);
+        photo_mask.setVisibility(View.GONE);
 
         WifiSingle = (ImageView)view.findViewById(R.id.WifiSingle);
 
@@ -223,6 +225,14 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
                     }
                 };
                 handler.postDelayed(runnable, 500);
+                JH_App.F_PlayPhoto();
+                photo_mask.setVisibility(View.VISIBLE);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        photo_mask.setVisibility(View.GONE);
+                    }
+                },120);
 
             } else {
                 if ((JH_App.nSdStatus & JH_App.Status_Connected) == 0) {

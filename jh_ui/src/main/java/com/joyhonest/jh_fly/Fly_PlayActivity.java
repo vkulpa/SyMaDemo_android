@@ -212,6 +212,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
     @Subscriber(tag = "SavePhotoOK")
     private void SavePhotoOK(String Sn) {
+/*
         if (Sn.length() < 5) {
             return;
         }
@@ -219,7 +220,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         String sName = Sn.substring(2, Sn.length());
         int nPhoto = Integer.parseInt(sType);
         if (nPhoto == 0) {
-            JH_App.F_Save2ToGallery(sName, true);
+           // JH_App.F_Save2ToGallery(sName, true);
             if(mActiveFragment == flyPathFragment)
             {
                 flyPathFragment.F_DispMessage("snapshot");
@@ -228,8 +229,10 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
                 flyPlayFragment.F_DispMessage("snapshot");
             }
         } else {
-            JH_App.F_Save2ToGallery(sName, false);
+            ;
+            //JH_App.F_Save2ToGallery(sName, false);
         }
+*/
     }
 
 
