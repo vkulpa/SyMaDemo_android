@@ -655,9 +655,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         }
 
         if (v == Adj_Btn) {
-            myControl.F_SetLeftRightAdj(0x80);
-            myControl.F_SetForwardBackAdj(0x80);
-            myControl.F_SetRotateAdj(0x80);
+            //myControl.F_SetLeftRightAdj(0x80);
+            //myControl.F_SetForwardBackAdj(0x80);
+            //myControl.F_SetRotateAdj(0x80);
             JH_App.bAdj = true;
             JH_App.F_PlayCenter();
             Adj_Btn.setBackgroundResource(R.mipmap.adj_sel_fly_jh);

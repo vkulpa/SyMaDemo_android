@@ -213,7 +213,7 @@
             android:id="@+id/button_leftRight"
             android:layout_width="50dp"
             android:layout_height="22dp"
-            />
+            android:layout_marginBottom="10dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -252,8 +252,8 @@
 
                     <Button
                         android:id="@+id/button06"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:background="@mipmap/adj_fly_jh"/>
                 </LinearLayout>
 
@@ -264,8 +264,8 @@
                     android:gravity="center">
                     <Button
                         android:id="@+id/button09"
-                        android:layout_width="30dp"
-                        android:layout_height="30dp"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
                         android:background="@mipmap/vr_fly_jh"/>
 
                 </LinearLayout>
