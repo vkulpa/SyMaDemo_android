@@ -270,6 +270,37 @@ public class JH_App {
         F_InitMusic();
     }
 
+    public static void F_CreateLocalFlyDefalutDir()
+    {
+        if (mContext == null)
+            return;
+        String StroragePath = "";
+
+        try {
+            StroragePath = Storage.getNormalSDCardPath();
+        } catch (Exception e) {
+            return;
+        }
+        if (StroragePath.length() == 0) {
+            StroragePath = Storage.getNormalSDCardPath();
+        }
+
+        File fdir;
+        boolean bCreateOK=false;
+        sLocalPhoto =   String.format("%s/SYMA fly/SYMA fly_P", StroragePath);
+        fdir = new File(sLocalPhoto);
+        if (!fdir.exists()) {
+            fdir.mkdirs();
+        }
+        sLocalVideo =   String.format("%s/SYMA fly/SYMA fly_V", StroragePath);
+        fdir = new File(sLocalVideo);
+        if (!fdir.exists()) {
+            fdir.mkdirs();
+        }
+
+
+    }
+
     public static void F_CreateLocalDir(String LocalPhoto, String LocalVideo, String SDPhoto, String SDVideo)
     {
         if (mContext == null)

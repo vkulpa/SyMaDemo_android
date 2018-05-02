@@ -2,8 +2,11 @@
 #include "cameraShader.h"
 
 extern const float dataVertex[];
+extern const float dataVertex_Flip[];
 extern const float dataTexCoor[];
 extern float  *maMVPMatrix;
+
+extern bool bGoble_Flip;
 
 void
 bindTexture(GLenum texture_n, GLuint texture_id, GLsizei width, GLsizei height, const void * buffer);
@@ -25,13 +28,26 @@ drawFrame(void* ins)
 		glUniformMatrix4fv(instance->maMVPMatrixHandle, 1, GL_FALSE, maMVPMatrix);
 	}
 
-	glVertexAttribPointer(instance->maPositionHandle,
-						3,//GLint size X Y Z
-						GL_FLOAT,//GLenum type
-						GL_FALSE,//GLboolean normalized
-						3 * 4,//GLsizei stride
-						dataVertex//const GLvoid * ptr
-	);
+	if(bGoble_Flip)
+	{
+		glVertexAttribPointer(instance->maPositionHandle,
+							  3,//GLint size X Y Z
+							  GL_FLOAT,//GLenum type
+							  GL_FALSE,//GLboolean normalized
+							  3 * 4,//GLsizei stride
+							  dataVertex_Flip//const GLvoid * ptr
+		);
+
+	}
+	else {
+		glVertexAttribPointer(instance->maPositionHandle,
+							  3,//GLint size X Y Z
+							  GL_FLOAT,//GLenum type
+							  GL_FALSE,//GLboolean normalized
+							  3 * 4,//GLsizei stride
+							  dataVertex//const GLvoid * ptr
+		);
+	}
 	//传入顶点纹理坐标
 	glVertexAttribPointer(instance->maTexCoorHandle,
 							2,//S T

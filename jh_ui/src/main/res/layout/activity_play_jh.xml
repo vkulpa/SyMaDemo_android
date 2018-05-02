@@ -9,6 +9,7 @@
     <!-- android:background="@mipmap/loginbackground_jh" -->
 
 
+
     <com.joyhonest.wifination.JH_GLSurfaceView
         android:id="@+id/surfaceView_gl"
         android:layout_width="match_parent"

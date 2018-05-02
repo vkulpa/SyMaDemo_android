@@ -339,6 +339,7 @@ public class wifination {
             Log.e("RecCmd:", s);
         } else {
             Integer ix = nStatus;
+            Log.e(TAG,"Get data = "+nStatus);
             EventBus.getDefault().post(ix, "OnGetGP_Status");
         }
     }

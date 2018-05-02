@@ -1,5 +1,6 @@
 <resources>
     <string name="app_JHDemo">乐信 Demo</string>
+    <string name="app_BydDemo">BYD Demo</string>
     <string name="app_JHDemoLkey">乐信 I帧 Demo</string>
     <string name="app_GPH264A_480">乐信 Demo_GP480</string>
     <string name="app_JHDemo_test">乐信 Demo_Test</string>

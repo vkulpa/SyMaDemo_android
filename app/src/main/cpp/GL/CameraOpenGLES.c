@@ -70,6 +70,13 @@ const float dataVertex[] =
                 1 * UNIT, 1 * UNIT, 0,
                 1 * UNIT, -1 * UNIT, 0
         };
+const float dataVertex_Flip[] =
+        {
+                1 * UNIT, -1 * UNIT, 0,
+                1 * UNIT, 1 * UNIT, 0,
+                -1 * UNIT, -1 * UNIT, 0,
+                -1 * UNIT, 1 * UNIT, 0
+        };
 //渲染纹理坐标数据
 const float dataTexCoor[] =
         {
@@ -213,6 +220,7 @@ Java_com_joyhonest_wifination_wifination_changeLayout(JNIEnv *env, jobject obj, 
 extern pthread_mutex_t m_gl_lock;
 
 extern bool bGoble_3D;
+
 
 extern bool bWhitClolor;
 

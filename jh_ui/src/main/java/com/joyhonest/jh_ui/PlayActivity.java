@@ -187,6 +187,21 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             public void run() {
                 setContentView(R.layout.activity_play_jh);
                 F_Init();
+                /*  BYd
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        int nW = Fragment_Layout.getWidth();
+                        int nH = Fragment_Layout.getHeight();
+                        RelativeLayout.LayoutParams  params =(RelativeLayout.LayoutParams) glSurfaceView.getLayoutParams();
+                        params.width = nW/2;
+                        params.height = nH/2;
+                        params.addRule(RelativeLayout.CENTER_IN_PARENT,RelativeLayout.TRUE);
+                        glSurfaceView.setLayoutParams(params);
+
+                    }
+                },200);
+                */
             }
         }, new Runnable() {
             @Override
@@ -198,6 +213,8 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         }).askPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
 
     }
+
+
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
@@ -265,6 +282,8 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         }
 
     }
+
+
 
     private void F_InitFragment() {
         Select_Video_Photo_Fragment = new Select_Video_Photo_Fragment();
@@ -542,6 +561,11 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         if(bGoFly)
             return;
         JH_App.checkDeviceHasNavigationBar(this);
+        ////Byd
+
+
+
+
 
 /*
         new Handler().postDelayed(new Runnable() {
@@ -1193,7 +1217,9 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
                     dispVideo_fragment.F_Play(data.sPhonePath);
                     F_SetView(dispVideo_fragment);
 
-                } else if (data.nDownloadStatus == JH_App.DownLoading) {
+                } else if (data.nDownloadStatus == JH_App.DownLoading)
+                {
+                    ;
                 } else if (data.nDownloadStatus == JH_App.DownLoaded_NO ||
                         data.nDownloadStatus == JH_App.DownLoadNormal)
 

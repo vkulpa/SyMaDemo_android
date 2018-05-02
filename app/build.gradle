@@ -10,6 +10,7 @@ android {
         //applicationId "com.joyhonest.jh_demo_test"
         //applicationId "com.joyhonest.jh_demo_test"
         applicationId "com.joyhonest.jh_demo"
+        //applicationId "com.joyhonest.Byd_demo"
         //applicationId "com.joyhonest.jh_demo_iKey"
         //applicationId "com.joyhonest.symademo_gph264a"
         //applicationId "com.joyhonest.GP_RTP"

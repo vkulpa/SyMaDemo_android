@@ -1492,8 +1492,21 @@ int naInit_Re(void) {
         //m_FFMpegPlayer.nDisplayWidth = 640;
         //m_FFMpegPlayer.nDisplayHeight = 464;
 
+        F_RecRP_RTSP_Status_Service();  //GPH264A
+
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0x10;
+        msg[6] = 0x00;
+        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+
         m_FFMpegPlayer.InitMedia("");
         m_FFMpegPlayer.nfps = 20;
+
+
         if (Connect_GPH264() < 0) {
             ret = -1;
         }
@@ -3567,11 +3580,12 @@ void F_GetData_SNA(char *data, int nLen) {
     nSDStatus &= 0x7F;
 }
 
-
+bool bGoble_Flip = false;
 JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naSetFlip(JNIEnv *env, jclass type, jboolean b) {
 
     // TODO
+    bGoble_Flip = b;
     m_FFMpegPlayer.bFlip = b;
 
 }
@@ -3922,6 +3936,7 @@ Java_com_joyhonest_wifination_wifination_naSetVideoSurface(JNIEnv *env, jclass t
 
 
 bool bGoble_3D = false;
+
 
 JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naSet3DA(JNIEnv *env, jclass type, jboolean b) {
@@ -5595,11 +5610,10 @@ void *doReceive_cmd(void *dat) {
     NET_UTP_DATA *pHead;
     while (!bNeedExit) {
 
-        //nCheckT_pre =  av_gettime()/1000;
 #if 1
         int nStatus;
         size = sizeof(servaddr);
-        struct timeval timeoutA = {0, 1000};     //1ms
+        struct timeval timeoutA = {0, 5000};     //1ms
         int nError;
         if (rev_socket < 0) {
             break;
@@ -5609,9 +5623,11 @@ void *doReceive_cmd(void *dat) {
         FD_SET(rev_socket, &readset); // 把socka放入要测试的描述符集中
         int nRet = select(rev_socket + 1, &readset, NULL, NULL, &timeoutA);// 检测是否有套接口是否可读
         if (nRet <= 0) {
+            usleep(2000);
             continue;
         }
         if (!FD_ISSET(rev_socket, &readset)) {
+            usleep(2000);
             continue;
         }
         //setsockopt(rev_socket, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeoutA,
@@ -5633,7 +5649,8 @@ void *doReceive_cmd(void *dat) {
                 }
                 continue;
             } else {
-                if (nbytes >= 8) {
+                if (nbytes >= 8)
+                {
                     if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 'T' && readBuff[6] == 'C') {
                         if (cmd_buffer != NULL) {
                             memset(cmd_buffer, 0, 20);
@@ -5643,22 +5660,24 @@ void *doReceive_cmd(void *dat) {
                     }
                 }
 
-                if (nbytes == 7) {
+                if (nbytes == 7)
+                {
                     if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D') {
-                        if (readBuff[5] == 0x10) {
+                        if (readBuff[5] == 0x10) //状态
+                        {
                             nSdStatus_GP &= 0xFFFF00FF;
                             readBuff[6] ^= 0x04;
                             if (readBuff[6] & 0x01)  //正在录像
                             {
                                 nSdStatus_GP |= 0x0100;
-                                nSDStatus |= SD_Recording;
+                                nSDStatus |= SD_Recording;              //录像按键
                             } else {
                                 nSDStatus &= (SD_Recording ^ 0xFFFF);
                             }
 
                             if (readBuff[6] & 0x02)  //  拍照
                             {
-                                nSdStatus_GP |= 0x0200;
+                                nSdStatus_GP |= 0x0200;                 //拍照按键
                                 nSDStatus |= SD_SNAP;
                             } else {
                                 nSDStatus &= ((SD_SNAP ^ 0xFFFF) & 0xFFFF);
@@ -5686,7 +5705,7 @@ void *doReceive_cmd(void *dat) {
                             F_SentGp_Status2Jave(nSdStatus_GP);
                         }
 
-                        if (readBuff[5] == 0x00) {
+                        if (readBuff[5] == 0x00) {         //按键命令
                             nSdStatus_GP &= 0xFFFFFF00;
                             nSdStatus_GP |= readBuff[6];
                             F_SentGp_Status2Jave(nSdStatus_GP);

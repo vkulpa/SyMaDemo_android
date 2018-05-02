@@ -194,7 +194,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             }
         };
 
-
+        JH_App.F_CreateLocalFlyDefalutDir();
         F_InitFragment();
         RssiHander.postDelayed(RssiRunable,100);
 //        JH_Tools.InitEncoder(1280,720,25,(int)(1000*1000*4));//
