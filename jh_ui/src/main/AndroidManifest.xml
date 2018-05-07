@@ -58,10 +58,10 @@
             android:name="com.joyhonest.jh_fly.Fly_PlayActivity"
             android:screenOrientation="sensorLandscape">
         </activity>
-        <activity
+        <!--activity
             android:name="com.joyhonest.jh_fly.MapTestActivity"
             android:screenOrientation="sensorLandscape">
-        </activity>
+        </activity -->
 
 
     </application>

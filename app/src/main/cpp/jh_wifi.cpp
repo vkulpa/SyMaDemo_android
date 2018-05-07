@@ -6276,21 +6276,29 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
 
 JNIEXPORT jboolean JNICALL
 Java_com_joyhonest_wifination_wifination_naSetBackground(JNIEnv *env, jclass type, jbyteArray data_, jint width, jint height) {
+    jboolean re = 0;
     if (gl_Frame == NULL) {
-        LOGE_B("ext 234");
-        return false;
+        LOGE("ext 234");
+        return re;
     }
     if (width > 1920 || height > 1080) {
-        LOGE_B("ext 123");
-        return false;
+        LOGE("ext 123");
+        return re;
     }
     if (nSDStatus & bit0_OnLine) {
-        LOGE_B("is online1111");
-        return false;
+        LOGE("is online1111");
+        return re;
     }
-    bool re = false;
+
     jbyte *data = env->GetByteArrayElements(data_, NULL);
-    re = F_SetBackGroud(data, width, height);
+    bool rr = F_SetBackGroud(data, width, height);
+    if(rr)
+    {
+        re = 1;
+    } else
+    {
+        re  = 0;
+    }
     env->ReleaseByteArrayElements(data_, data, 0);
     return re;
 }

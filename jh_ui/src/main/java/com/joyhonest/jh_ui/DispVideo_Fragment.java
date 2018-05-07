@@ -50,6 +50,10 @@ public class DispVideo_Fragment extends Fragment {
         videoView.setMediaController(mc);
         videoView.setBackgroundColor(0xFFFFFFFF);
 
+
+        videoView.setZOrderOnTop(true);
+        videoView.setZOrderMediaOverlay(true);
+
         backBut.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

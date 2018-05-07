@@ -2707,7 +2707,8 @@ extern int nBufferLen;
 bool C_FFMpegPlayer::F_IsNeed2WriteH264Stream(void) {
 
     //if (nICType == IC_GKA || nICType == IC_GPH264A || nICType == IC_GPH264)
-    if (nIC_Type == IC_GKA || nIC_Type == IC_GPH264A) {
+    if (nIC_Type == IC_GKA ) //|| nIC_Type == IC_GPH264A)
+    {
         if (m_codecCtx != NULL && m_codecCtx->width == nRecordWidth && m_codecCtx->height == nRecordHeight) {
             return true;
         }
