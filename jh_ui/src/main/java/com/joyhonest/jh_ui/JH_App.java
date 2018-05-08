@@ -161,6 +161,12 @@ public class JH_App {
     private static int music_adj = -1;
     private static int music_btn = -1;
 
+    private static int music_speed_L = -1;
+    private static int music_speed_H = -1;
+    private static int music_video_start = -1;
+    private static int music_video_stop = -1;
+
+
     public static int nOrg;
 
     public static Context mContext = null;
@@ -267,7 +273,7 @@ public class JH_App {
             mGridList = new ArrayList<MyItemData>();
         }
         F_CreateLocalDir(LocalPhoto,LocalVideo,SDPhoto,SDVideo);
-        F_InitMusic();
+      //  F_InitMusic();
     }
 
     public static void F_CreateLocalFlyDefalutDir()
@@ -498,22 +504,71 @@ public class JH_App {
     }
 
     public static void F_InitMusic() {
-        if (Build.VERSION.SDK_INT >= 21)
-        {
-            SoundPool.Builder builder = new SoundPool.Builder();
-            builder.setMaxStreams(4);//传入音频数量
-            AudioAttributes.Builder attrBuilder = new AudioAttributes.Builder();
-            attrBuilder.setLegacyStreamType(AudioManager.STREAM_MUSIC);//设置音频流的合适的属性
-            builder.setAudioAttributes(attrBuilder.build());//加载一个AudioAttributes
-            soundPool = builder.build();
+        if(soundPool==null) {
+            if (Build.VERSION.SDK_INT >= 21) {
+                SoundPool.Builder builder = new SoundPool.Builder();
+                builder.setMaxStreams(4);//传入音频数量
+                AudioAttributes.Builder attrBuilder = new AudioAttributes.Builder();
+                attrBuilder.setLegacyStreamType(AudioManager.STREAM_MUSIC);//设置音频流的合适的属性
+                builder.setAudioAttributes(attrBuilder.build());//加载一个AudioAttributes
+                soundPool = builder.build();
+            } else {
+                soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
+
+            }
         }
-        else
+        if(music_mid!=-1)
         {
-            soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
+            soundPool.unload(music_mid);
+            music_mid = -1;
         }
+        if(music_adj!=-1)
+        {
+            soundPool.unload(music_adj);
+            music_adj = -1;
+        }
+        if(music_photo!=-1)
+        {
+            soundPool.unload(music_photo);
+            music_photo = -1;
+        }
+
+        if(music_speed_L!=-1)
+        {
+            soundPool.unload(music_speed_L);
+            music_speed_L = -1;
+        }
+        if(music_speed_H!=-1)
+        {
+            soundPool.unload(music_speed_H);
+            music_speed_H = -1;
+        }
+        if(music_video_start!=-1)
+        {
+            soundPool.unload(music_video_start);
+            music_video_start = -1;
+        }
+        if(music_video_stop!=-1)
+        {
+            soundPool.unload(music_video_stop);
+            music_video_stop = -1;
+        }
+
+
         music_mid = soundPool.load(mContext, R.raw.center_fly, 1);
         music_adj = soundPool.load(mContext, R.raw.adjian_fly, 1);
-        music_photo = soundPool.load(mContext, R.raw.photo_m_fly, 1);
+        if(nType == JH_App.nStyle_fly) {
+            music_photo = soundPool.load(mContext, R.raw.photo_fly, 1);
+            music_speed_L = soundPool.load(mContext, R.raw.speed_low_fly, 1);;
+            music_speed_H = soundPool.load(mContext, R.raw.speed_h_fly, 1);;
+            music_video_start = soundPool.load(mContext, R.raw.video_start_fly, 1);;
+            music_video_stop = soundPool.load(mContext, R.raw.video_stop_fly, 1);;
+        }
+        else
+            {
+            music_photo = soundPool.load(mContext, R.raw.photo_m_fly, 1);
+        }
+
     }
 
 
@@ -612,6 +667,31 @@ public class JH_App {
 
         if (music_photo >0)
             soundPool.play(music_photo, 1, 1, 0, 0, 1);
+    }
+
+    public  static void F_PlayStartRecord()
+    {
+        if (music_video_start>0)
+            soundPool.play(music_video_start, 1, 1, 0, 0, 1);
+    }
+    public  static void F_PlayStopRecord()
+    {
+        if (music_video_stop>0)
+            soundPool.play(music_video_stop, 1, 1, 0, 0, 1);
+    }
+    public  static void F_PlaySpeed(boolean bHiSpeedA)
+    {
+        if(bHiSpeedA)
+        {
+            if (music_speed_H>0)
+                soundPool.play(music_speed_H, 1, 1, 0, 0, 1);
+        }
+        else
+        {
+            if (music_speed_L>0)
+                soundPool.play(music_speed_L, 1, 1, 0, 0, 1);
+        }
+
     }
 
     public static void F_PlayButton() {

@@ -120,6 +120,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         wifination.naSetVrBackground(true);
         JH_App.bFlyDisableAll = true;
+        JH_App.nType = JH_App.nStyle_fly;
+        JH_App.F_InitMusic();
 
         mAsker=new PermissionAsker(10,new Runnable() {
             @Override
