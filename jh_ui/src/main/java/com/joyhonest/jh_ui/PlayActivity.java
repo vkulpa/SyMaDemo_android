@@ -284,6 +284,12 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
+    @Subscriber(tag="OnGetGP_Status")
+    private  void OnGetGP_Status(int n)
+    {
+
+        Log.e("GetData","Key = "+n);
+    }
 
 
     private void F_InitFragment() {

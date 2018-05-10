@@ -77,6 +77,22 @@ const float dataVertex_Flip[] =
                 -1 * UNIT, -1 * UNIT, 0,
                 -1 * UNIT, 1 * UNIT, 0
         };
+
+const float dataVertex_90[] =
+        {
+                1 * UNIT, 1 * UNIT, 0,
+                -1 * UNIT, 1 * UNIT, 0,
+                1 * UNIT, -1 * UNIT, 0,
+                -1 * UNIT, -1 * UNIT, 0
+        };
+const float dataVertex__90[] =
+        {
+                -1 * UNIT, -1 * UNIT, 0,
+                1 * UNIT, -1 * UNIT, 0,
+                -1 * UNIT, 1 * UNIT, 0,
+                1 * UNIT, 1 * UNIT, 0
+        };
+
 //渲染纹理坐标数据
 const float dataTexCoor[] =
         {
@@ -91,6 +107,9 @@ const float dataTexCoor[] =
 AVFrame *gl_Frame = NULL;
 //全局变量
 Instance *instance =NULL;
+
+int nRotation=0;
+
 float * maMVPMatrix = NULL;
 void F_InitGPL(int WW,int HH)
 {

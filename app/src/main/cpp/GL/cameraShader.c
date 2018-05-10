@@ -1,8 +1,15 @@
 #include <stdbool.h>
 #include "cameraShader.h"
 
+extern int nRotation;
 extern const float dataVertex[];
 extern const float dataVertex_Flip[];
+
+extern const float dataVertex_90[];
+
+extern const float dataVertex__90[];
+
+
 extern const float dataTexCoor[];
 extern float  *maMVPMatrix;
 
@@ -40,13 +47,35 @@ drawFrame(void* ins)
 
 	}
 	else {
-		glVertexAttribPointer(instance->maPositionHandle,
-							  3,//GLint size X Y Z
-							  GL_FLOAT,//GLenum type
-							  GL_FALSE,//GLboolean normalized
-							  3 * 4,//GLsizei stride
-							  dataVertex//const GLvoid * ptr
-		);
+		if(nRotation == 90) {
+			glVertexAttribPointer(instance->maPositionHandle,
+								  3,//GLint size X Y Z
+								  GL_FLOAT,//GLenum type
+								  GL_FALSE,//GLboolean normalized
+								  3 * 4,//GLsizei stride
+								  dataVertex_90//const GLvoid * ptr
+			);
+		}
+		else if(nRotation == -90)
+		{
+			glVertexAttribPointer(instance->maPositionHandle,
+								  3,//GLint size X Y Z
+								  GL_FLOAT,//GLenum type
+								  GL_FALSE,//GLboolean normalized
+								  3 * 4,//GLsizei stride
+								  dataVertex__90//const GLvoid * ptr
+			);
+		}
+		else {
+			glVertexAttribPointer(instance->maPositionHandle,
+								  3,//GLint size X Y Z
+								  GL_FLOAT,//GLenum type
+								  GL_FALSE,//GLboolean normalized
+								  3 * 4,//GLsizei stride
+								  dataVertex//const GLvoid * ptr
+			);
+		}
+
 	}
 	//传入顶点纹理坐标
 	glVertexAttribPointer(instance->maTexCoorHandle,

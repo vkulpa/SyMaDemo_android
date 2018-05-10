@@ -6369,3 +6369,17 @@ Java_com_joyhonest_wifination_wifination_naSetVrBackground(JNIEnv *env, jclass t
     // TODO
     bWhitClolor = b;
 }
+
+extern int nRotation;
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naRotation(JNIEnv *env, jclass type, jint n) {
+
+    // TODO
+    if(n == 0 || n ==90 || n ==-90)
+    {
+        nRotation = n;
+    }
+
+}
