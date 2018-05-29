@@ -1093,7 +1093,10 @@ public class JH_App {
 
         if (JH_App.nICType == wifination.IC_GP) {
             str = "http://192.168.25.1:8080/?action=stream";
-            wifination.naInit(str);
+
+            re = wifination.naInit(str);
+            if (re == 0)
+                wifination.naPlay();
         }
 
         if (JH_App.nICType == wifination.IC_GPRTSP) {
@@ -1104,13 +1107,12 @@ public class JH_App {
         }
 
         if (JH_App.nICType == wifination.IC_GPH264) {
-            str = "rtsp://192.168.27.1:8080/?action=stream";
-            //str = "rtsp://192.168.16.1/stream0";
+            str = "";
             wifination.naInit(str);
         }
 
         if (JH_App.nICType == wifination.IC_GPRTP) {
-            str = "192.168.28.1:19200";
+            str = "";
             wifination.naInit(str);
         }
         if (JH_App.nICType == wifination.IC_GPRTPB) {

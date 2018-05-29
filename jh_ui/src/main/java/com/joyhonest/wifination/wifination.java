@@ -5,6 +5,8 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.util.Log;
 
 
@@ -14,6 +16,8 @@ import org.simple.eventbus.EventBus;
 
 
 import java.nio.ByteBuffer;
+
+import static android.content.Context.WIFI_SERVICE;
 
 
 /**
@@ -37,6 +41,7 @@ public class wifination {
     public final static int IC_GK_UDP = 9;
 
 
+
     public final static int TYPE_ONLY_PHONE = 0;
     public final static int TYPE_ONLY_SD = 1;
     public final static int TYPE_BOTH_PHONE_SD = 3;
@@ -51,6 +56,7 @@ public class wifination {
     private static final wifination m_Instance = new wifination();
     private static final int BMP_Len = (((1280 + 3) / 4) * 4) * 4 * 720 + 1024;
 
+    public  static Context  appContext=null;
 
     static {
         try {
@@ -82,8 +88,8 @@ public class wifination {
                     }
             }
             */
-            mDirectBuffer = ByteBuffer.allocateDirect(BMP_Len + 20);     //获取每帧数据，主要根据实际情况，分配足够的空间。
-            naSetDirectBuffer(mDirectBuffer, BMP_Len + 20);
+            mDirectBuffer = ByteBuffer.allocateDirect(BMP_Len + 50);     //获取每帧数据，主要根据实际情况，分配足够的空间。
+            naSetDirectBuffer(mDirectBuffer, BMP_Len + 50);
 //            mDirectBufferYUV = ByteBuffer.allocateDirect(BMP_Len);
             //           naSetDirectBufferYUV(mDirectBufferYUV, BMP_Len);
             // JH_Tools.AvcEncoder(1280,720,25,2500000);
@@ -223,31 +229,68 @@ public class wifination {
     public static native  void naSetRevBmp(boolean b); //是否把解码到的图像发送到JAVA，有APP自己来显示而不是通过SDK内部来渲染显示
 
     public static native  void naSetVrBackground(boolean b);
-    public static native  void naRotation(int n);  //N = 0  90    -90
+    public static native  void naRotation(int n);  //N = 0  90    -90   //画面转90 度 显示
 
-    //-(void)naSetVrBackground:(BOOL)bWhite;
 
-    /**
-     * OpenGL ES 2.0
-     */
+    public  static  native  boolean naSetWifiPassword(String sPassword);
+
+
+    public  static native  void naSetScal(float fScal); //设定放大显示倍数
+
+
+
     public static native void init();
-
-    /**
-     *
-     */
     public static native void release();
-
-    /**
-     * @param width
-     * @param height
-     */
     public static native void changeLayout(int width, int height);
-
-    /**
-     * @paramdata
-     */
     public static native void drawFrame();
 
+    private static String intToIp(int i) {
+        return (i & 0xFF) + "." + ((i >> 8) & 0xFF) + "." + ((i >> 16) & 0xFF) + "." + ((i >> 24) & 0xFF);
+    }
+
+    private static int G_getIP()
+    {
+          if(appContext==null)
+            return IC_NO;
+        WifiManager wifi_service = (WifiManager) appContext.getSystemService(WIFI_SERVICE);
+
+        WifiInfo info = wifi_service.getConnectionInfo();
+
+        String wifiId;
+        wifiId = (info != null ? info.getSSID() : null);
+        if (wifiId != null) {
+            wifiId = wifiId.replace("\"", "");
+            if (wifiId.length() > 4)
+                wifiId = wifiId.substring(wifiId.length() - 4);
+        } else {
+            wifiId = "nowifi";
+        }
+
+        String sIP = intToIp(info.getIpAddress());
+
+        int nICType = wifination.IC_NO;
+
+        if (sIP.startsWith("175.16.10")) {
+            nICType = wifination.IC_GKA;
+        } else if (sIP.startsWith("192.168.234")) {
+            nICType = wifination.IC_GK;
+        } else if (sIP.startsWith("192.168.25")) {
+            nICType = wifination.IC_GP;
+        } else if (sIP.startsWith("192.168.26")) {
+            nICType = wifination.IC_GPRTSP;
+        } else if (sIP.startsWith("192.168.27")) {
+            nICType = wifination.IC_GPH264;
+        } else if (sIP.startsWith("192.168.28")) {
+            nICType = wifination.IC_GPRTP;
+        } else if (sIP.startsWith("192.168.29")) {
+            nICType = wifination.IC_GPRTPB;
+        } else if (sIP.startsWith("192.168.30")) {
+            nICType = wifination.IC_GPH264A;
+        } else if (sIP.startsWith("192.168.123")) {
+            nICType = wifination.IC_SN;
+        }
+        return nICType;
+    }
 
     public static void F_AdjBackGround(Context context, int bakid) {
         Bitmap bmp = null;
@@ -256,9 +299,12 @@ public class wifination {
         BitmapFactory.decodeResource(context.getResources(), bakid, options);
         int imageHeight = options.outHeight;
         int imageWidth = options.outWidth;
-        if (imageWidth < 640 && imageHeight < 480) {
+        if (imageWidth <= 640 && imageHeight <= 480)
+        {
             bmp = BitmapFactory.decodeResource(context.getResources(), bakid);
-        } else {
+        }
+        else
+        {
             int scale = imageWidth / 640;
             if (scale <= 0) {
                 scale = 2;
@@ -273,7 +319,8 @@ public class wifination {
 
         int ww = bmp.getWidth();
         int hh = bmp.getHeight();
-        if (ww > 1280 || hh > 720) {
+        if (ww > 1280 || hh > 720)
+        {
             //获得图片的宽高
             int width = bmp.getWidth();
             int height = bmp.getHeight();
@@ -290,8 +337,6 @@ public class wifination {
             Bitmap newbm = Bitmap.createBitmap(bmp, 0, 0, width, height, matrix,
                     true);
             bmp.recycle();
-            ;
-            bmp = null;
             bmp = newbm;
         }
         ww = bmp.getWidth();
@@ -327,17 +372,24 @@ public class wifination {
 
 
     private static void OnGetGP_Status(int nStatus) {
-        if (nStatus == 0x55AA55AA) {
-            String s = "";
-            byte[] cmd = new byte[20];
+        if ((nStatus&0xFFFFFF00) == 0x55AA5500) {
+            //String s = "";
+            int nLen = (nStatus & 0xFF);
+            if(nLen>50)
+                nLen=50;
+
+            byte[] cmd = new byte[nLen];
 
             ByteBuffer buf = wifination.mDirectBuffer;
-            // buf.rewind();
-            for (int i = 0; i < 20; i++) {
+            buf.rewind();
+            for (int i = 0; i < nLen; i++) {
                 cmd[i] = buf.get(i + BMP_Len);
-                s = s + " " + cmd[i];
+                //s = s + " " + cmd[i];
             }
-            Log.e("RecCmd:", s);
+            EventBus.getDefault().post(cmd, "GetWifiSendData");
+            //JH_Tools.AdjData(cmd);
+            //JH_Tools.FindCmd();
+            //JH_Tools.F_ClearData();
         } else {
             Integer ix = nStatus;
             Log.e(TAG,"Get data = "+nStatus);

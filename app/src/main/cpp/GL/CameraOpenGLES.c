@@ -196,8 +196,8 @@ Java_com_joyhonest_wifination_wifination_changeLayout(JNIEnv *env, jobject obj, 
         return;
     if (instance != 0)
     {
-        instance->vWidth = width;
-        instance->vHeight = height;
+        instance->vWidth =(unsigned int) width;
+        instance->vHeight = (unsigned int)height;
 
     }
     unsigned int angle;

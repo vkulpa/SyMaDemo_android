@@ -520,6 +520,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         F_DispGSensorIcon();
     }
 
+    boolean  bTest = true;
+
     @Override
     public void onClick(View v) {
         if(v != Return_Btn)
@@ -691,10 +693,21 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
 
         if (v == Floder_Btn) {
-            // wifination.naSetVideoSurface(null);
+/*
+            bTest=!bTest;
+            Integer df = 0;
+            if(bTest)
+            {
+                df=1;
+            }
+            EventBus.getDefault().post(df, "B_TEST");
+*/
+
+
             F_SetNoGsensor();
             Integer nFragment = JH_Fly_Setting.Brow_Select_Fragment;
             EventBus.getDefault().post(nFragment, "gotoFragment");
+
 
         }
         if (v == Photo_Record_Start_Btn) {
@@ -839,7 +852,14 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     public void F_DispPhoto_Record() {
 
         if (bPhoto) {
+
             Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_icon_fly_jh);
+            if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
+                wifination.naStopRecord_All();
+                Record_Time_TextCtrl.setVisibility(View.INVISIBLE);
+            }
+
+            /*
             if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0)
             {
                 Record_Time_TextCtrl.setVisibility(View.VISIBLE);
@@ -848,12 +868,15 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             {
                 Record_Time_TextCtrl.setVisibility(View.INVISIBLE);
             }
+            */
+
+
         } else {
 
-            if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
+            if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0)
+            {
                 Record_Time_TextCtrl.setVisibility(View.VISIBLE);
                 Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_recording_icon_fly_jh);
-                //myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
                 myControl.F_SetFlyRecord(true);
                 if(bControlUI) {
                     Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh);
@@ -871,23 +894,18 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             else
             {
                 Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_record_icon_fly_jh);
-                //myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
-               // myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
+
                 myControl.F_SetFlyRecord(false);
 
                 if(bControlUI) {
-                    //Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh_b);
+
                     Fly_Camera_Btn.setBackgroundResource(R.mipmap.remote_control_fly_jh);
                 }
                 else
                 {
-                    //Fly_Camera_Btn.setBackgroundResource(R.mipmap.no_remote_fly_jh_b);
+
                     Fly_Camera_Btn.setBackgroundResource(R.mipmap.no_remote_fly_jh);
                 }
-
-                //Floder_Btn.setBackgroundResource(R.mipmap.folder_fly_jh_b);
-                //StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
-                //UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh_b);
                 Floder_Btn.setBackgroundResource(R.mipmap.folder_fly_jh);
                 StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
                 UpDn_Btn.setBackgroundResource(R.mipmap.keyup_dn_fly_jh);

@@ -92,7 +92,7 @@ MyMediaCoder myMediaCoder;
 
 uint32_t nUdpInx = 0;
 
-std::string sServerIP = "192.168.26.1";
+std::string sServerIP = "192.168.254.1";
 
 
 __volatile int64_t nCheckT_pre;
@@ -102,7 +102,7 @@ bool bNeedStop = true;
 typedef unsigned char byte;
 
 
-bool bRecord720P = true;
+bool bRecord720P = false;
 
 typedef struct {
     char str[40];
@@ -153,6 +153,7 @@ jmethodID GetDownLoad_mid;
 
 jmethodID RevTestInfo_mid;
 jmethodID Save2ToGallery_mid;
+jmethodID   G_getIP;
 //jmethodID RemoveFromGallery_mid;
 //jmethodID  ReceiveYUV_mid;
 
@@ -208,6 +209,8 @@ char sPlayPath[256];
 
 bool bFollow = false;
 
+bool  bRocordWHisSeted=false;
+
 jbyte TestInfo[1024];
 
 #define  bit0_OnLine            1
@@ -233,7 +236,10 @@ typedef enum {
 //#define   IC_GP         1
 //#define   IC_SN         2
 
-int nICType = IC_GK;
+int nICType = IC_NO;
+
+
+float  nScal=1.0f;
 
 uint8_t nSDStatus = 0;
 uint8_t nSDstatus_bak = -1;
@@ -333,19 +339,21 @@ T_REQ_MSG req_msg;
 
 
 pthread_t adjRecTime_phread = -1;
-int32_t nRecTime = 0;
+uint32_t nRecTime = 0;
 int64_t nRecStartTime = 0;
 bool bRealRecording = false;
 bool bAdjRecTime = true;
 pthread_mutex_t m_adjRecTime_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void *F_adjRecTim(void *data) {
+#if 0
     int ix = 0;
     int64_t nCurrent, nBack;
     nRecTime = 0;
     nRecStartTime = av_gettime() / 1000;
     while (bAdjRecTime) {
-        if (ix >= 25) {
+        if (ix >= 25)
+        {
             ix = 0;
             if (bRealRecording && (nSDStatus & bit1_LocalRecording)) {
                 nBack = nCurrent = av_gettime() / 1000;  //ms
@@ -360,6 +368,7 @@ void *F_adjRecTim(void *data) {
         usleep(1000 * 10); //10ms
     }
     LOGE("Exit Add RecTime");
+#endif
     return NULL;
 }
 
@@ -368,8 +377,9 @@ Java_com_joyhonest_wifination_wifination_naGetRecordTime(JNIEnv *env, jclass typ
 
     // TODO
     int32_t ret = 0;
+    float df = 1000/m_FFMpegPlayer.nRecFps;
     pthread_mutex_lock(&m_adjRecTime_lock);
-    ret = nRecTime;
+    ret = (int32_t)(nRecTime *df);
     pthread_mutex_unlock(&m_adjRecTime_lock);
     return (jint) ret;
 }
@@ -456,7 +466,6 @@ int send_cmd_udp(uint8_t *msg, int nLen, const char *host, uint16_t port) {
     }
     if (sendto(client_socket_fd, msg, nLen, 0, (struct sockaddr *) &server_addr,
                sizeof(server_addr)) < 0) {
-        // LOGE("Send File Name Failed:");
         close(client_socket_fd);
         return -1;
     }
@@ -800,7 +809,7 @@ pthread_t checkRelinker = -1;
 
 int naStop(void);
 
-int naInit(const char *ps);
+int _naInit_(const char *ps);
 
 /*
 void *StopThread(void *para) {
@@ -827,26 +836,25 @@ int naInit_Re_B(void);
 
 void *checkRelinkerThrad(void *param) {
     bool re = true;
-    while (re) {
-
+    while (re)
+    {
 #ifndef DEBUG
-//#if 1
+
         {
             if (bInit && !bNeedStop) {
                 int64_t current = av_gettime() / 1000;
                 int dat = (int) (current - nCheckT_pre);
                 if (nRelinker_T != 0) {
-                    if (dat > (int) nRelinker_T) {
+                    if (dat > (int) nRelinker_T)
+                    {
                         bInit = false;
                         bRealRecording = false;
                         naStop_B();
                         usleep(1000 * 500);
-                        if (!bNeedStop) {
+                        if (!bNeedStop)
+                        {
                             LOGE_B("Relinker!!!!nRelinker_T =  %d  dat = %d", (int) nRelinker_T, dat);
-                            //    naInit_Re();
                             naInit_Re_B();
-
-
                         }
                     }
                 }
@@ -895,7 +903,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
             DEBUG_PRINT("No Save2ToGallery_mid");
         }
 
-     //   RemoveFromGallery_mid = env->GetStaticMethodID(data_Clazz, "OnRemoveFromeGallery", "(Ljava/lang/String;I)V");
+        G_getIP = env->GetStaticMethodID(data_Clazz, "G_getIP", "()I");
 
 
 
@@ -1042,17 +1050,12 @@ FILE *testFile = NULL;
 
 int64_t nPreTimeA = 0;
 
-int naInit(const char *pFileName) {
+int F_getType(void);
 
-#if 0
-    char *stestfilename = "/mnt/sdcard/test.txt";
-    testFile = fopen(stestfilename, "wb");
-    char *_sdata ="JH——TEST\n";
-    fwrite(_sdata, 1,strlen(_sdata) , testFile);
-#endif
+int _naInit_(const char *pFileName)
+{
+
     nPreTimeA = 0;
-
-
     F_StartAdjRecTime(true);
     GPRTP_UDP_SOCKET = -1;
     std::string::size_type idx;
@@ -1072,37 +1075,87 @@ int naInit(const char *pFileName) {
         bInit = true;
         return -1;
     }
+
     if (pFileName != NULL && nPathLen != 0) {
         memcpy(sPlayPath, pFileName, nPathLen);
     }
 
     sServerIP = sPlayPath;
-    idx = sServerIP.find("192.168.25.1");
+    std::string src = sServerIP;
+    std::string dst;
+    transform(sServerIP.begin(), sServerIP.end(), sServerIP.begin(), ::tolower);
+    //sServerIP = dst;
 
-    //IC_GK = 0,      //192.168.234.X
-//IC_GP,          //192.168.25.X
+
+
+//IC_GK = 0,      //192.168.234.X
 //IC_SN,          //192.168.123.X
 //IC_GKA,             //175.16.10.X
+//IC_GP,          //192.168.25.X
 //IC_GPRTSP,   //192.168.26.X
+
 //IC_GPH264,   //192.168.27.X
 //IC_GPRTP,    //192.168.28.X
 //IC_GPH264A,   //192.168.30.X
 //IC_GPRTPB,   //192.168.29.X
+    int type = F_getType();
+    if(type!=IC_NO)
+    {
+        nICType = type;
+    }
+    if(nICType == IC_NO)
+        return -100;
+
+    idx = sServerIP.find("rtsp://192.168.26.1");
+    if (idx != std::string::npos)
+    {
+        nICType = IC_GPRTSP;
+        sServerIP = "192.168.26.1";
+    }
+
+    idx = sServerIP.find("rtsp://192.168.25.1");
+    if (idx != std::string::npos)
+    {
+        nICType = IC_GPRTSP;
+        sServerIP = "192.168.25.1";
+    }
+
+    idx = sServerIP.find("http://192.168.26.1");
+    if (idx != std::string::npos)
+    {
+        nICType = IC_GP;
+        sServerIP = "192.168.26.1";
+    }
+    idx = sServerIP.find("http://192.168.25.1");
+    if (idx != std::string::npos)
+    {
+        nICType = IC_GP;
+        sServerIP = "192.168.25.1";
+    }
+
     if (nICType == IC_GK) {
         sServerIP = "192.168.234.1";
     } else if (nICType == IC_GP) {
+        ;
+        /*
         if (idx != std::string::npos) {
             sServerIP = "192.168.25.1";
         } else {
             sServerIP = "192.168.26.1";
         }
+         */
     } else if (nICType == IC_SN) {
         sServerIP = "192.168.123.1";
     } else if (nICType == IC_GKA) {
         sServerIP = "175.16.10.2";
-    } else if (nICType == IC_GPRTSP) {
-        sServerIP = "192.168.26.1";
-    } else if (nICType == IC_GPH264) {
+    }
+        else if (nICType == IC_GPRTSP) {
+            ;
+         }
+    //else if (nICType == IC_GPRTSP) {
+    //    sServerIP = "192.168.26.1";
+    // }
+    else if (nICType == IC_GPH264) {
         sServerIP = "192.168.27.1";
     } else if (nICType == IC_GPRTP) {
         sServerIP = "192.168.28.1";
@@ -1170,10 +1223,15 @@ bool bInitMedia = false;
 bool bInitMediaA = false;
 
 
+
+
 int naInit_Re_B(void) {
     int ret = 0;
     uint8_t msg[20];
+    bNeedExit = false;
 
+
+/*
     myMediaCoder.F_CloseDecoder();
     if (rev_socket > 0 || rev_cmd_thread != -1) {
         if (rev_socket > 0) {
@@ -1189,10 +1247,11 @@ int naInit_Re_B(void) {
         }
         GPRTP_rev_thread = -1;
     }
+*/
 
     if (nICType == IC_GPH264A) {
 
-
+        F_RecRP_RTSP_Status_Service();
         bStoped = true;
         bInit = true;
         if (GP_tcp_VideoSocket.bConnected) {
@@ -1203,7 +1262,6 @@ int naInit_Re_B(void) {
         if (Connect_GPH264() < 0) {
             ret = -1;
         }
-
         return ret;
     } else if (nICType == IC_GKA) {
 
@@ -1215,7 +1273,6 @@ int naInit_Re_B(void) {
             DEBUG_PRINT("1-----");
             return ret;
         }
-
         if (sPlayPath[0] == '1') {
             m_FFMpegPlayer.nDisplayWidth = 640;//1280;
             m_FFMpegPlayer.nDisplayHeight = 360;//720;
@@ -1225,8 +1282,6 @@ int naInit_Re_B(void) {
             m_FFMpegPlayer.nDisplayHeight = 360;
             nGKA_StreamNo = 2;
         }
-
-        //m_FFMpegPlayer.InitMedia(sPlayPath);
         F_ResetRelinker();
         F_SetRelinkerT(5000);
         ret = 0;
@@ -1237,30 +1292,9 @@ int naInit_Re_B(void) {
         if (ret >= 0) {
             F_RecRP_RTSP_Status_Service();  //GKA
         }
-
         return ret;
 
-
-    } else if (nICType == IC_GK_UDP) {
-
-        if (sPlayPath[0] == '1') {
-            m_FFMpegPlayer.nDisplayWidth = 1280;//1280;
-            m_FFMpegPlayer.nDisplayHeight = 720;//720;
-            nGKA_StreamNo = 1;
-        } else {
-            m_FFMpegPlayer.nDisplayWidth = 640;
-            m_FFMpegPlayer.nDisplayHeight = 360;
-            nGKA_StreamNo = 2;
-        }
-
-        m_JhGK_udp.nGKA_StreamNo = nGKA_StreamNo;
-
-        m_FFMpegPlayer.nfps = 25;
-        // m_FFMpegPlayer.InitMedia(sPlayPath);
-        m_JhGK_udp.Init();
-        return 0;
-
-    } else if (nICType == IC_SN) {
+    }  else if (nICType == IC_SN) {
         m_FFMpegPlayer.nfps = 25;
         if (m_MySonix.createCommandSocket() == 0) {
             m_MySonix.sendStop();
@@ -1325,9 +1359,11 @@ int naInit_Re_B(void) {
             msg[5] = 0x20;
             msg[6] = 0x00;
             send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+            bInit = true;
         }
         return 0;
     } else if (nICType == IC_GPRTSP || nICType == IC_GPRTP || nICType == IC_GPRTPB) {
+
         nCheckT_pre = av_gettime() / 1000;
         F_SetRelinkerT(1000 * 5);
         m_FFMpegPlayer.nfps = 20;
@@ -1377,6 +1413,7 @@ int naInit_Re_B(void) {
             msg[6] = 0x01;
             send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
             usleep(1000 * 10);
+            bInit = true;
             return 0;
         }
     }
@@ -1419,10 +1456,8 @@ int naInit_Re_B(void) {
     nCheckT_pre = av_gettime() / 1000;
     F_SetRelinkerT(1000 * 5);
     bInit = true;
-    //i32Ret = m_FFMpegPlayer.InitMedia(sPlayPath);
+    int i32Ret = m_FFMpegPlayer.InitMedia(sPlayPath);
     naPlay();
-
-
     return 0;
 
 }
@@ -1430,7 +1465,6 @@ int naInit_Re_B(void) {
 int naInit_Re(void) {
     bInitMedia = false;
     bInitMediaA = false;
-
     nFrameCount = 0;
     disp_no = -1;
     start_time = -1;
@@ -1453,29 +1487,11 @@ int naInit_Re(void) {
     F_SetRelinkerT(4000);
     pthread_mutex_init(&m_mutex, NULL);
     bInit = true;
-    if (nICType == IC_GK_UDP) {
-
-        if (sPlayPath[0] == '1') {
-            m_FFMpegPlayer.nDisplayWidth = 1280;//1280;
-            m_FFMpegPlayer.nDisplayHeight = 720;//720;
-            nGKA_StreamNo = 1;
-        } else {
-            m_FFMpegPlayer.nDisplayWidth = 640;
-            m_FFMpegPlayer.nDisplayHeight = 360;
-            nGKA_StreamNo = 2;
-        }
 
 
-        m_JhGK_udp.nGKA_StreamNo = nGKA_StreamNo;
 
-        m_FFMpegPlayer.nfps = 25;
-        m_FFMpegPlayer.InitMedia(sPlayPath);
-
-        m_JhGK_udp.Init();
-        return 0;
-
-    }
-    if (nICType == IC_GP) { ;
+    if (nICType == IC_GP) {
+        ;
     }
     int i32Ret = -1;
     if (nICType == IC_GPH264A) {
@@ -1488,9 +1504,6 @@ int naInit_Re(void) {
         m_FFMpegPlayer.nErrorFrame = 0;
         m_FFMpegPlayer.nDisplayWidth = 1280;
         m_FFMpegPlayer.nDisplayHeight = 720;
-
-        //m_FFMpegPlayer.nDisplayWidth = 640;
-        //m_FFMpegPlayer.nDisplayHeight = 464;
 
         F_RecRP_RTSP_Status_Service();  //GPH264A
 
@@ -1505,8 +1518,6 @@ int naInit_Re(void) {
 
         m_FFMpegPlayer.InitMedia("");
         m_FFMpegPlayer.nfps = 20;
-
-
         if (Connect_GPH264() < 0) {
             ret = -1;
         }
@@ -1745,7 +1756,7 @@ JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naInit(JNIEnv *env, jclass type, jstring pFileName_) {
     const char *pFileName = env->GetStringUTFChars(pFileName_, 0);
     bNeedStop = false;
-    int i32Ret = naInit(pFileName);
+    int i32Ret = _naInit_(pFileName);
 
     env->ReleaseStringUTFChars(pFileName_, pFileName);
     return i32Ret;
@@ -1817,9 +1828,9 @@ JNIEnv *getJNIEnv(int *needsDetach);
 
 int naStop_B(void) {
     int ret = 0;
-
+    bNeedExit = true;
+    usleep(1000 * 50);
     if (rev_socket > 0 || rev_cmd_thread != -1) {
-        //RTSP_Status
         if (rev_socket > 0) {
             close(rev_socket);
             rev_socket = -1;
@@ -1834,7 +1845,6 @@ int naStop_B(void) {
         }
         GPRTP_rev_thread = -1;
     }
-
 
     if (nICType == IC_GPH264A) {
         bInit = false;
@@ -1865,9 +1875,12 @@ int naStop_B(void) {
         return 0;
     } else if (nICType == IC_GPRTP || nICType == IC_GPRTPB) {
         F_SendStatus2Jave();
-        //m_FFMpegPlayer.Stop();
         return 0;
     } else if (nICType == IC_GP) {
+        naStop();
+    }
+    else if(nICType == IC_GPRTSP)
+    {
         naStop();
     }
 
@@ -1875,7 +1888,10 @@ int naStop_B(void) {
 }
 
 
-int naStop(void) {
+void F_SentRTPStop();
+
+int naStop(void)
+{
 
     int ret = 0;
     F_StartAdjRecTime(false);
@@ -1937,8 +1953,10 @@ int naStop(void) {
         return 0;
     }
     if (nICType == IC_GPRTP || nICType == IC_GPRTPB) {
+        F_SentRTPStop();
         F_SendStatus2Jave();
         m_FFMpegPlayer.Stop();
+
         return 0;
     }
     if (nICType == IC_GP) {
@@ -2135,6 +2153,23 @@ void F_OnSave2ToGallery_mid(int n) {
 
 //////////测试信息
 
+int F_getType(void)
+{
+    int needsDetach = 0;
+    int nTt=IC_NO;
+    JNIEnv *evn = getJNIEnv(&needsDetach);
+    if (evn == NULL) {
+        return nTt;
+    }
+
+    if (G_getIP != NULL) {
+        nTt  = evn->CallStaticIntMethod(objclass,G_getIP);
+
+    }
+    if (needsDetach)
+        gJavaVM->DetachCurrentThread();
+    return nTt;
+}
 
 int F_SentTestInfo(void) {
 
@@ -2566,6 +2601,29 @@ Java_com_joyhonest_wifination_wifination_naSetIcType(JNIEnv *env, jclass type, j
         m_FFMpegPlayer.nDisplayHeight = 360;
     }
 
+    if (nICType == IC_GK) {
+        sServerIP = "192.168.234.1";
+    } else if (nICType == IC_GP) {
+            sServerIP = "192.168.25.1";
+    } else if (nICType == IC_SN) {
+        sServerIP = "192.168.123.1";
+    } else if (nICType == IC_GKA) {
+        sServerIP = "175.16.10.2";
+    } else if (nICType == IC_GPRTSP) {
+        sServerIP = "192.168.26.1";
+    } else if (nICType == IC_GPH264) {
+        sServerIP = "192.168.27.1";
+    } else if (nICType == IC_GPRTP) {
+        sServerIP = "192.168.28.1";
+    } else if (nICType == IC_GPRTPB) {
+        sServerIP = "192.168.29.1";
+    } else if (nICType == IC_GPH264A) {
+        sServerIP = "192.168.30.1";
+    } else if (nICType == IC_GK_UDP) {
+        sServerIP = "192.168.16.1";
+    } else {
+        sServerIP = "192.168.240.1";
+    }
 }
 
 int F_SendHttpComd(string spath) {
@@ -4045,15 +4103,15 @@ Java_com_joyhonest_wifination_wifination_naSnapPhoto(JNIEnv *env, jclass type, j
     if (nSDStatus & bit1_LocalRecording) { ;
     } else {
 
-        if (nICType == IC_GKA) {
+        if(!bRocordWHisSeted)
+        {
             if (bRecord720P) {
                 m_FFMpegPlayer.F_ReSetRecordWH(1280, 720);
             } else {
                 m_FFMpegPlayer.F_ReSetRecordWH(m_FFMpegPlayer.nDisplayWidth, m_FFMpegPlayer.nDisplayHeight);
             }
-        } else {
-            m_FFMpegPlayer.F_ReSetRecordWH(m_FFMpegPlayer.nDisplayWidth, m_FFMpegPlayer.nDisplayHeight);
         }
+
     }
 
 
@@ -4134,35 +4192,29 @@ JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naStartRecord(JNIEnv *env, jclass type, jstring pFileName_,
                                                        jint PhoneOrSD) {
     if (nSDStatus & bit1_LocalRecording) { ;//return -1;
-    } else {
-        if (bRecord720P)
-            m_FFMpegPlayer.F_ReSetRecordWH(1280, 720);
-        else
-            m_FFMpegPlayer.F_ReSetRecordWH(m_FFMpegPlayer.nDisplayWidth, m_FFMpegPlayer.nDisplayHeight);
 
-        if (nICType == IC_GKA) {
+    }
+    else
+    {
+
+        if(!bRocordWHisSeted)
+        {
             if (bRecord720P)
                 m_FFMpegPlayer.F_ReSetRecordWH(1280, 720);
             else
                 m_FFMpegPlayer.F_ReSetRecordWH(m_FFMpegPlayer.nDisplayWidth, m_FFMpegPlayer.nDisplayHeight);
-        } else {
-
-            if (nICType == IC_GPRTPB) {
-                m_FFMpegPlayer.F_ReSetRecordWH(1280, 720);
-            } else {
-                m_FFMpegPlayer.F_ReSetRecordWH(m_FFMpegPlayer.nDisplayWidth, m_FFMpegPlayer.nDisplayHeight);
-            }
-
         }
-
 
     }
 
     int nFps = m_FFMpegPlayer.nRecFps;
     int bitrate = 4 * 1000 * 1000;
-    if (m_FFMpegPlayer.nRecordWidth <= 640) {
+    if (m_FFMpegPlayer.nRecordWidth <= 640)
+    {
         bitrate = 4 * 1000 * 1000;
-    } else {
+    }
+    else
+    {
         bitrate = (int) (8 * 1000 * 1000);
     }
 
@@ -4179,20 +4231,16 @@ Java_com_joyhonest_wifination_wifination_naStartRecord(JNIEnv *env, jclass type,
     }
     if (PhoneOrSD == 0) //Phone
     {
-        if (nSDStatus & bit1_LocalRecording) { ;
+        if (nSDStatus & bit1_LocalRecording) {
+            ;
         } else {
 
-            /*
-            if(nICType == IC_GKA || nICType == IC_GPH264A)
-            {
-                bH264 = true;
-            }
-             */
             int ret = m_FFMpegPlayer.SaveVideo(pFileName, bH264);
             nSDStatus |= bit1_LocalRecording;
             F_SendStatus2Jave();
         }
-    } else if (PhoneOrSD == 1)  //SD
+    }
+    else if (PhoneOrSD == 1)  //SD
     {
         if (nICType == IC_GK) {
             if ((nSDStatus & SD_Recording) == 0)
@@ -4232,11 +4280,10 @@ Java_com_joyhonest_wifination_wifination_naStartRecord(JNIEnv *env, jclass type,
     } else                    //SD and Phone
     {
         if (nSDStatus & bit1_LocalRecording) { ;
+
         } else {
 
-            //if(nICType == IC_GKA || nICType == IC_GPH264A) {
-            //    bH264 = true;
-            //}
+
             int ret = m_FFMpegPlayer.SaveVideo(pFileName, bH264);
             nSDStatus |= bit1_LocalRecording;
             F_SendStatus2Jave();
@@ -4432,9 +4479,9 @@ Java_com_joyhonest_wifination_wifination_naSetDirectBuffer(JNIEnv *env, jclass t
                                                            jint nLen) {
     buffer = (unsigned char *) env->GetDirectBufferAddress(bufferA);
     m_FFMpegPlayer.Rgbabuffer = buffer;
-    nBufferLen = nLen - 20;
+    nBufferLen = nLen - 50;
     cmd_buffer = buffer + nBufferLen;
-    memset(cmd_buffer, 0, 20);
+    memset(cmd_buffer, 0, 50);
 
 }
 
@@ -5409,16 +5456,19 @@ void *doReceive_rtp(void *dat) {
             int nRecEcho = 0;
             if (FD_ISSET(GPRTP_UDP_SOCKET, &rfd)) {
                 nRecEcho = recvfrom(GPRTP_UDP_SOCKET, readRtpBuffer, sizeof(readRtpBuffer), 0, (sockaddr *) &servaddr, &size);
-                if (nICType == IC_GPRTPB) {
-                    if (nRecEcho >= 9) {
+                if (nICType == IC_GPRTPB)
+                {
+                    if (nRecEcho >= 9)
+                    {
+
                         nCheckT_pre = av_gettime() / 1000;
+
                         jpginx = readRtpBuffer[1] * 0x100 + readRtpBuffer[0];
                         jpg_pack_count = (uint8_t) readRtpBuffer[2];
                         jpg_udp_inx = (uint8_t) readRtpBuffer[3];
                         if (jpg_udp_inx >= 250)
                             continue;
 
-                        ///////////
                         testinfo.F_InsertInof(jpginx, jpg_pack_count, jpg_udp_inx);
 
                         JPEG_BUFFER *jpg = F_FindJpegBuffer(jpginx);
@@ -5428,16 +5478,20 @@ void *doReceive_rtp(void *dat) {
                             LOGE("Find packed error!");
                         }
 
-                        if (jpg_udp_inx * (1450 - 8) + (1450 - 8) < LEN_Buffer) {
-                            if (jpg->mInx[jpg_udp_inx] == 0) {
+                        if (jpg_udp_inx * (1450 - 8) + (1450 - 8) < LEN_Buffer)
+                        {
+                            if (jpg->mInx[jpg_udp_inx] == 0)
+                            {
                                 jpg->mInx[jpg_udp_inx] = 1;
                                 memcpy(jpg->buffer + jpg_udp_inx * (1450 - 8), readRtpBuffer + 8,
                                        1450 - 8);
                                 jpg->nCount++;
-                            } else {
+                            } else
+                            {
                                 LOGE("Duplicate Recivied  packet  %d of %d", jpg_udp_inx, jpginx);
                             }
-                            if (jpg->nCount >= jpg_pack_count) {
+                            if (jpg->nCount >= jpg_pack_count)
+                            {
                                 bool bOK = true;
                                 for (int ix = 0; ix < jpg_pack_count; ix++) {
                                     if (jpg->mInx[ix] == 0) {
@@ -5454,7 +5508,9 @@ void *doReceive_rtp(void *dat) {
                                 }
                                 jpg->Clear();
                             }
+
                         }
+
                     }
                 } else if (nICType == IC_GPRTP) {
                     if (nRecEcho > 20) {
@@ -5579,9 +5635,8 @@ void *doReceive_rtp(void *dat) {
 
     F_SentRTPStop();
     usleep(1000 * 10);
-    F_SentRTPStop();
-
-    usleep(1000 * 10);
+    //F_SentRTPStop();
+    //usleep(1000 * 10);
 
 
     jpg0.Release();
@@ -5653,9 +5708,11 @@ void *doReceive_cmd(void *dat) {
                 {
                     if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 'T' && readBuff[6] == 'C') {
                         if (cmd_buffer != NULL) {
-                            memset(cmd_buffer, 0, 20);
+                            memset(cmd_buffer, 0, 50);
                             memcpy(cmd_buffer, readBuff + 7, nbytes - 7);
-                            F_SentGp_Status2Jave(0x55AA55AA);
+                            int32_t dat = 0x55AA5500;
+                            dat |=((nbytes - 7)&0xFF);
+                            F_SentGp_Status2Jave(dat);
                         }
                     }
                 }
@@ -6008,6 +6065,7 @@ int naSave2FrameMp4(uint8_t *data, int nLen, int b, bool keyframe) {
         // m_FFMpegPlayer.AddMp4Video(sps_gka720,sizeof(sps_gka720),pps_gka720,sizeof(pps_gka720));
 
     } else {
+        nRecTime++;
         m_FFMpegPlayer.WriteMp4Frame((uint8_t *) data, nLen, keyframe);
     }
     return 0;
@@ -6029,6 +6087,7 @@ Java_com_joyhonest_wifination_wifination_naSetRecordWH(JNIEnv *env, jclass type,
     if (nSDStatus & bit1_LocalRecording) {
         return -1;
     } else {
+        bRocordWHisSeted  = true;
         m_FFMpegPlayer.F_ReSetRecordWH(ww, hh);
         return 0;
     }
@@ -6206,6 +6265,8 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
                              myYUV->data[1], myYUV->linesize[1],
                              myYUV->data[2], myYUV->linesize[2],
                              width, height);
+
+
     gl_Frame->width = myYUV->width;
     gl_Frame->height = myYUV->height;
 
@@ -6213,7 +6274,8 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
     gl_Frame->linesize[1] = myYUV->linesize[1];
     gl_Frame->linesize[2] = myYUV->linesize[2];
 
-    if (m_FFMpegPlayer.bFlip) {
+    if (m_FFMpegPlayer.bFlip)
+    {
         AVFrame *frame_a = av_frame_alloc();
         frame_a->width = width;
         frame_a->height = height;
@@ -6231,7 +6293,8 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
         }
     }
 
-    if (m_FFMpegPlayer.b3D) {
+    if (m_FFMpegPlayer.b3D)
+    {
         AVFrame *frame_b = av_frame_alloc();
         frame_b->format = AV_PIX_FMT_YUV420P;
         frame_b->width = width / 2;
@@ -6285,10 +6348,10 @@ Java_com_joyhonest_wifination_wifination_naSetBackground(JNIEnv *env, jclass typ
         LOGE("ext 123");
         return re;
     }
-    if (nSDStatus & bit0_OnLine) {
-        LOGE("is online1111");
-        return re;
-    }
+    //if (nSDStatus & bit0_OnLine) {
+    //    LOGE("is online1111");
+    //    return re;
+    //}
 
     jbyte *data = env->GetByteArrayElements(data_, NULL);
     bool rr = F_SetBackGroud(data, width, height);
@@ -6383,3 +6446,40 @@ Java_com_joyhonest_wifination_wifination_naRotation(JNIEnv *env, jclass type, ji
     }
 
 }
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_joyhonest_wifination_wifination_naSetWifiPassword(JNIEnv *env, jclass type, jstring sPassword_) {
+    const char *sPassword = env->GetStringUTFChars(sPassword_, 0);
+    // TODO
+    int nLen = strlen(sPassword);
+    if(nLen==0)
+        return 0;
+    if(nLen>64)
+        return 0;
+    uint8  msg[80];
+    msg[0] = 'J';
+    msg[1] = 'H';
+    msg[2] = 'C';
+    msg[3] = 'M';
+    msg[4] = 'D';
+    msg[5] = 0x30;
+    msg[6] = 0x02;
+    msg[7] = (uint8)nLen;
+    for(int i=0;i<nLen;i++)
+    {
+        msg[8+i] = (uint8)(sPassword[i]);
+    }
+    send_cmd_udp(msg, 8+nLen, sServerIP.c_str(), 20000);
+    env->ReleaseStringUTFChars(sPassword_, sPassword);
+    return 1;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetScal(JNIEnv *env, jclass type, jfloat fScal) {
+
+    nScal = fScal;
+
+}
+

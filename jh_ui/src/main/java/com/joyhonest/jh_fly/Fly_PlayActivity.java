@@ -112,16 +112,19 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     public JH_GLSurfaceView glSurfaceView;
 
 
-    private Handler   myHandler;
-    private Runnable   myRunnable;
+    //private Handler   myHandler;
+    //private Runnable   myRunnable;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        wifination.appContext = getApplicationContext();
         wifination.naSetVrBackground(true);
         JH_App.bFlyDisableAll = true;
         JH_App.nType = JH_App.nStyle_fly;
         JH_App.F_InitMusic();
+
 
         mAsker=new PermissionAsker(10,new Runnable() {
             @Override
@@ -152,26 +155,14 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
         glSurfaceView = (JH_GLSurfaceView)findViewById(R.id.glSurfaceView);
 
-        myHandler = new Handler();
-        myRunnable=new Runnable() {
-            @Override
-            public void run() {
-                myHandler.postDelayed(this,20);
-            }
-        };
-        //myHandler.post(myRunnable);
-        EventBus.getDefault().register(this);
         MyControl.bFlyType = true;
-        // locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+
         wifination.F_AdjBackGround(this, R.mipmap.loginbackground_fly_jh);//R.mipmap.loginbackground_jh)
         JH_App.checkDeviceHasNavigationBar(this);
         JH_App.F_Clear_not_videoFiles();
 
         mFragmentMan = getFragmentManager();// getSupportFragmentManager();
         Fragment_Layout = (RelativeLayout) findViewById(R.id.Fragment_Layout);
-        //surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
-        //surfaceHolder = surfaceView.getHolder();
-        //surfaceHolder.addCallback(this);
         thread1 = new HandlerThread("MyHandlerThread_fly");
         thread1.start(); //创建一个HandlerThread并启动它
         openHandler = new Handler(thread1.getLooper());
@@ -179,7 +170,6 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         RssiRunable = new Runnable() {
             @Override
             public void run() {
-
                 int nrssi = JH_App.F_GetWifiRssi();
                 {
                     if(flyPlayFragment!=null)
@@ -196,10 +186,10 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             }
         };
 
+        RssiHander.postDelayed(RssiRunable,100);
         JH_App.F_CreateLocalFlyDefalutDir();
         F_InitFragment();
-        RssiHander.postDelayed(RssiRunable,100);
-//        JH_Tools.InitEncoder(1280,720,25,(int)(1000*1000*4));//
+        EventBus.getDefault().register(this);
     }
 
     @Subscriber(tag="HideSurfaceView")
@@ -380,10 +370,10 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(myHandler!=null)
-        {
-            myHandler.removeCallbacksAndMessages(null);
-        }
+        //if(myHandler!=null)
+        //{
+        //    myHandler.removeCallbacksAndMessages(null);
+        //}
 
         if(openHandler!=null) {
 
@@ -615,6 +605,29 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         mFragmentMan.executePendingTransactions();
         F_DispFramgent(fragment);
     }
+    @Subscriber(tag="B_TEST")
+    private  void B_TEST(Integer i)
+    {
+        if(i==1)
+        {
+            wifination.naInit("");
+        }
+        else
+        {
+            wifination.naStop();
+            glSurfaceView.bDraw=false;
+            try {
+                Thread.sleep(100);
+            }
+            catch (InterruptedException e)
+            {
+                e.printStackTrace();
+            }
+
+            wifination.F_AdjBackGround(getApplicationContext(),R.mipmap.loginbackground_fly_jh);
+            glSurfaceView.bDraw=true;
+        }
+    }
 
     private void F_InitFragment() {
         flyPlayFragment = new FlyPlayFragment();
@@ -646,13 +659,11 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
                 hideFragments(transactionA);
                 transactionA.commit();
                 mFragmentMan.executePendingTransactions();
-
                 new Handler().postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         dispVideo_fragment.F_SetBackImg(R.mipmap.return_icon_black_fly_jh);
                         F_SetView(flyPlayFragment);
-                     //   JH_App.openGPSSettings();
                     }
                 }, 20);
             }

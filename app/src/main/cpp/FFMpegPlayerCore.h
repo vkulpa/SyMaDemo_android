@@ -55,7 +55,7 @@ extern "C" {
 
 
 typedef unsigned char byte;
-
+#define   IC_NO         -1
 #define   IC_GK         0
 #define   IC_GP         1
 #define   IC_SN         2

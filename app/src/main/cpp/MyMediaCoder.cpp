@@ -48,8 +48,8 @@ bool MyMediaCoder::F_InitEncoder(int width,int height,int32_t framerate,int fps)
         return false;
     }
 
-    if (mediaFormat != NULL) {
-
+    if (mediaFormat != NULL)
+    {
 
         uint32_t flags = AMEDIACODEC_CONFIGURE_FLAG_ENCODE;
         AMediaFormat_setString(mediaFormat, AMEDIAFORMAT_KEY_MIME, "video/avc");

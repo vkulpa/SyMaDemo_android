@@ -132,9 +132,11 @@ void Java_com_example_displayyuv_MainActivity_test(JNIEnv *env, jobject thiz, jo
 using namespace std;
 
 
+extern float  nScal;
+
 extern uint8_t nSDStatus;
 extern bool     bRealRecording;
-extern int32_t  nRecTime;
+extern uint32_t  nRecTime;
 
 extern int nFrameCount;
 
@@ -217,7 +219,7 @@ int C_FFMpegPlayer::GetStatus() {
 }
 
 C_FFMpegPlayer::C_FFMpegPlayer() :
-        m_Status(E_PlayerStatus_Stoped), nRecFps(25),
+        m_Status(E_PlayerStatus_Stoped), nRecFps(20),
         m_formatCtx(NULL), m_videoStream(0), m_codecCtx(NULL), m_decodedFrame(NULL),
         My_EncodecodecCtx(NULL),
         m_sws_ctx(NULL), m_width(0), m_height(0), fmt(NULL), pFormatCtx(NULL), pFrameRGB(NULL),
@@ -690,12 +692,15 @@ bool C_FFMpegPlayer::F_RecreateEnv(void) {
 }
 
 
-int C_FFMpegPlayer::InitMedia(const char *path) {
+int C_FFMpegPlayer::InitMedia(const char *a_path) {
 
 #ifdef  D_H264file
     sH264FileName ="/storage/emulated/0/com.joyhonest.jh_demo/Video/2017-11-21-001.h264";
     h64fileHandle = open(sH264FileName.c_str(), O_CREAT  | O_RDWR,0666);
 #endif
+    string spath = a_path;
+    transform(spath.begin(), spath.end(), spath.begin(), ::tolower);
+    const char *path = spath.c_str();
 
     if (nIC_Type == IC_GK_UDP) {
 
@@ -780,7 +785,9 @@ int C_FFMpegPlayer::InitMedia(const char *path) {
     av_dict_set(&options, "rtsp_transport", "tcp", 0);
 
     F_ResetCheckT(1000 * 10);
-    if ((err_code = avformat_open_input(&m_formatCtx, path, NULL, &options)) != 0) {
+    //if ((err_code = avformat_open_input(&m_formatCtx, path, NULL, &options)) != 0)
+        if ((err_code = avformat_open_input(&m_formatCtx, path, NULL, NULL)) != 0)
+    {
         av_strerror(err_code, buffer, 1023);
         DEBUG_PRINT("avformat_open_input %s failed!", path);
         DEBUG_PRINT("%s", buffer);
@@ -1027,10 +1034,11 @@ int C_FFMpegPlayer::Stop() {
     m_bSaveVideo = false;
     usleep(1000 * 20);
     F_ResetCheckT(5);
-    usleep(1000 * 10);
+    usleep(1000 * 50);
     //if (nIC_Type == IC_GKA || nIC_Type == IC_SN || nIC_Type == IC_GPRTP || nIC_Type == IC_GPH264A || nIC_Type == IC_GPRTPB || nIC_Type == IC_GK_UDP)
     if (nIC_Type == IC_GPH264 ||
-        nIC_Type == IC_GPRTSP) { ;
+        nIC_Type == IC_GPRTSP) {
+        ;
     } else {
         Releaseffmpeg();
     }
@@ -1045,7 +1053,8 @@ int C_FFMpegPlayer::WriteMp4Frame(uint8_t *data, int nLen, bool b) {
     if (nLen == 0)
         return -1;
     int ds = 90000 / nfps;  //   (1000/nfps*90000)/1000
-    if (F_IsNeed2WriteH264Stream()) {
+    //if (F_IsNeed2WriteH264Stream())
+    {
         ds = 90000 / nRecFps;
     }
 
@@ -1116,10 +1125,7 @@ int C_FFMpegPlayer::SaveVideo(const char *path, bool bisH264) {
             return -1;
         }
         MP4SetTimeScale(fileHandle, 90000);
-
         pthread_create(&m_writeThread, NULL, WriteThreadFunction, this);
-
-
         return 0;
     }
     return FFMPEGPLAYER_NOERROR;
@@ -1995,6 +2001,7 @@ int PlatformDisplaySN(char *dat, int nLen);
 int C_FFMpegPlayer::decodeAndRender_RTP(char *data, int nLen) {
 
 
+
     return decodeAndRender_SN(data, nLen);
 
 }
@@ -2022,25 +2029,18 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
         ret = -1;
     }
 
-    if (ret == 0) {
+    if (ret == 0)
+    {
 
-        static int64_t nPreA = av_gettime() / 1000;
-        int64_t nCur = av_gettime() / 1000;
-        int dp = (int) (nCur - nPreA);
+        //static int64_t nPreA = av_gettime() / 1000;
+        //int64_t nCur = av_gettime() / 1000;
+        //int dp = (int) (nCur - nPreA);
+        //nPreA = nCur;
 
-        nPreA = nCur;
         m_Status = E_PlayerStatus_Playing;
         nDisplayWidth = m_codecCtx->width;
         nDisplayHeight = m_codecCtx->height;
         InitMediaSN();
-        /*
-        ret = sws_scale(img_convert_ctx,
-                        (const uint8_t *const *) m_decodedFrame->data,
-                        m_decodedFrame->linesize, 0,
-                        m_codecCtx->height,
-                        pFrameYUV->data, pFrameYUV->linesize);
-        */
-
         if (m_decodedFrame->format == AV_PIX_FMT_YUVJ420P || m_decodedFrame->format == AV_PIX_FMT_YUV420P) {
             libyuv::I420Copy(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
                              m_decodedFrame->data[1], m_decodedFrame->linesize[1],
@@ -2057,6 +2057,101 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
                                pFrameYUV->data[1], pFrameYUV->linesize[1],
                                pFrameYUV->data[2], pFrameYUV->linesize[2],
                                m_decodedFrame->width, m_decodedFrame->height);
+        }
+
+
+
+        int nSS = (int)(nScal*100);
+
+        if(nSS==100)
+        {
+            ;
+        }
+        else
+        {
+            float fScal = nScal;
+
+
+            AVFrame *pFrameYUV_D = av_frame_alloc();
+            pFrameYUV_D->format = AV_PIX_FMT_YUV420P;
+            pFrameYUV_D->width = (int)(nDisplayWidth*fScal);
+            pFrameYUV_D->height = (int)(m_codecCtx->height*fScal);
+            ret = av_image_alloc(
+                    pFrameYUV_D->data, pFrameYUV_D->linesize, pFrameYUV_D->width,
+                    pFrameYUV_D->height,
+                    AV_PIX_FMT_YUV420P, 4);
+
+             libyuv::I420Scale(pFrameYUV->data[0],pFrameYUV->linesize[0],
+                               pFrameYUV->data[1],pFrameYUV->linesize[1],
+                               pFrameYUV->data[2],pFrameYUV->linesize[2],
+                               pFrameYUV->width,pFrameYUV->height,
+                               pFrameYUV_D->data[0],pFrameYUV_D->linesize[0],
+                               pFrameYUV_D->data[1],pFrameYUV_D->linesize[1],
+                               pFrameYUV_D->data[2],pFrameYUV_D->linesize[2],
+                               pFrameYUV_D->width,pFrameYUV_D->height,
+                               libyuv::kFilterLinear);
+
+            av_free(pFrameYUV->data[0]);
+            av_frame_free(&pFrameYUV);
+            pFrameYUV = av_frame_alloc();
+
+            pFrameYUV->format = AV_PIX_FMT_YUV420P;
+            pFrameYUV->width = nDisplayWidth;
+            pFrameYUV->height =m_codecCtx->height;
+            ret = av_image_alloc(
+                    pFrameYUV->data, pFrameYUV->linesize, pFrameYUV->width,
+                    pFrameYUV->height,
+                    AV_PIX_FMT_YUV420P, 4);
+
+            int cx =  pFrameYUV_D->width/2;
+            int cy =  pFrameYUV_D->height/2;
+
+            int lx = cx-(pFrameYUV->width/2);
+            lx=(lx+1)/2;
+            lx*=2;
+
+
+            int ly = cy-(pFrameYUV->height/2);
+            ly = (ly+1)/2;
+            ly*=2;
+
+            byte *psrc;
+            byte *pdes;
+
+            byte *pSrcStart = pFrameYUV_D->data[0]+ly*pFrameYUV_D->linesize[0]+lx;
+            pdes = pFrameYUV->data[0];
+
+            for(int yy=0;yy<pFrameYUV->height;yy++)
+            {
+                psrc = pSrcStart+yy*pFrameYUV_D->linesize[0];
+                memcpy(pdes+yy*pFrameYUV->linesize[0],psrc,(size_t)(pFrameYUV->linesize[0]));
+            }
+
+
+
+            pSrcStart = pFrameYUV_D->data[1]+ly/2*pFrameYUV_D->linesize[1]+lx/2;
+            pdes = pFrameYUV->data[1];
+
+            for(int yy=0;yy<pFrameYUV->height/2;yy++)
+            {
+                psrc = pSrcStart+yy*pFrameYUV_D->linesize[1];
+                memcpy(pdes+yy*pFrameYUV->linesize[1],psrc,(size_t )pFrameYUV->linesize[1]);
+                //memset(pdes,0,(size_t )pFrameYUV->linesize[1]);
+            }
+
+            pSrcStart = pFrameYUV_D->data[2]+ly/2*pFrameYUV_D->linesize[2]+lx/2;
+            pdes = pFrameYUV->data[2];
+
+            for(int yy=0;yy<pFrameYUV->height/2;yy++)
+            {
+                psrc = pSrcStart+yy*pFrameYUV_D->linesize[2];
+                memcpy(pdes+yy*pFrameYUV->linesize[1],psrc,(size_t )pFrameYUV->linesize[2]);
+                //memset(pdes,0,(size_t )pFrameYUV->linesize[1]);
+            }
+
+            av_free(pFrameYUV_D->data[0]);
+            av_frame_free(&pFrameYUV_D);
+
         }
 
         m_decodedFrame->key_frame = 1;
@@ -2135,7 +2230,8 @@ int C_FFMpegPlayer::decodeAndRender() {
             break;
         time_out = getCurrentTime();
         firsttimeplay = true;
-        if (packet.stream_index == m_videoStream) {
+        if (packet.stream_index == m_videoStream)
+        {
 
             if (avcodec_send_packet(m_codecCtx, &packet) == 0) {
                 if (avcodec_receive_frame(m_codecCtx, m_decodedFrame) != 0) {
@@ -2148,13 +2244,6 @@ int C_FFMpegPlayer::decodeAndRender() {
             }
             nDisplayWidth = m_codecCtx->width;
             nDisplayHeight = m_codecCtx->height;
-            /*
-            if(nRecordWidth !=m_codecCtx->width  ||
-                       nRecordHeight != m_codecCtx->height) {
-                F_ReSetRecordWH(m_codecCtx->width, m_codecCtx->height);
-            }
-             */
-
 
             if (ret == 0) {
                 ret = sws_scale(img_convert_ctx,
@@ -2284,7 +2373,6 @@ int C_FFMpegPlayer::decodeAndRender() {
         }
         av_packet_unref(&packet);
     }
-
     m_bOpenOK = false;
     F_CloseSocket();
     LOGE("decodeAndRender End");
@@ -2346,10 +2434,10 @@ int C_FFMpegPlayer::writeVideo() {
     int64_t T1 = av_gettime() / 1000;
 
     if (bIsH264) {
-
         int nLen = 0;
         MyFrame *pMyFrame = NULL;
-        while (m_bSaveVideo && m_Status == E_PlayerStatus_Playing) {
+        while (m_bSaveVideo && m_Status == E_PlayerStatus_Playing)
+        {
             pMyFrame = NULL;
             struct timespec timespec1;
             timespec1.tv_sec = 0;
@@ -2359,26 +2447,24 @@ int C_FFMpegPlayer::writeVideo() {
             if (!m_FrameQueue_H264.empty()) {
                 pMyFrame = m_FrameQueue_H264.front();
                 m_FrameQueue_H264.pop();
-
-                //LOGE("count Frame= %d", m_FrameQueue_H264.size());
             }
             pthread_mutex_unlock(&m_Frame_Queuelock);
             if (pMyFrame == NULL) {
                 usleep(1000 * 2);
                 continue;
             }
-
             if (F_IsNeed2WriteH264Stream()) {
                 WriteMp4Frame(pMyFrame->data, pMyFrame->nLen, pMyFrame->bKeyFranme);
+                nRecTime++;
             } else {
                 myMediaCoder.offerEncoder(pMyFrame->data, pMyFrame->nLen);
+
             }
 
-
-            if (pMyFrame != NULL) {
+            if (pMyFrame != NULL)
+            {
                 delete pMyFrame;
             }
-
             usleep(2*1000); //delay 10ms  让出CPU给其他线程
         }
 
