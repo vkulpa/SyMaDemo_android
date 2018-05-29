@@ -34,6 +34,7 @@ int pps::pps_parse()
 	printf("<><><><><><><><><><><><><><><><><><><><><><><><><><><><><><>\n");
 	//end
 	 */
+	return 0;
 }
 
 U8 pps::get_pic_order_present_flag()
