@@ -28,6 +28,7 @@
 #else
 #define DEBUG_PRINT(format, ...)  ((void)0)
 #define LOGE(...) ((void)0)
+
 #endif
 
 #define LOGE_B(...) __android_log_print(ANDROID_LOG_ERROR ,"ffmpegJNI—",__VA_ARGS__)

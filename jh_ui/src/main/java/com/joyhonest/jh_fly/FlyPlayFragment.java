@@ -106,6 +106,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
   //  private Button           return_btn_b;
 
 
+    private  boolean  bTestFlip=false;
+
     public FlyPlayFragment() {
         // Required empty public constructor
     }
@@ -569,6 +571,11 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         }
         */
         if (v == StopFly_Btn) {
+            /*
+            bTestFlip =!bTestFlip;
+            wifination.naSetFlip(bTestFlip);
+            */
+
             JH_App.bStop = true;
             JH_App.bUp = false;
             JH_App.bDn = false;
@@ -589,6 +596,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
                 }
             }, 500);
+
         }
 
         if (v == UpDn_Btn) {
@@ -1201,7 +1209,7 @@ Data9：Data0- Data8异或后，再加0X55
         }
         cmd[9] = (byte) (((cmd[0] ^ cmd[1] ^ cmd[2] ^ cmd[3] ^ cmd[4] ^ cmd[5] ^ cmd[6] ^ cmd[7] ^ cmd[8]) & 0xFF) + 0x55);
         wifination.naSentCmd(cmd, 10);
-        Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2+"  temp="+nTestTemp);
+      //  Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2+"  temp="+nTestTemp);
 
 
         /*

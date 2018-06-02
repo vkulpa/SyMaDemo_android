@@ -266,6 +266,9 @@ public class wifination {
             wifiId = "nowifi";
         }
 
+        int ip = info.getIpAddress();
+        return ip;
+        /*
         String sIP = intToIp(info.getIpAddress());
 
         int nICType = wifination.IC_NO;
@@ -290,6 +293,7 @@ public class wifination {
             nICType = wifination.IC_SN;
         }
         return nICType;
+        */
     }
 
     public static void F_AdjBackGround(Context context, int bakid) {
@@ -371,8 +375,10 @@ public class wifination {
     }
 
 
-    private static void OnGetGP_Status(int nStatus) {
-        if ((nStatus&0xFFFFFF00) == 0x55AA5500) {
+    private static void OnGetGP_Status(int nStatus)
+    {
+        if ((nStatus&0xFFFFFF00) == 0x55AA5500)  // wifi模块透传回来的数据
+        {
             //String s = "";
             int nLen = (nStatus & 0xFF);
             if(nLen>50)
@@ -384,13 +390,22 @@ public class wifination {
             buf.rewind();
             for (int i = 0; i < nLen; i++) {
                 cmd[i] = buf.get(i + BMP_Len);
-                //s = s + " " + cmd[i];
             }
             EventBus.getDefault().post(cmd, "GetWifiSendData");
-            //JH_Tools.AdjData(cmd);
-            //JH_Tools.FindCmd();
-            //JH_Tools.F_ClearData();
-        } else {
+        }else if ((nStatus&0xFFFFFF00) == 0xAA55AA00)    //GP RTPB  回传 模块信息数据
+        {
+            int nLen = (nStatus & 0xFF);
+            if(nLen>50)
+                nLen=50;
+            byte[] cmd = new byte[nLen];
+            ByteBuffer buf = wifination.mDirectBuffer;
+            buf.rewind();
+            for (int i = 0; i < nLen; i++) {
+                cmd[i] = buf.get(i + BMP_Len);
+            }
+            EventBus.getDefault().post(cmd, "GetWifiInfoData");
+        }
+        else {
             Integer ix = nStatus;
             Log.e(TAG,"Get data = "+nStatus);
             EventBus.getDefault().post(ix, "OnGetGP_Status");

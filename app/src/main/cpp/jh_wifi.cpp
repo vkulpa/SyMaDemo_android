@@ -44,6 +44,10 @@ extern "C" {
 #include <sstream>
 #include <sys/system_properties.h>
 
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdarg.h>
+
 
 #include "MySonix.h"
 #include "MyDownLoad_GKA.h"
@@ -210,7 +214,7 @@ char sPlayPath[256];
 bool bFollow = false;
 
 bool  bRocordWHisSeted=false;
-
+bool bGoble_Flip = false;
 jbyte TestInfo[1024];
 
 #define  bit0_OnLine            1
@@ -449,6 +453,7 @@ int send_cmd_udp_fd(int fd, uint8_t *msg, int nLen, const char *host, uint16_t p
 }
 
 
+
 int send_cmd_udp(uint8_t *msg, int nLen, const char *host, uint16_t port) {
     if (msg == NULL)
         return -1;
@@ -471,6 +476,14 @@ int send_cmd_udp(uint8_t *msg, int nLen, const char *host, uint16_t port) {
     }
     close(client_socket_fd);
     return 0;
+
+}
+int send_cmd_udp(uint8_t *msg, int nLen, int nHost, uint16_t port)
+{
+    struct in_addr in_addr;
+    in_addr.s_addr =(__be32)nHost;
+    char *sHost = inet_ntoa(in_addr);
+    return send_cmd_udp(msg,nLen,(const char *)sHost,port);
 
 }
 
@@ -1043,6 +1056,19 @@ Java_com_joyhonest_wifination_wifination_naGetMenuFile(JNIEnv *env, jclass type,
 }
 */
 
+
+int F_GetIpfor4Bytes(int n1,int n2,int n3)
+{
+
+ //   return (i & 0xFF) + "." + ((i >> 8) & 0xFF) + "." + ((i >> 16) & 0xFF) + "." + ((i >> 24) & 0xFF);
+       int ip=0;
+    ip+=n1;
+    ip+=n2*0x100;
+    ip+=n3*0x10000;
+    return ip;
+
+}
+
 int naInit_Re(void);
 
 
@@ -1050,7 +1076,54 @@ FILE *testFile = NULL;
 
 int64_t nPreTimeA = 0;
 
-int F_getType(void);
+int F_GetIP(void);
+
+
+
+void F_AdjIcType(int type)
+{
+    if(type == F_GetIpfor4Bytes(192,168,234))
+    {
+        nICType = IC_GK;
+    }
+    else if(type == F_GetIpfor4Bytes(192,168,123))
+    {
+        nICType = IC_SN;
+    }
+    else if(type == F_GetIpfor4Bytes(175,16,10))
+    {
+        nICType = IC_GKA;
+    }
+    else if(type == F_GetIpfor4Bytes(192,168,25))
+    {
+        nICType = IC_GP;
+    }
+    else if(type == F_GetIpfor4Bytes(192,168,26))
+    {
+        nICType = IC_GPRTSP;
+    }
+    else if(type == F_GetIpfor4Bytes(192,168,27))
+    {
+        nICType = IC_GPH264;
+    }
+    else if(type == F_GetIpfor4Bytes(192,168,28))
+    {
+        nICType = IC_GPRTP;
+    }
+    else if(type == F_GetIpfor4Bytes(192,168,29))
+    {
+        nICType = IC_GPRTPB;
+    }
+    else if(type == F_GetIpfor4Bytes(192,168,30))
+    {
+        nICType = IC_GPH264A;
+    } else
+    {
+        nICType =IC_NO;
+    }
+
+}
+
 
 int _naInit_(const char *pFileName)
 {
@@ -1098,11 +1171,10 @@ int _naInit_(const char *pFileName)
 //IC_GPRTP,    //192.168.28.X
 //IC_GPH264A,   //192.168.30.X
 //IC_GPRTPB,   //192.168.29.X
-    int type = F_getType();
-    if(type!=IC_NO)
-    {
-        nICType = type;
-    }
+    int type = F_GetIP();
+    type &=0x00FFFFFF;
+    F_AdjIcType(type);
+
     if(nICType == IC_NO)
         return -100;
 
@@ -1349,7 +1421,12 @@ int naInit_Re_B(void) {
             msg[4] = 'D';
             msg[5] = 0x20;
             msg[6] = 0x00;
-            send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+            msg[7] = 0x00;
+            msg[8] = 0x00;
+            msg[9] = 0x00;
+            msg[10] = 0x00;
+
+            send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
             usleep(1000 * 20);
             msg[0] = 'J';
             msg[1] = 'H';
@@ -1358,7 +1435,12 @@ int naInit_Re_B(void) {
             msg[4] = 'D';
             msg[5] = 0x20;
             msg[6] = 0x00;
-            send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+            msg[7] = 0x00;
+            msg[8] = 0x00;
+            msg[9] = 0x00;
+            msg[10] = 0x00;
+
+            send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
             bInit = true;
         }
         return 0;
@@ -1392,7 +1474,12 @@ int naInit_Re_B(void) {
             msg[4] = 'D';
             msg[5] = 0x20;
             msg[6] = 0x00;
-            send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+            msg[7] = 0x00;
+            msg[8] = 0x00;
+            msg[9] = 0x00;
+            msg[10] = 0x00;
+
+            send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
             usleep(1000 * 10);
 
             msg[0] = 'J';
@@ -1441,7 +1528,12 @@ int naInit_Re_B(void) {
         msg[4] = 'D';
         msg[5] = 0x20;
         msg[6] = 0x00;
-        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+        msg[7] = 0x00;
+        msg[8] = 0x00;
+        msg[9] = 0x00;
+        msg[10] = 0x00;
+
+        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
         usleep(1000 * 10);
 
 
@@ -1617,7 +1709,12 @@ int naInit_Re(void) {
             msg[4] = 'D';
             msg[5] = 0x20;
             msg[6] = 0x00;
-            send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+            msg[7] = 0x00;
+            msg[8] = 0x00;
+            msg[9] = 0x00;
+            msg[10] = 0x00;
+
+            send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
             usleep(1000 * 20);
             msg[0] = 'J';
             msg[1] = 'H';
@@ -1626,7 +1723,12 @@ int naInit_Re(void) {
             msg[4] = 'D';
             msg[5] = 0x20;
             msg[6] = 0x00;
-            send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+            msg[7] = 0x00;
+            msg[8] = 0x00;
+            msg[9] = 0x00;
+            msg[10] = 0x00;
+
+            send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
         }
         return 0;
     }
@@ -1644,21 +1746,40 @@ int naInit_Re(void) {
             m_FFMpegPlayer.InitMedia("");
             F_Rec_RTP_Data_Service();
 
-            msg[0] = 'J';
-            msg[1] = 'H';
-            msg[2] = 'C';
-            msg[3] = 'M';
-            msg[4] = 'D';
-            msg[5] = 0x10;
-            msg[6] = 0x00;
-            send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
-            usleep(1000 * 25);
+
+
             msg[0] = 'J';
             msg[1] = 'H';
             msg[2] = 'C';
             msg[3] = 'M';
             msg[4] = 'D';
             msg[5] = 0x20;
+            msg[6] = 0x00;
+            msg[7] = 0x00;
+            msg[8] = 0x00;
+            msg[9] = 0x00;
+            msg[10] = 0x00;
+            send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
+            usleep(1000 * 50);
+            msg[0] = 'J';
+            msg[1] = 'H';
+            msg[2] = 'C';
+            msg[3] = 'M';
+            msg[4] = 'D';
+            msg[5] = 0x20;
+            msg[6] = 0x00;
+            msg[7] = 0x00;
+            msg[8] = 0x00;
+            msg[9] = 0x00;
+            msg[10] = 0x00;
+            send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
+            usleep(1000 * 40);
+            msg[0] = 'J';
+            msg[1] = 'H';
+            msg[2] = 'C';
+            msg[3] = 'M';
+            msg[4] = 'D';
+            msg[5] = 0x10;
             msg[6] = 0x00;
             send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
             usleep(1000 * 10);
@@ -1699,7 +1820,11 @@ int naInit_Re(void) {
             msg[4] = 'D';
             msg[5] = 0x20;
             msg[6] = 0x00;
-            send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+            msg[7] = 0x00;
+            msg[8] = 0x00;
+            msg[9] = 0x00;
+            msg[10] = 0x00;
+            send_cmd_udp(msg,11, sServerIP.c_str(), 20000);
             usleep(1000 * 10);
         }
 
@@ -1728,7 +1853,12 @@ int naInit_Re(void) {
         msg[4] = 'D';
         msg[5] = 0x20;
         msg[6] = 0x00;
-        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+        msg[7] = 0x00;
+        msg[8] = 0x00;
+        msg[9] = 0x00;
+        msg[10] = 0x00;
+
+        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
         usleep(1000 * 10);
 
 
@@ -2153,7 +2283,7 @@ void F_OnSave2ToGallery_mid(int n) {
 
 //////////测试信息
 
-int F_getType(void)
+int F_GetIP(void)
 {
     int needsDetach = 0;
     int nTt=IC_NO;
@@ -2313,6 +2443,8 @@ void F_SentRevBmp(int32_t wh) {
 
 }
 
+
+
 int PlatformDisplay() {
     nCheckT_pre = av_gettime() / 1000;
 
@@ -2321,6 +2453,7 @@ int PlatformDisplay() {
         F_SendStatus2Jave();
     }
     nSDStatus |= bit0_OnLine;
+    bGoble_Flip = false;
     pthread_mutex_lock(&m_checkFrame_lock);/*锁住互斥量*/
     nFrameCount++;
     pthread_mutex_unlock(&m_checkFrame_lock);/*解锁互斥量*/
@@ -2430,8 +2563,11 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
                 msg[4] = 'D';
                 msg[5] = 0x20;
                 msg[6] = 0x00;
-                send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
-
+                msg[7] = 0x00;
+                msg[8] = 0x00;
+                msg[9] = 0x00;
+                msg[10] = 0x00;
+                send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
             }
         } else {
             cmd[0] = 0xA5;
@@ -2465,7 +2601,12 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
                 msg[4] = 'D';
                 msg[5] = 0x20;
                 msg[6] = 0x00;
-                send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+                msg[7] = 0x00;
+                msg[8] = 0x00;
+                msg[9] = 0x00;
+                msg[10] = 0x00;
+
+                send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
             }
 
         } else {
@@ -3376,7 +3517,7 @@ int F_GetFps(int nChancel) {
     return -1;
 }
 
-string sver = "abc";
+string sver = "0";
 
 void F_ReadClearSocket() {
     MySocketData data;
@@ -3638,12 +3779,19 @@ void F_GetData_SNA(char *data, int nLen) {
     nSDStatus &= 0x7F;
 }
 
-bool bGoble_Flip = false;
+
 JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naSetFlip(JNIEnv *env, jclass type, jboolean b) {
 
     // TODO
-    bGoble_Flip = b;
+    if(nSDStatus & bit0_OnLine)
+    {
+        bGoble_Flip = false;
+    }
+    else
+    {
+        bGoble_Flip = b;
+    }
     m_FFMpegPlayer.bFlip = b;
 
 }
@@ -4998,7 +5146,12 @@ Java_com_joyhonest_wifination_wifination_naGetGP_1RTSP_1Status(JNIEnv *env, jcla
         msg[4] = 'D';
         msg[5] = 0x20;
         msg[6] = 0x00;
-        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+        msg[7] = 0x00;
+        msg[8] = 0x00;
+        msg[9] = 0x00;
+        msg[10] = 0x00;
+
+        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
         usleep(1000 * 20);
 
     }
@@ -5021,7 +5174,12 @@ Java_com_joyhonest_wifination_wifination_naGetGP_1RTSP_1Status(JNIEnv *env, jcla
         msg[4] = 'D';
         msg[5] = 0x20;
         msg[6] = 0x00;
-        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+        msg[7] = 0x00;
+        msg[8] = 0x00;
+        msg[9] = 0x00;
+        msg[10] = 0x00;
+
+        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
         usleep(1000 * 20);
     }
 
@@ -5652,6 +5810,12 @@ void *doReceive_rtp(void *dat) {
 
 }
 
+template<typename T> string toString(const T& t){
+    ostringstream oss;  //创建一个格式化输出流
+    oss<<t;             //把值传递如流中
+    return oss.str();
+}
+
 void *doReceive_cmd(void *dat) {
 
     int tmp;
@@ -5663,12 +5827,13 @@ void *doReceive_cmd(void *dat) {
 
     fd_set readset;
     NET_UTP_DATA *pHead;
+    bNeedExit = false;
     while (!bNeedExit) {
 
 #if 1
         int nStatus;
         size = sizeof(servaddr);
-        struct timeval timeoutA = {0, 5000};     //1ms
+         struct timeval timeoutA = {0, 5000};     //1ms
         int nError;
         if (rev_socket < 0) {
             break;
@@ -5693,9 +5858,13 @@ void *doReceive_cmd(void *dat) {
         nbytes = recvfrom(rev_socket, readBuff, 1500, 0, (struct sockaddr *) &servaddr, (socklen_t *) &size);
         if (nbytes <= 0) {
             continue;
-        } else {
-            if (nICType == IC_GKA) {
-                if (nbytes > sizeof(NET_UTP_DATA)) {
+        }
+        else
+        {
+            if (nICType == IC_GKA)
+            {
+                if (nbytes > sizeof(NET_UTP_DATA))
+                {
                     pHead = (NET_UTP_DATA *) readBuff;
                     nbytes -= sizeof(NET_UTP_DATA);
                     memcpy(readBuffA, &pHead->seq, 4);
@@ -5703,16 +5872,38 @@ void *doReceive_cmd(void *dat) {
                     F_OnGetWifiData((byte *) readBuffA, nbytes + 4);
                 }
                 continue;
-            } else {
+            }
+            else
+            {
                 if (nbytes >= 8)
                 {
-                    if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 'T' && readBuff[6] == 'C') {
-                        if (cmd_buffer != NULL) {
+                    if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 'T' && readBuff[6] == 'C')
+                    {
+                        if (cmd_buffer != NULL)
+                        {
                             memset(cmd_buffer, 0, 50);
                             memcpy(cmd_buffer, readBuff + 7, nbytes - 7);
                             int32_t dat = 0x55AA5500;
                             dat |=((nbytes - 7)&0xFF);
                             F_SentGp_Status2Jave(dat);
+                        }
+                    }
+                    else  if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 0x20 && readBuff[6] == 0x00)
+                    {
+                        if(nbytes>=47)
+                        {
+
+                            memset(cmd_buffer, 0, 50);
+                            memcpy(cmd_buffer, readBuff + 7, nbytes - 7);
+                            int32_t dat = 0xAA55AA00;// 0x55AA5500;
+                            dat |=((nbytes - 7)&0xFF);
+                            F_SentGp_Status2Jave(dat);
+                            /*
+                            stringstream stream;
+                            stream<<(int)readBuff[47];
+                            string string_temp=stream.str();
+                            sver = string_temp;
+                             */
                         }
                     }
                 }
@@ -6174,7 +6365,41 @@ Java_com_joyhonest_wifination_wifination_naGetwifiFps(JNIEnv *env, jclass type) 
 
 
 JNIEXPORT jstring JNICALL
-Java_com_joyhonest_wifination_wifination_naGetControlType(JNIEnv *env, jclass type) {
+Java_com_joyhonest_wifination_wifination_naGetControlType(JNIEnv *env, jclass type)
+{
+    int typeA = F_GetIP();
+    typeA &=0x00FFFFFF;
+    F_AdjIcType(typeA);
+    if(nICType == IC_GKA)
+    {
+        ;
+    }
+    else
+    {
+        sver="";
+        F_RecRP_RTSP_Status_Service();
+        typeA &=0x00FFFFFF;
+        typeA |=0x01000000;
+        uint8 msg[20];
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0x20;
+        msg[6] = 0x00;
+        msg[7] = 0x00;
+        msg[8] = 0x00;
+        msg[9] = 0x00;
+        msg[10] = 0x00;
+        send_cmd_udp(msg, 11, typeA, 20000);
+        usleep(1000*200);
+        if (sver.length()==0)
+        {
+            send_cmd_udp(msg, 11, typeA, 20000);
+            usleep(1000*100);
+        }
+    }
     return env->NewStringUTF(sver.c_str());
 }
 

@@ -158,17 +158,14 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     private Handler RssiHander;
     private Runnable RssiRunable;
     private byte[] mData = null;
-
     private  boolean  bGoFly=false;
-
     private PermissionAsker mAsker;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState)
+    {
         super.onCreate(savedInstanceState);
-
         JH_App.F_InitMusic();
-
 
 /*
         if(JH_App.F_GetWifiType()==wifination.IC_GPH264A)
@@ -180,7 +177,9 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             return;
         }
 */
+
         bGoFly = false;
+        wifination.appContext = getApplicationContext();
         wifination.naSetVrBackground(false);
 
         mAsker=new PermissionAsker(10,new Runnable() {

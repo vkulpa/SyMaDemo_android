@@ -1901,7 +1901,6 @@ void C_FFMpegPlayer::_DispDecordData(void) {
                              m_decodedFrame->width, m_decodedFrame->height);
         }
         if (bFlip) {
-
             if (frame_a == NULL) {
                 frame_a = av_frame_alloc();
                 frame_a->format = AV_PIX_FMT_YUV420P;
@@ -1911,30 +1910,24 @@ void C_FFMpegPlayer::_DispDecordData(void) {
                                m_codecCtx->height,
                                AV_PIX_FMT_YUV420P, 4);
             }
-            /*
-            if(frame_c == NULL)
-            {
-                frame_c = av_frame_alloc();
-                frame_c->format = AV_PIX_FMT_YUV420P;
-                frame_c->width = m_codecCtx->width/2;
-                frame_c->height = m_codecCtx->height/2;
-                av_image_alloc(frame_c->data, frame_c->linesize, m_codecCtx->width/2,
-                               m_codecCtx->height/2,
-                               AV_PIX_FMT_YUV420P, 4);
-            }
-        */
 
-
-            //frame_rotate_180(pFrameYUV, frame_a);
-            //av_frame_copy(pFrameYUV, frame_a);
-
-            libyuv::I420Mirror(pFrameYUV->data[0], pFrameYUV->linesize[0],
+            libyuv::I420Rotate(pFrameYUV->data[0], pFrameYUV->linesize[0],
                                pFrameYUV->data[1], pFrameYUV->linesize[1],
                                pFrameYUV->data[2], pFrameYUV->linesize[2],
                                frame_a->data[0], frame_a->linesize[0],
                                frame_a->data[1], frame_a->linesize[1],
                                frame_a->data[2], frame_a->linesize[2],
-                               frame_a->width, frame_a->height);
+                               frame_a->width, frame_a->height,libyuv::kRotate180);
+
+            /*
+            libyuv::I420Rotate(frame_a->data[0], frame_a->linesize[0],
+                               frame_a->data[1], frame_a->linesize[1],
+                               frame_a->data[2], frame_a->linesize[2],
+                               pFrameYUV->data[0], pFrameYUV->linesize[0],
+                               pFrameYUV->data[1], pFrameYUV->linesize[1],
+                               pFrameYUV->data[2], pFrameYUV->linesize[2],
+                               frame_a->width, frame_a->height,libyuv::kRotate180);
+                               */
 
             ret = libyuv::I420Copy(frame_a->data[0], frame_a->linesize[0],
                                    frame_a->data[1], frame_a->linesize[1],
@@ -1943,6 +1936,7 @@ void C_FFMpegPlayer::_DispDecordData(void) {
                                    pFrameYUV->data[1], frame_a->linesize[1],
                                    pFrameYUV->data[2], frame_a->linesize[2],
                                    frame_a->width, frame_a->height);
+
         }
         /*
         if (b3D) {
@@ -2060,6 +2054,45 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
         }
 
 
+        if (bFlip) {
+            if (frame_a == NULL) {
+                frame_a = av_frame_alloc();
+                frame_a->format = AV_PIX_FMT_YUV420P;
+                frame_a->width = m_codecCtx->width;
+                frame_a->height = m_codecCtx->height;
+                av_image_alloc(frame_a->data, frame_a->linesize, m_codecCtx->width,
+                               m_codecCtx->height,
+                               AV_PIX_FMT_YUV420P, 4);
+            }
+
+            libyuv::I420Rotate(pFrameYUV->data[0], pFrameYUV->linesize[0],
+                               pFrameYUV->data[1], pFrameYUV->linesize[1],
+                               pFrameYUV->data[2], pFrameYUV->linesize[2],
+                               frame_a->data[0], frame_a->linesize[0],
+                               frame_a->data[1], frame_a->linesize[1],
+                               frame_a->data[2], frame_a->linesize[2],
+                               frame_a->width, frame_a->height,libyuv::kRotate180);
+
+            /*
+            libyuv::I420Rotate(frame_a->data[0], frame_a->linesize[0],
+                               frame_a->data[1], frame_a->linesize[1],
+                               frame_a->data[2], frame_a->linesize[2],
+                               pFrameYUV->data[0], pFrameYUV->linesize[0],
+                               pFrameYUV->data[1], pFrameYUV->linesize[1],
+                               pFrameYUV->data[2], pFrameYUV->linesize[2],
+                               frame_a->width, frame_a->height,libyuv::kRotate180);
+                               */
+
+            ret = libyuv::I420Copy(frame_a->data[0], frame_a->linesize[0],
+                                   frame_a->data[1], frame_a->linesize[1],
+                                   frame_a->data[2], frame_a->linesize[2],
+                                   pFrameYUV->data[0], frame_a->linesize[0],
+                                   pFrameYUV->data[1], frame_a->linesize[1],
+                                   pFrameYUV->data[2], frame_a->linesize[2],
+                                   frame_a->width, frame_a->height);
+
+        }
+
 
         int nSS = (int)(nScal*100);
 
@@ -2155,45 +2188,7 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
         }
 
         m_decodedFrame->key_frame = 1;
-#if 0
-        if (bFlip)
-        {
-            if (frame_a == NULL) {
-                frame_a = av_frame_alloc();
-                frame_a->format = pix_format;
-                frame_a->width = m_codecCtx->width;
-                frame_a->height = m_codecCtx->height;
-                av_image_alloc(frame_a->data, frame_a->linesize, m_codecCtx->width,
-                               m_codecCtx->height,
-                               pix_format, 4);
-            }
-            frame_rotate_180(pFrameYUV, frame_a);
-            av_frame_copy(pFrameYUV, frame_a);
-        }
 
-        if (b3D) {
-            ret = sws_scale(img_convert_ctx_half,
-                            (const uint8_t *const *) pFrameYUV->data,
-                            pFrameYUV->linesize, 0,
-                            m_codecCtx->height,
-                            frame_b->data, frame_b->linesize);
-
-            Adj23D(frame_b, pFrameYUV);
-
-        }
-        if (m_decodedFrame != NULL) {
-
-            if (m_decodedFrame->key_frame != 0) {
-                av_frame_copy(frame_SnapBuffer, pFrameYUV);
-            }
-        }
-
-        if (m_bSaveSnapshot) {
-            {
-                EncodeSnapshot();
-            }
-        }
-#endif
         if (m_decodedFrame != NULL) {
 
             if (m_decodedFrame->key_frame != 0) {
@@ -2251,6 +2246,7 @@ int C_FFMpegPlayer::decodeAndRender() {
                                 m_decodedFrame->linesize, 0,
                                 m_codecCtx->height,
                                 pFrameYUV->data, pFrameYUV->linesize);
+                /*
                 if (bFlip) {
                     if (frame_a == NULL) {
                         frame_a = av_frame_alloc();
@@ -2264,6 +2260,47 @@ int C_FFMpegPlayer::decodeAndRender() {
                     frame_rotate_180(pFrameYUV, frame_a);
                     av_frame_copy(pFrameYUV, frame_a);
                 }
+                 */
+
+                if (bFlip) {
+                    if (frame_a == NULL) {
+                        frame_a = av_frame_alloc();
+                        frame_a->format = AV_PIX_FMT_YUV420P;
+                        frame_a->width = m_codecCtx->width;
+                        frame_a->height = m_codecCtx->height;
+                        av_image_alloc(frame_a->data, frame_a->linesize, m_codecCtx->width,
+                                       m_codecCtx->height,
+                                       AV_PIX_FMT_YUV420P, 4);
+                    }
+
+                    libyuv::I420Rotate(pFrameYUV->data[0], pFrameYUV->linesize[0],
+                                       pFrameYUV->data[1], pFrameYUV->linesize[1],
+                                       pFrameYUV->data[2], pFrameYUV->linesize[2],
+                                       frame_a->data[0], frame_a->linesize[0],
+                                       frame_a->data[1], frame_a->linesize[1],
+                                       frame_a->data[2], frame_a->linesize[2],
+                                       frame_a->width, frame_a->height,libyuv::kRotate180);
+
+                    /*
+                    libyuv::I420Rotate(frame_a->data[0], frame_a->linesize[0],
+                                       frame_a->data[1], frame_a->linesize[1],
+                                       frame_a->data[2], frame_a->linesize[2],
+                                       pFrameYUV->data[0], pFrameYUV->linesize[0],
+                                       pFrameYUV->data[1], pFrameYUV->linesize[1],
+                                       pFrameYUV->data[2], pFrameYUV->linesize[2],
+                                       frame_a->width, frame_a->height,libyuv::kRotate180);
+                                       */
+
+                    ret = libyuv::I420Copy(frame_a->data[0], frame_a->linesize[0],
+                                           frame_a->data[1], frame_a->linesize[1],
+                                           frame_a->data[2], frame_a->linesize[2],
+                                           pFrameYUV->data[0], frame_a->linesize[0],
+                                           pFrameYUV->data[1], frame_a->linesize[1],
+                                           pFrameYUV->data[2], frame_a->linesize[2],
+                                           frame_a->width, frame_a->height);
+
+                }
+
 
                 if (b3D) {
                     if (b3DA) {

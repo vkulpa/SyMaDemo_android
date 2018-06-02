@@ -124,8 +124,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         JH_App.bFlyDisableAll = true;
         JH_App.nType = JH_App.nStyle_fly;
         JH_App.F_InitMusic();
-
-
+        //String str = wifination.naGetControlType();
         mAsker=new PermissionAsker(10,new Runnable() {
             @Override
             public void run() {
@@ -143,10 +142,17 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
     }
 
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mAsker.onRequestPermissionsResult(grantResults);
+    }
+    @Subscriber(tag="GetWifiInfoData")
+    private  void GetWifiInfoData(byte[] cmd)
+    {
+         byte nType = cmd[40];
+         Log.e("GET Wifi Type",""+nType);
     }
 
     private  void F_Init()
