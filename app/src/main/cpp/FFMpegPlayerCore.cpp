@@ -2855,7 +2855,7 @@ AVPacket *C_FFMpegPlayer::F_GetPacket() {
     if (m_codecCtx == NULL)
         return NULL;
 
-    myOpenCV::F_Bitmap2Grey(pFrameYUV->data[0],m_decodedFrame->height,m_decodedFrame->width);
+   // myOpenCV::F_Bitmap2Grey(pFrameYUV->data[0],m_decodedFrame->height,m_decodedFrame->width);
 
 #if 1
     if (!F_IsNeed2WriteH264Stream()) {
