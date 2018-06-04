@@ -24,6 +24,7 @@ src/main/cpp/udt_src;
 src/main/cpp/h264prase;
 src/main/cpp/ffmpeginclude;
 /work/ffmpeg/libyuv/jni/include;
+/WORK/ffmpeg/OpenCV/include;
 
 )
 
@@ -37,13 +38,17 @@ file (GLOB_RECURSE HJ_WIFI_source_files "${CMAKE_CURRENT_SOURCE_DIR}/src/main/cp
 
 add_library( # Sets the name of the library.
              jh_wifi
-
              # Sets the library as a shared library.
              SHARED
-
              # Provides a relative path to your source file(s).
              ${HJ_WIFI_source_files}
              )
+
+# 设置opencv的动态库
+
+add_library(libopencv_java3 SHARED IMPORTED)
+set_target_properties(libopencv_java3 PROPERTIES IMPORTED_LOCATION
+            /WORK/ffmpeg/OpenCV/libs/${ANDROID_ABI}/libopencv_java3.so)
 
 
 # Searches for a specified prebuilt library and stores the path as a
@@ -78,6 +83,8 @@ find_library( # Sets the name of the path variable.
 
 
 
+
+
 #用IF控制，可以实现Release版本不输出debug信息
 #如果是Debug编译，就define  DEBUG，这样再源代码中就可以通这个宏来判断不同的编译类型
 
@@ -89,8 +96,28 @@ ENDIF()
 # can link multiple libraries, such as libraries you define in this
 # build script, prebuilt third-party libraries, or system libraries.
 
+
+
+
+
+set(OpenCV_STATIC ON) #1
+set(OpenCV_DIR /WORK/ffmpeg/OpenCV-android-sdk/sdk/native/jni) #2
+find_package(OpenCV REQUIRED) #3
+
+
 target_link_libraries( # Specifies the target library.
                        jh_wifi
+#                       libopencv_java3
+                       m
+                       log
+                       android
+                       c
+                       dl
+                       z
+                       jnigraphics
+                       GLESv2
+
+
                        /WORK/ffmpeg/libyuv/obj/local/${ANDROID_ABI}/libyuv.a
                        /WORK/ffmpeg/ffmpeglib/libavformat.a
                        /WORK/ffmpeg/ffmpeglib/libavdevice.a
@@ -99,11 +126,9 @@ target_link_libraries( # Specifies the target library.
                        /WORK/ffmpeg/ffmpeglib/libavfilter.a
                        /WORK/ffmpeg/ffmpeglib/libswresample.a
                        /WORK/ffmpeg/ffmpeglib/libswscale.a
-                       GLESv2
-                       z
-                       android
-                       jnigraphics
-                       log
+
+                        ${OpenCV_LIBS} #4
+
                         )
 
 
@@ -118,4 +143,7 @@ target_link_libraries( # Specifies the target library.
 #/WORK/ffmpeg/ffmpeglib/libavfilter.a
 #/WORK/ffmpeg/ffmpeglib/libswresample.a
 #/WORK/ffmpeg/ffmpeglib/libswscale.a
+
+
+
 

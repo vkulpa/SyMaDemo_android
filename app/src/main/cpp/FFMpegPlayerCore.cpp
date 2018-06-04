@@ -22,6 +22,7 @@
 #include "MyMediaCoder.h"
 #include "phone_rl_protocol.h"
 
+
 extern MyMediaCoder myMediaCoder;
 
 
@@ -1900,6 +1901,10 @@ void C_FFMpegPlayer::_DispDecordData(void) {
                              pFrameYUV->data[2], pFrameYUV->linesize[2],
                              m_decodedFrame->width, m_decodedFrame->height);
         }
+
+
+
+
         if (bFlip) {
             if (frame_a == NULL) {
                 frame_a = av_frame_alloc();
@@ -2052,6 +2057,7 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
                                pFrameYUV->data[2], pFrameYUV->linesize[2],
                                m_decodedFrame->width, m_decodedFrame->height);
         }
+
 
 
         if (bFlip) {
@@ -2848,6 +2854,8 @@ AVPacket *C_FFMpegPlayer::F_GetPacket() {
         return NULL;
     if (m_codecCtx == NULL)
         return NULL;
+
+    myOpenCV::F_Bitmap2Grey(pFrameYUV->data[0],m_decodedFrame->height,m_decodedFrame->width);
 
 #if 1
     if (!F_IsNeed2WriteH264Stream()) {

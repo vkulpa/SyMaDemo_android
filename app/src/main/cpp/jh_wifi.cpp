@@ -58,6 +58,8 @@ extern "C" {
 #include "MyMediaCoder.h"
 #include "JH_TestInfo.h"
 
+#include "myOpenCV.h"
+
 using namespace std;
 
 #define COMMAND_TAG 0x42
@@ -1127,6 +1129,8 @@ void F_AdjIcType(int type)
 
 int _naInit_(const char *pFileName)
 {
+
+
 
     nPreTimeA = 0;
     F_StartAdjRecTime(true);
@@ -2490,7 +2494,7 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
 
     jbyte *cmd_b = env->GetByteArrayElements(cmd_, NULL);
     uint8_t cmd[80];
-    uint8_t msg[8];
+    uint8_t msg[20];
 #if 0
     F_OnGetWifiData((byte *)cmd_b,n);
 
@@ -5125,7 +5129,7 @@ Java_com_joyhonest_wifination_wifination_isPhoneRecording(JNIEnv *env, jclass ty
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naGetGP_1RTSP_1Status(JNIEnv *env, jclass type) {
 
-    uint8_t msg[7];
+    uint8_t msg[20];
 
 
     if (nICType == IC_GPRTSP || nICType == IC_GPRTP || nICType == IC_GPRTPB) {
@@ -5418,13 +5422,13 @@ void F_ClearList(list<myRTP *> *listB) {
 int nMinxInx = 0;
 
 
-void Swap(int A[], int i, int j) {
+void Swap(uint32_t A[], int i, int j) {
     int temp = A[i];
     A[i] = A[j];
     A[j] = temp;
 }
 
-void BubbleSort(int A[], int n) {
+void BubbleSort(uint32_t A[], int n) {
     for (int j = 0; j < n - 1; j++)         // 每次最大元素就像气泡一样"浮"到数组的最后
     {
         for (int i = 0; i < n - 1 - j; i++) // 依次比较相邻的两个元素,使较大的那个向后移
@@ -5479,7 +5483,7 @@ list<myRTP *> *FindList(uint32_t ix) {
         if (id4 == ix)
             return &list4;
 
-        int df[5] = {id0, id1, id2, id3, id4};
+        uint32_t df[5] = {id0, id1, id2, id3, id4};
 
         BubbleSort(df, 5);
         int minx = df[0];

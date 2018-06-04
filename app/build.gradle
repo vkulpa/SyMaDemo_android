@@ -21,7 +21,8 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                cppFlags "-frtti -fexceptions -mfloat-abi=softfp -mfpu=neon"
+                //-mfloat-abi=softfp -mfpu=neon
+                cppFlags "-std=c++11 -frtti -fexceptions  "
                 arguments "-DANDROID_ARM_NEON=TRUE  -DGL_GLEXT_PROTOTYPES"
             }
         }

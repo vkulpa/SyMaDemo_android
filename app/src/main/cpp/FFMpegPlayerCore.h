@@ -40,6 +40,7 @@ extern "C" {
 #include "h264_rbsp.h"
 #include "sps_parse.h"
 #include "pps_parse.h"
+#include "myOpenCV.h"
 
 
 #define  FFMPEG3_3_3
