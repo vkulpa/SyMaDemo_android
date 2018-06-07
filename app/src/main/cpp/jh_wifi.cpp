@@ -38,6 +38,7 @@ extern "C" {
 #include "MySocket_GKA.h"
 #include <algorithm>
 #include <cctype>
+#include<net/if.h>
 
 #include <vector>
 #include <sys/socket.h>
@@ -150,6 +151,9 @@ jmethodID dir_mid;
 jmethodID Receive_mid;
 
 
+jmethodID  G_StartAudio_mid;
+
+
 jmethodID GetWifiData_mid;
 
 jmethodID GetThunb_mid;
@@ -159,7 +163,7 @@ jmethodID GetDownLoad_mid;
 
 jmethodID RevTestInfo_mid;
 jmethodID Save2ToGallery_mid;
-jmethodID   G_getIP;
+//jmethodID   G_getIP;
 //jmethodID RemoveFromGallery_mid;
 //jmethodID  ReceiveYUV_mid;
 
@@ -383,7 +387,7 @@ Java_com_joyhonest_wifination_wifination_naGetRecordTime(JNIEnv *env, jclass typ
 
     // TODO
     int32_t ret = 0;
-    float df = 1000/m_FFMpegPlayer.nRecFps;
+    float df = 1000.0f/m_FFMpegPlayer.nRecFps;
     pthread_mutex_lock(&m_adjRecTime_lock);
     ret = (int32_t)(nRecTime *df);
     pthread_mutex_unlock(&m_adjRecTime_lock);
@@ -918,7 +922,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
             DEBUG_PRINT("No Save2ToGallery_mid");
         }
 
-        G_getIP = env->GetStaticMethodID(data_Clazz, "G_getIP", "()I");
+        //G_getIP = env->GetStaticMethodID(data_Clazz, "G_getIP", "()I");
 
 
 
@@ -932,6 +936,8 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
             DEBUG_PRINT("No OnGetWifiData");
             DEBUG_PRINT("No OnGetWifiData");
         }
+        G_StartAudio_mid = env->GetStaticMethodID(data_Clazz,"G_StartAudio","(I)V");
+
 
         status_mid = env->GetStaticMethodID(data_Clazz, "OnStatusChamnge", "(I)V");
         if (status_mid == NULL) {
@@ -1059,6 +1065,8 @@ Java_com_joyhonest_wifination_wifination_naGetMenuFile(JNIEnv *env, jclass type,
 */
 
 
+
+
 int F_GetIpfor4Bytes(int n1,int n2,int n3)
 {
 
@@ -1074,7 +1082,7 @@ int F_GetIpfor4Bytes(int n1,int n2,int n3)
 int naInit_Re(void);
 
 
-FILE *testFile = NULL;
+//FILE *testFile = NULL;
 
 int64_t nPreTimeA = 0;
 
@@ -1129,8 +1137,6 @@ void F_AdjIcType(int type)
 
 int _naInit_(const char *pFileName)
 {
-
-
 
     nPreTimeA = 0;
     F_StartAdjRecTime(true);
@@ -1886,11 +1892,20 @@ int naInit_Re(void) {
 
 void F_RecRP_RTSP_Status_Service();
 
+
+
+
+
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naInit(JNIEnv *env, jclass type, jstring pFileName_) {
     const char *pFileName = env->GetStringUTFChars(pFileName_, 0);
     bNeedStop = false;
+
     int i32Ret = _naInit_(pFileName);
+
+
+
+
 
     env->ReleaseStringUTFChars(pFileName_, pFileName);
     return i32Ret;
@@ -2031,6 +2046,8 @@ int naStop(void)
     F_StartAdjRecTime(false);
     bInit = false;
     bNeedExit = true;
+    m_FFMpegPlayer.m_Status = E_PlayerStatus_Stoping;
+
     usleep(1000 * 50);
     nSDStatus = 0;
     myMediaCoder.F_CloseDecoder();
@@ -2114,7 +2131,7 @@ int naStop(void)
     }
 
     mysocket.DisConnect();
-    m_FFMpegPlayer.Stop();
+    //m_FFMpegPlayer.Stop();
     F_ResetCheckT(1);
     //nSDStatus &= (0x04 ^ 0xFF);
     nSDStatus = 0;
@@ -2149,10 +2166,7 @@ JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naStop(JNIEnv *env, jclass type) {
     bNeedStop = true;
     naStop();
-    if (testFile != NULL) {
-        fclose(testFile);
-        testFile = NULL;
-    }
+
 
     return 0;
 }
@@ -2289,6 +2303,56 @@ void F_OnSave2ToGallery_mid(int n) {
 
 int F_GetIP(void)
 {
+
+    int s, i;
+    int numif;
+
+    struct ifconf ifc;
+
+    struct ifreq *ifr;
+    int32_t ip = -1;
+
+    memset(&ifc, 0, sizeof(ifc));
+    ifc.ifc_ifcu.ifcu_req = NULL;
+    ifc.ifc_len = 0;
+    if ((s = ::socket(PF_INET, SOCK_STREAM, 0)) < 0)
+    {
+        return -1;
+    }
+    if (ioctl(s, SIOCGIFCONF, &ifc) < 0)
+    {
+
+        return -1;
+    }
+    if((ifr = (struct ifreq*)malloc(ifc.ifc_len)) == NULL)
+    {
+        return -1;
+    }
+    ifc.ifc_ifcu.ifcu_req = ifr;
+    if (ioctl(s, SIOCGIFCONF, &ifc) < 0)
+    {
+
+        return -1;
+    }
+    numif = ifc.ifc_len / sizeof(struct ifreq);
+
+    int ss = 0;
+    for (i = 0; i < numif; i++)
+    {
+        struct ifreq *r = &ifr[i];
+        struct sockaddr_in *sin = (struct sockaddr_in*)&r->ifr_addr;
+        if (!strcmp(r->ifr_name, "lo"))
+            continue; // skip loopback interface
+        char *a = inet_ntoa(sin->sin_addr);
+        ip =(int32_t)sin->sin_addr.s_addr;
+        break;
+
+    }
+
+    return ip;
+
+    /*
+
     int needsDetach = 0;
     int nTt=IC_NO;
     JNIEnv *evn = getJNIEnv(&needsDetach);
@@ -2303,6 +2367,7 @@ int F_GetIP(void)
     if (needsDetach)
         gJavaVM->DetachCurrentThread();
     return nTt;
+     */
 }
 
 int F_SentTestInfo(void) {
@@ -2369,6 +2434,25 @@ void F_OnGetWifiData(byte *data, int nLen) {
         }
         evn->DeleteLocalRef(jbarray);
     }
+
+    if (needsDetach)
+        gJavaVM->DetachCurrentThread();
+}
+
+
+void F_SetRecordAudio(int n)
+{
+    int needsDetach = 0;
+
+
+    JNIEnv *evn = getJNIEnv(&needsDetach);
+    if (evn == NULL) {
+        return;
+    }
+
+        if (G_StartAudio_mid != NULL) {
+            evn->CallStaticVoidMethod(objclass, G_StartAudio_mid, n);
+        }
 
     if (needsDetach)
         gJavaVM->DetachCurrentThread();
@@ -2452,12 +2536,14 @@ void F_SentRevBmp(int32_t wh) {
 int PlatformDisplay() {
     nCheckT_pre = av_gettime() / 1000;
 
-    if (((nSDStatus & bit0_OnLine) == 0) && bInit) {
+    if (((nSDStatus & bit0_OnLine) == 0) && bInit)
+    {
         nSDStatus |= bit0_OnLine;
         F_SendStatus2Jave();
     }
     nSDStatus |= bit0_OnLine;
     bGoble_Flip = false;
+
     pthread_mutex_lock(&m_checkFrame_lock);/*锁住互斥量*/
     nFrameCount++;
     pthread_mutex_unlock(&m_checkFrame_lock);/*解锁互斥量*/
@@ -4150,7 +4236,15 @@ bool bGoble_3D = false;
 
 JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naSet3DA(JNIEnv *env, jclass type, jboolean b) {
-    bGoble_3D = b;
+
+    if(nSDStatus & bit0_OnLine)
+    {
+        bGoble_3D = false;
+    }
+    else
+    {
+        bGoble_3D = b;
+    }
     m_FFMpegPlayer.b3D = b;
     m_FFMpegPlayer.b3DA = false;
 
@@ -4160,7 +4254,15 @@ Java_com_joyhonest_wifination_wifination_naSet3DA(JNIEnv *env, jclass type, jboo
 JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naSet3D(JNIEnv *env, jclass type, jboolean b) {
 
-    bGoble_3D = b;
+
+    if(nSDStatus & bit0_OnLine)
+    {
+        bGoble_3D = false;
+    }
+    else
+    {
+        bGoble_3D = b;
+    }
     m_FFMpegPlayer.b3D = b;
     m_FFMpegPlayer.b3DA = b;
 
@@ -4487,6 +4589,7 @@ Java_com_joyhonest_wifination_wifination_naStopRecord(JNIEnv *env, jclass type, 
 
     //TODO
     myMediaCoder.F_CloseEncoder();
+
     if (nType == 0) //Phone
     {
         m_FFMpegPlayer.StopSaveVideo();
@@ -4562,8 +4665,8 @@ Java_com_joyhonest_wifination_wifination_naStopRecord(JNIEnv *env, jclass type, 
             }
         }
         nSDStatus &= (bit1_LocalRecording ^ 0xFF);
-
     }
+    F_SetRecordAudio(0);
     F_SendStatus2Jave();
 }
 
@@ -6253,13 +6356,11 @@ int naSave2FrameMp4(uint8_t *data, int nLen, int b, bool keyframe) {
             return 0;
         }
 
-        //uint8_t sps_gka720[] = {'G', 'M', 0, 0x1f, 0x99, 0xb0, 0x14, 0x01, 'n', 0x84, 0, 0, 0x0f, 0xa0, 0, 0x03, '\r', 0x0b, 0x10};
-        //uint8_t pps_gka720[] = {'H', 0xea, 'C', 0xc8};
-
         m_FFMpegPlayer.AddMp4Video(sData + sps, pps - sps - 4, sData + pps, nSize - pps);
-        // m_FFMpegPlayer.AddMp4Video(sps_gka720,sizeof(sps_gka720),pps_gka720,sizeof(pps_gka720));
 
-    } else {
+    }
+    else
+    {
         nRecTime++;
         m_FFMpegPlayer.WriteMp4Frame((uint8_t *) data, nLen, keyframe);
     }
@@ -6709,6 +6810,30 @@ JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naSetScal(JNIEnv *env, jclass type, jfloat fScal) {
 
     nScal = fScal;
+
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_joyhonest_wifination_AudioEncoder_naSentVoiceData(JNIEnv *env, jclass type, jbyteArray data_, jint nLen)
+{
+    jbyte *data = env->GetByteArrayElements(data_, NULL);
+    if(nLen!=0)
+    {
+        m_FFMpegPlayer.F_WriteAudio(data,nLen);
+    }
+    env->ReleaseByteArrayElements(data_, data, 0);
+    return true;
+}
+
+bool  bG_Audio=false;
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetRecordAudio(JNIEnv *env, jclass type, jboolean b) {
+
+    // TODO
+    bG_Audio = b;
 
 }
 

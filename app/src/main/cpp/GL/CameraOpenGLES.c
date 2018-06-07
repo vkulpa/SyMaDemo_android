@@ -19,6 +19,10 @@
 #include "libavutil/frame.h"
 #include "libavutil/opt.h"
 
+
+#include <GLES2/gl2.h>
+#include <GLES3/gl3.h>
+
 #define D_STR(XX)   #XX
 
 //#define   NO_Fuc
@@ -27,6 +31,13 @@
 #define TEXTURE_COOR_UNIT 1
 
 //顶点着色器脚本代码
+
+
+GLuint mPboIds[2];                   // IDs of PBO
+bool    bInitPbo=false;
+int mRowStride=4;//对齐4字节
+int mPboSize=1;
+
 
 const char * codeVertexShader = D_STR(
         attribute vec3 aPosition; //顶点位置
@@ -132,6 +143,11 @@ void F_InitGPL(int WW,int HH)
 		instance = 0;
 	}
 
+
+
+
+
+
     instance = (Instance *)malloc(sizeof(Instance));
     memset(instance, 0, sizeof(Instance));
     //	1.初始化着色器
@@ -144,6 +160,7 @@ void F_InitGPL(int WW,int HH)
     instance->maMVPMatrixHandle =(unsigned int) glGetUniformLocation( instance->pProgram, "uMVPMatrix");
     instance->maPositionHandle = (unsigned int)glGetAttribLocation(instance->pProgram, "aPosition");
     instance->maTexCoorHandle = (unsigned int)glGetAttribLocation(instance->pProgram, "aTexCoor");
+
     instance->myTextureHandle = (unsigned int)glGetUniformLocation(instance->pProgram, "yTexture");
     instance->muTextureHandle = (unsigned int)glGetUniformLocation(instance->pProgram, "uTexture");
     instance->mvTextureHandle = (unsigned int)glGetUniformLocation(instance->pProgram, "vTexture");
@@ -200,38 +217,33 @@ Java_com_joyhonest_wifination_wifination_changeLayout(JNIEnv *env, jobject obj, 
         instance->vHeight = (unsigned int)height;
 
     }
-    unsigned int angle;
-    unsigned int eW, eH;
-    float vRadio, radio;
-#if 0
-    angle = 270;
-    vRadio = (float)height / width;
-    if (angle == 90 || angle == 270)
-      {
-        radio = ((float)instance->pWidth / instance->pHeight);
-      }
-    else
-      {
-        radio = ((float)instance->pHeight / instance->pWidth);
-      }
-    if(vRadio < radio)
-      {
-        eH = instance->vHeight;
-        eW = (unsigned int)(eH / radio);
-      }
-    else
-      {
-        eW = instance->vWidth;
-        eH = (unsigned int)(eW * radio);
-      }
-#else
-    eW = instance->vWidth;
-    eH = instance->vHeight;
-#endif
 
-//    LOGI_EU("changeLayout() eW = %d, eH = %d, radio = %f, vRadio = %f, instance->pHeight = %d, instance->pWidth = %d",
-//            eW, eH, radio, vRadio, instance->pHeight, instance->pWidth);
-    //glViewport(0, 0, 2, 4);
+///  PB0
+    mRowStride = (width * 4);
+    if (bInitPbo)
+    {
+        glDeleteBuffers(2, mPboIds);
+    }
+    //glGenFramebuffers
+    mPboSize =mRowStride*height;
+    //生成2个PBO
+    glGenBuffers(2, mPboIds);
+
+    //绑定到第一个PBO
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, mPboIds[0]);
+    //设置内存大小
+    glBufferData(GL_PIXEL_PACK_BUFFER, mPboSize, NULL,GL_STATIC_READ);
+    //绑定到第而个PBO
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, mPboIds[1]);
+    //设置内存大小
+    glBufferData(GL_PIXEL_PACK_BUFFER, mPboSize, NULL,GL_STATIC_READ);
+    //解除绑定PBO
+    glBindBuffer(GL_PIXEL_PACK_BUFFER, 0);
+    bInitPbo = true;
+///////
+
+
+
     glViewport(0, 0, instance->vWidth, instance->vHeight);
 #endif
 }

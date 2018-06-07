@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -21,6 +22,8 @@ import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.Settings;
 import android.support.annotation.NonNull;
+
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
@@ -120,6 +123,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         wifination.appContext = getApplicationContext();
+        wifination.naSetRecordAudio(true);
         wifination.naSetVrBackground(true);
         JH_App.bFlyDisableAll = true;
         JH_App.nType = JH_App.nStyle_fly;
@@ -133,13 +137,27 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             }
         }, new Runnable() {
             @Override
-            public void run() {
-                Toast.makeText(Fly_PlayActivity.this, "The necessary permission denied, the application exit",
-                        Toast.LENGTH_SHORT).show();
-                finish();
-            }
-        }).askPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            public void run()
+            {
+                F_DispAlert();
 
+            }
+        }).askPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.RECORD_AUDIO);
+
+    }
+
+    private  void F_DispAlert()
+    {
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setTitle("Waring")
+                .setMessage("The necessary permission denied, the application exit")
+                .setNegativeButton("OK", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        finish();
+                    }
+                }).create();
+        dialog.show();
     }
 
 

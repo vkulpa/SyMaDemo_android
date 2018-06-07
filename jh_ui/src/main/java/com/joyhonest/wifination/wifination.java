@@ -41,6 +41,7 @@ public class wifination {
     public final static int IC_GK_UDP = 9;
 
 
+    public  static  AudioEncoder  AudioEncoder;
 
     public final static int TYPE_ONLY_PHONE = 0;
     public final static int TYPE_ONLY_SD = 1;
@@ -61,42 +62,20 @@ public class wifination {
     static {
         try {
             System.loadLibrary("jh_wifi");
+            AudioEncoder = new AudioEncoder();
         } catch (UnsatisfiedLinkError Ule) {
             Log.e(TAG, "Cannot load jh_wifi.so ...");
             Ule.printStackTrace();
         } finally {
 
-            //lstFile = new ArrayList<String>();  //结果 List
-            //String  sa= "/proc/sys/net/ipv4/tcp_slow_start_after_idle";
-            //String  sa= "/proc/sys/net/ipv4";
-            //GetFilesA(sa,null,false);
-            //JH_Tools.F_InitDecord(1280,720);
-/*
-                if(Build.VERSION.SDK_INT>=18)
-                {
-                    for(int j = MediaCodecList.getCodecCount() - 1; j >= 0; j--)
-                    {
-                        MediaCodecInfo codecInfo = MediaCodecList.getCodecInfoAt(j);
-                        String[] types = codecInfo.getSupportedTypes();
-                        for (int i = 0; i < types.length; i++) {
-                            if (types[i].equalsIgnoreCase("video/avc"))
-                            {
-                                String aa = codecInfo.getName();
-                                Log.e("Decordwe" ,"Decorder: "+ aa);
-                            }
-                        }
-                    }
-            }
-            */
             mDirectBuffer = ByteBuffer.allocateDirect(BMP_Len + 50);     //获取每帧数据，主要根据实际情况，分配足够的空间。
             naSetDirectBuffer(mDirectBuffer, BMP_Len + 50);
-//            mDirectBufferYUV = ByteBuffer.allocateDirect(BMP_Len);
-            //           naSetDirectBufferYUV(mDirectBufferYUV, BMP_Len);
-            // JH_Tools.AvcEncoder(1280,720,25,2500000);
         }
     }
 
-    private wifination() {
+    private wifination()
+    {
+
     }
 
     //静态工厂方法
@@ -238,12 +217,33 @@ public class wifination {
     public  static native  void naSetScal(float fScal); //设定放大显示倍数
 
 
+    public static native  void naSetRecordAudio(boolean b);
+
+
+
+
+
 
     public static native void init();
     public static native void release();
     public static native void changeLayout(int width, int height);
     public static native void drawFrame();
 
+
+    private static void G_StartAudio(int b)
+    {
+        if(b!=0)
+        {
+            AudioEncoder.start();
+        }
+        else
+        {
+            AudioEncoder.stop();
+        }
+    }
+
+
+/*
     private static String intToIp(int i) {
         return (i & 0xFF) + "." + ((i >> 8) & 0xFF) + "." + ((i >> 16) & 0xFF) + "." + ((i >> 24) & 0xFF);
     }
@@ -268,33 +268,9 @@ public class wifination {
 
         int ip = info.getIpAddress();
         return ip;
-        /*
-        String sIP = intToIp(info.getIpAddress());
 
-        int nICType = wifination.IC_NO;
-
-        if (sIP.startsWith("175.16.10")) {
-            nICType = wifination.IC_GKA;
-        } else if (sIP.startsWith("192.168.234")) {
-            nICType = wifination.IC_GK;
-        } else if (sIP.startsWith("192.168.25")) {
-            nICType = wifination.IC_GP;
-        } else if (sIP.startsWith("192.168.26")) {
-            nICType = wifination.IC_GPRTSP;
-        } else if (sIP.startsWith("192.168.27")) {
-            nICType = wifination.IC_GPH264;
-        } else if (sIP.startsWith("192.168.28")) {
-            nICType = wifination.IC_GPRTP;
-        } else if (sIP.startsWith("192.168.29")) {
-            nICType = wifination.IC_GPRTPB;
-        } else if (sIP.startsWith("192.168.30")) {
-            nICType = wifination.IC_GPH264A;
-        } else if (sIP.startsWith("192.168.123")) {
-            nICType = wifination.IC_SN;
-        }
-        return nICType;
-        */
     }
+    */
 
     public static void F_AdjBackGround(Context context, int bakid) {
         Bitmap bmp = null;
@@ -477,6 +453,8 @@ public class wifination {
         //Integer iw=i;
         EventBus.getDefault().post(bmp, "ReviceBMP");
     }
+
+
 
 
 }

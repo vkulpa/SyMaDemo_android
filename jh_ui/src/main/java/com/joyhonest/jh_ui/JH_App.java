@@ -1100,7 +1100,8 @@ public class JH_App {
         }
 
         if (JH_App.nICType == wifination.IC_GPRTSP) {
-            str = "rtsp://192.168.26.1:8080/?action=stream";
+            //str = "rtsp://192.168.26.1:8080/?action=stream";
+            str = "rtsp://192.168.25.1:8080/?action=stream";
             re = wifination.naInit(str);
             if (re == 0)
                 wifination.naPlay();

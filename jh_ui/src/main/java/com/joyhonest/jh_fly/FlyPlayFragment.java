@@ -571,10 +571,18 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         }
         */
         if (v == StopFly_Btn) {
+
             /*
             bTestFlip =!bTestFlip;
-            wifination.naSetFlip(bTestFlip);
+            wifination.StartAudio(bTestFlip);
+
+
+
+            //wifination.naSetFlip(bTestFlip);
+            wifination.naSet3D(bTestFlip);
             */
+
+
 
             JH_App.bStop = true;
             JH_App.bUp = false;
@@ -596,6 +604,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
                 }
             }, 500);
+
 
         }
 
@@ -701,15 +710,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
 
         if (v == Floder_Btn) {
-/*
-            bTest=!bTest;
-            Integer df = 0;
-            if(bTest)
-            {
-                df=1;
-            }
-            EventBus.getDefault().post(df, "B_TEST");
-*/
+
 
 
             F_SetNoGsensor();
@@ -767,7 +768,12 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                 } else {
                     strRecordFilename = JH_App.F_GetSaveName(false);
                     JH_App.F_PlayStartRecord();
-                    wifination.naStartRecord(strRecordFilename, wifination.TYPE_BOTH_PHONE_SD);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            wifination.naStartRecord(strRecordFilename, wifination.TYPE_BOTH_PHONE_SD);
+                        }
+                    },800);
                     Record_Time_TextCtrl.setText("00:00");
                     Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_recording_icon_fly_jh);
                 }

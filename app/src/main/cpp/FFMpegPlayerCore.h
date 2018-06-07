@@ -104,8 +104,18 @@ typedef enum {
 
 //----------------------------------------------------------------------
 class C_FFMpegPlayer {
+
+
+    bool MP4AacGetConfiguration(uint8_t** ppConfig,
+                                                uint32_t* pConfigLength,
+                                                uint8_t profile,
+                                                uint32_t samplingRate,
+                                                uint8_t channels);
+    uint8_t MP4AdtsFindSamplingRateIndex(uint32_t samplingRate);
+
 public:
 
+    E_PlayerStatus m_Status;
     bool  F_IsNeed2WriteH264Stream(void);
     uint64_t    nErrorFrame;
     C_FFMpegPlayer();
@@ -113,6 +123,7 @@ public:
     ~C_FFMpegPlayer();
 
     MP4TrackId video;
+    MP4TrackId  music;
     MP4FileHandle fileHandle;
     bool  bIsH264;
     int  nSpsSet;
@@ -341,7 +352,7 @@ private:
     uint8_t *buffer_a;
 
 
-    E_PlayerStatus m_Status;
+
 
     bool bPause;
 
@@ -407,12 +418,15 @@ private:
 
     bool   bCanDisplay;
     bool m_bSaveSnapshot;
+
+
     bool m_bSaveVideo;
 
 
-
-
 public:
+
+    bool  F_WriteAudio(jbyte * data,int nLen);
+
     AVFrame *pFrameYUV;//=av_frame_alloc();//av_frame_alloc();
     int Releaseffmpeg();
 

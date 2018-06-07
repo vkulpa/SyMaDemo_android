@@ -110,19 +110,16 @@ bool MyMediaCoder::F_InitDecoder(int width,int height,int8_t *sps,int spsLen,int
     {
         return false;
     }
-
     decoder =  AMediaCodec_createDecoderByType(mine);
-    //decoder = AMediaCodec_createCodecByName("OMX.qcom.video.decoder.avc");
-
     AMediaFormat_setString(videoFormat, "mime", "video/avc");
     AMediaFormat_setInt32(videoFormat, AMEDIAFORMAT_KEY_WIDTH, m_nDecWidth); // 视频宽度
     AMediaFormat_setInt32(videoFormat, AMEDIAFORMAT_KEY_HEIGHT, m_nDecHeight); // 视频高度
     AMediaFormat_setInt32(videoFormat,AMEDIAFORMAT_KEY_COLOR_FORMAT,OMX_COLOR_FormatYUV420SemiPlanar);
     AMediaFormat_setBuffer(videoFormat, "csd-0", sps, spsLen); // sps
     AMediaFormat_setBuffer(videoFormat, "csd-1", pps, ppsLen); // pps
-
     media_status_t rc = AMediaCodec_configure(decoder, videoFormat, NULL, NULL, 0);
-    if (AMEDIA_OK == rc) {
+    if (AMEDIA_OK == rc)
+    {
         AMediaCodec_start(decoder);
         AMediaFormat_delete(videoFormat);
         return true;
@@ -210,6 +207,7 @@ bool MyMediaCoder::offerEncoder(uint8_t *data,int32_t nLen)
     int pos = 0;
     size_t inoutLen;
     ssize_t inputIndex = AMediaCodec_dequeueInputBuffer( encoder, 5000);
+    bool re = false;
     if(inputIndex>=0)
     {
         uint8_t* inputbuffer =  AMediaCodec_getInputBuffer(encoder,inputIndex,&inoutLen);
@@ -246,8 +244,10 @@ bool MyMediaCoder::offerEncoder(uint8_t *data,int32_t nLen)
                 {
                     bKeyframe = true;
                     naSave2FrameMp4(outputBuf, info.size, 1, bKeyframe);
+                    re = true;
                 } else {
                     naSave2FrameMp4(outputBuf, info.size, 1, bKeyframe);
+                    re = true;
                 }
                 AMediaCodec_releaseOutputBuffer(encoder, outbufidx, 0);// info.size != 0);
                 break;
@@ -258,12 +258,13 @@ bool MyMediaCoder::offerEncoder(uint8_t *data,int32_t nLen)
             }
         }
     }
-    return true;
+    return re;
 }
 
 
 void MyMediaCoder::F_CloseDecoder(void)
 {
+
     if(decoder !=NULL)
     {
         AMediaCodec_stop(decoder);
