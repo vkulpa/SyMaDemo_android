@@ -10,7 +10,6 @@ import android.graphics.Point;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
-import android.view.PointerIcon;
 import android.view.View;
 import android.widget.RelativeLayout;
 

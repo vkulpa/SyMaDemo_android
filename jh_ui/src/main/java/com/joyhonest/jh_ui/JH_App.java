@@ -1,7 +1,7 @@
 package com.joyhonest.jh_ui;
 
 import android.app.Activity;
-import android.app.Application;
+
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -51,12 +51,11 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
+
 import java.util.List;
 
 import static android.content.Context.WIFI_SERVICE;
 
-//import com.autonavi.ae.utils.NaviUtils;
 import com.joyhonest.wifination.wifination;
 
 import org.simple.eventbus.EventBus;

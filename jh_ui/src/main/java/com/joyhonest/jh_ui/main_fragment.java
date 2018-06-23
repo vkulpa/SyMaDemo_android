@@ -2,18 +2,15 @@ package com.joyhonest.jh_ui;
 
 
 import android.app.Fragment;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.Intent;
+
 import android.content.pm.ActivityInfo;
-import android.net.Uri;
+
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
-import android.provider.MediaStore;
+
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
-//import android.support.v4.app.Fragment;
+
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;
@@ -23,13 +20,12 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.joyhonest.jh_fly.JH_Fly_Setting;
+
 import com.joyhonest.wifination.wifination;
 
 import org.simple.eventbus.EventBus;
 
-import java.io.File;
-import java.io.FileNotFoundException;
+
 
 
 /**

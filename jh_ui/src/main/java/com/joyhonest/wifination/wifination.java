@@ -5,19 +5,9 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
 import android.util.Log;
-
-
-
-
 import org.simple.eventbus.EventBus;
-
-
 import java.nio.ByteBuffer;
-
-import static android.content.Context.WIFI_SERVICE;
 
 
 /**
