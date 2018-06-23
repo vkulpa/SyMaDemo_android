@@ -2074,7 +2074,7 @@ int read_packet(void *opaque, uint8_t *buf, int buf_size);
 
 int64_t seek(void *opaque, int64_t offset, int whence);
 
-
+extern bool  bWhitClolor;
 void Adj23D(AVFrame *src, AVFrame *des) {
     int i = 0;
     int hw = src->width >> 1;
@@ -2095,9 +2095,16 @@ void Adj23D(AVFrame *src, AVFrame *des) {
 
     int ha = des->height / 4;
 
-    memset(des->data[0], 16, des->width * des->height);                                 //yuv 黑色
-    memset(des->data[1], 128, des->width * des->height / 4);
-    memset(des->data[2], 128, des->width * des->height / 4);
+    if(bWhitClolor)
+    {
+            memset(des->data[0], 235, (size_t )des->width * des->height);                                 //yuv 白色色
+            memset(des->data[1], 128, (size_t )des->width * des->height / 4);
+            memset(des->data[2], 128, (size_t )des->width * des->height / 4);
+    } else {
+            memset(des->data[0], 16, (size_t )des->width * des->height);                                 //yuv 黑色
+            memset(des->data[1], 128, (size_t )des->width * des->height / 4);
+            memset(des->data[2], 128, (size_t )des->width * des->height / 4);
+    }
 
 
     int dat = ha * des->width;
@@ -2105,37 +2112,37 @@ void Adj23D(AVFrame *src, AVFrame *des) {
     pdes += dat;
     for (i = 0; i < src->height; i++) {
 
-        memcpy(pdes, psrc, src->width - 1);
-        memcpy(pdes + src->width, psrc, src->width);
+        memcpy(pdes, psrc, (size_t )src->width - 1);
+        memcpy(pdes + src->width, psrc, (size_t )src->width);
         pdes += des->width;
         psrc += src->width;
 
 
     }
     ha = des->height / 8;
-    pdes = (byte *) des->data[1];
-    psrc = (byte *) src->data[1];
+    pdes = des->data[1];
+    psrc =  src->data[1];
 
-    pdes1 = (byte *) des->data[2];
-    psrc1 = (byte *) src->data[2];
+    pdes1 = des->data[2];
+    psrc1 = src->data[2];
     for (i = 0; i < hh; i++) {
 
         srcp = psrc + i * hw;
         desp = pdes + (i + ha) * deshw;
 
-        memcpy(desp, srcp, hw);
-        memcpy(desp + hw, srcp, hw);
+        memcpy(desp, srcp,(size_t ) hw);
+        memcpy(desp + hw, srcp, (size_t )hw);
 
 
         srcp = psrc1 + i * hw;
         desp = pdes1 + (i + ha) * deshw;
 
-        memcpy(desp, srcp, hw);
-        memcpy(desp + hw, srcp, hw);
+        memcpy(desp, srcp, (size_t )hw);
+        memcpy(desp + hw, srcp, (size_t )hw);
     }
 
 }
-
+/*
 void frame_rotate_180(AVFrame *src, AVFrame *des) {
     int n = 0, i = 0;
     int hw = src->width >> 1;
@@ -2188,4 +2195,4 @@ void frame_rotate_180(AVFrame *src, AVFrame *des) {
     des->key_frame = src->key_frame;
 }
 
-
+*/

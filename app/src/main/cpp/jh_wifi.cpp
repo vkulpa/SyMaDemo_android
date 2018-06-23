@@ -715,11 +715,11 @@ int F_GetSDCardStatus(const char *sUrl) {
         } else                      // 成功，返回描述词状态已改变的个数
         {
             printf("Connect success!\n");
-            ret = 1;
+
         }
     } else {
         printf("Connect success!\n");
-        ret = 1;
+
     }
     ul = 0;
     ioctl(socket_handle, FIONBIO, &ul); //设置为阻塞模式
@@ -857,7 +857,8 @@ void *checkRelinkerThrad(void *param) {
     bool re = true;
     while (re)
     {
-#ifndef DEBUG
+#if 1
+//#ifndef DEBUG
 
         {
             if (bInit && !bNeedStop) {
@@ -1301,7 +1302,7 @@ void F_Rec_RTP_Data_Service();
 int Connect_GPH264(void);
 
 
-bool bInitMedia = false;
+//bool bInitMedia = false;
 bool bInitMediaA = false;
 
 
@@ -1331,9 +1332,10 @@ int naInit_Re_B(void) {
     }
 */
 
+    F_RecRP_RTSP_Status_Service();
     if (nICType == IC_GPH264A) {
 
-        F_RecRP_RTSP_Status_Service();
+
         bStoped = true;
         bInit = true;
         if (GP_tcp_VideoSocket.bConnected) {
@@ -1372,7 +1374,7 @@ int naInit_Re_B(void) {
             ret = -1;
         }
         if (ret >= 0) {
-            F_RecRP_RTSP_Status_Service();  //GKA
+           // F_RecRP_RTSP_Status_Service();  //GKA
         }
         return ret;
 
@@ -1421,7 +1423,7 @@ int naInit_Re_B(void) {
             m_MySonix.StartReceive();
             m_MySonix.sendStart();
             F_SendStatus2Jave();
-            F_RecRP_RTSP_Status_Service();  //SN
+          //  F_RecRP_RTSP_Status_Service();  //SN
 
 
             msg[0] = 'J';
@@ -1461,7 +1463,7 @@ int naInit_Re_B(void) {
         m_FFMpegPlayer.nfps = 20;
         m_FFMpegPlayer.nDisplayHeight = 480;  //
         m_FFMpegPlayer.nDisplayWidth = 640;
-        F_RecRP_RTSP_Status_Service();              //GP
+      //  F_RecRP_RTSP_Status_Service();              //GP
         if (nICType == IC_GPRTP || nICType == IC_GPRTPB)       //自定义RTP    IC_GPRTP 凌通的自定义RTP    IC_GPRTPB 乐信的自定义RTP
         {
 
@@ -1519,7 +1521,7 @@ int naInit_Re_B(void) {
         m_FFMpegPlayer.nfps = 20;
         m_FFMpegPlayer.nDisplayHeight = 360;
         m_FFMpegPlayer.nDisplayWidth = 640;
-        F_RecRP_RTSP_Status_Service();     //GP
+    //    F_RecRP_RTSP_Status_Service();     //GP
 
 
         msg[0] = 'J';
@@ -1550,7 +1552,10 @@ int naInit_Re_B(void) {
     } else {
         m_FFMpegPlayer.nDisplayHeight = 360;  //
         m_FFMpegPlayer.nDisplayWidth = 640;
+
     }
+
+
 
     //GPRTSP  GPH264  朗通的方案
 
@@ -1558,14 +1563,14 @@ int naInit_Re_B(void) {
     nCheckT_pre = av_gettime() / 1000;
     F_SetRelinkerT(1000 * 5);
     bInit = true;
-    int i32Ret = m_FFMpegPlayer.InitMedia(sPlayPath);
+    m_FFMpegPlayer.InitMedia(sPlayPath);
     naPlay();
     return 0;
-
 }
 
+
 int naInit_Re(void) {
-    bInitMedia = false;
+    //bInitMedia = false;
     bInitMediaA = false;
     nFrameCount = 0;
     disp_no = -1;
@@ -1582,8 +1587,8 @@ int naInit_Re(void) {
     nSDStatus = 0;
     m_FFMpegPlayer.bStarDecord = false;
     m_FFMpegPlayer.StopSaveVideo();
-    m_FFMpegPlayer.sps_len = 0;
-    m_FFMpegPlayer.pps_len = 0;
+//    m_FFMpegPlayer.sps_len = 0;
+//    m_FFMpegPlayer.pps_len = 0;
     bInit = false;
     nCheckT_pre = av_gettime() / 1000;
     F_SetRelinkerT(4000);
@@ -1592,9 +1597,9 @@ int naInit_Re(void) {
 
 
 
-    if (nICType == IC_GP) {
-        ;
-    }
+    F_RecRP_RTSP_Status_Service();
+
+
     int i32Ret = -1;
     if (nICType == IC_GPH264A) {
         int ret = 0;
@@ -1607,7 +1612,7 @@ int naInit_Re(void) {
         m_FFMpegPlayer.nDisplayWidth = 1280;
         m_FFMpegPlayer.nDisplayHeight = 720;
 
-        F_RecRP_RTSP_Status_Service();  //GPH264A
+     //   F_RecRP_RTSP_Status_Service();  //GPH264A
 
         msg[0] = 'J';
         msg[1] = 'H';
@@ -1657,7 +1662,7 @@ int naInit_Re(void) {
             ret = -1;
         }
         if (ret >= 0) {
-            F_RecRP_RTSP_Status_Service();  //GKA
+           // F_RecRP_RTSP_Status_Service();  //GKA
         }
 
         return ret;
@@ -1710,7 +1715,7 @@ int naInit_Re(void) {
             m_MySonix.sendStart();
             nSDStatus = 0;//|=bit0_OnLine;
             F_SendStatus2Jave();
-            F_RecRP_RTSP_Status_Service(); //SN
+        //    F_RecRP_RTSP_Status_Service(); //SN
 
             msg[0] = 'J';
             msg[1] = 'H';
@@ -1749,7 +1754,7 @@ int naInit_Re(void) {
         m_FFMpegPlayer.nfps = 20;
         m_FFMpegPlayer.nDisplayHeight = 480;  //
         m_FFMpegPlayer.nDisplayWidth = 640;
-        F_RecRP_RTSP_Status_Service();              //GP
+     //   F_RecRP_RTSP_Status_Service();              //GP
         if (nICType == IC_GPRTP || nICType == IC_GPRTPB)       //自定义RTP    IC_GPRTP 凌通的自定义RTP    IC_GPRTPB 乐信的自定义RTP
         {
 
@@ -1844,7 +1849,7 @@ int naInit_Re(void) {
         //m_FFMpegPlayer.nDisplayHeight = 480;  //
         m_FFMpegPlayer.nDisplayHeight = 360;
         m_FFMpegPlayer.nDisplayWidth = 640;
-        F_RecRP_RTSP_Status_Service();     //GP
+     //   F_RecRP_RTSP_Status_Service();     //GP
 
 
         msg[0] = 'J';
@@ -1969,6 +1974,8 @@ Java_com_joyhonest_wifination_wifination_naPlay(JNIEnv *env, jclass type) {
     //nCheckT_pre = av_gettime()*1000;
     //return m_FFMpegPlayer.PlayMedia();
     // return naPlay();
+    env;
+    type;
     return 0;
 }
 
@@ -2041,18 +2048,15 @@ void F_SentRTPStop();
 
 int naStop(void)
 {
-
     int ret = 0;
     F_StartAdjRecTime(false);
     bInit = false;
     bNeedExit = true;
     m_FFMpegPlayer.m_Status = E_PlayerStatus_Stoping;
-
     usleep(1000 * 50);
     nSDStatus = 0;
     myMediaCoder.F_CloseDecoder();
     if (rev_socket > 0 || rev_cmd_thread != -1) {
-        //RTSP_Status
         if (rev_socket > 0) {
             close(rev_socket);
             rev_socket = -1;
@@ -2324,14 +2328,16 @@ int F_GetIP(void)
 
         return -1;
     }
-    if((ifr = (struct ifreq*)malloc(ifc.ifc_len)) == NULL)
+    byte *ffp = new byte[ifc.ifc_len];
+    ifr = (struct ifreq *)ffp;
+    if(ifr == NULL)
     {
         return -1;
     }
     ifc.ifc_ifcu.ifcu_req = ifr;
     if (ioctl(s, SIOCGIFCONF, &ifc) < 0)
     {
-
+        delete []ffp;
         return -1;
     }
     numif = ifc.ifc_len / sizeof(struct ifreq);
@@ -2348,7 +2354,7 @@ int F_GetIP(void)
         break;
 
     }
-
+    delete []ffp;
     return ip;
 
     /*
@@ -2862,7 +2868,7 @@ int F_SendHttpComd(string spath) {
     if (nICType == IC_GK) {
         LOGE("Video Cmd _Start_2");
         const char *host = "192.168.234.1";
-        const char *url = "http://192.168.234.1";
+        //const char *url = "http://192.168.234.1";
         int port = 80;
         int socket_handle = socket(AF_INET, SOCK_STREAM, 0);
         if (socket_handle < 0) {
@@ -4198,37 +4204,7 @@ Java_com_joyhonest_wifination_wifination_naGetFiles(JNIEnv *env, jclass type,
     return 0;
 }
 
-/*
-JNIEXPORT jboolean JNICALL
-Java_com_joyhonest_wifination_wifination_naSetVideoSurface(JNIEnv *env, jclass type,
-                                                           jobject surface) {
 
-
-    if(surfaceA!=NULL)
-    {
-        env->DeleteGlobalRef(surfaceA);
-        surfaceA = NULL;
-    }
-    if(surface!=NULL)
-        surfaceA =(jobject) (env->NewGlobalRef(surface));
-
-    if(m_FFMpegPlayer.nativeWindow!=NULL)
-    {
-        m_FFMpegPlayer.bReleaseSurface=true;
-
-        //ANativeWindow_release(m_FFMpegPlayer.nativeWindow);
-        //m_FFMpegPlayer.nativeWindow = NULL;
-    }
-
-    //m_FFMpegPlayer.nativeWindow = ANativeWindow_fromSurface(env, surface);
-    //ANativeWindow_setBuffersGeometry(m_FFMpegPlayer.nativeWindow, m_FFMpegPlayer.nDisplayWidth,
-     //                                m_FFMpegPlayer.nDisplayHeight,
-      //                               WINDOW_FORMAT_RGBA_8888);
-
-    return true;
-
-}
-*/
 
 
 bool bGoble_3D = false;
@@ -4404,10 +4380,12 @@ Java_com_joyhonest_wifination_wifination_naSnapPhoto(JNIEnv *env, jclass type, j
             msg[6] = 0x01;
             send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
         }
-    } else                    //SD and Phone
+    }
+    else                    //SD and Phone
     {
         ret = m_FFMpegPlayer.SaveSnapshot(pFileName);
-        if (nICType == IC_GK) {
+        if (nICType == IC_GK)
+        {
             LOGE("Video Cmd _Photo2 GK");
             F_SendHttpComd("/web/cgi-bin/hi3510/snap.cgi?&-getpic&-chn=0");
         }
@@ -5728,7 +5706,7 @@ void *doReceive_rtp(void *dat) {
 
                         nCheckT_pre = av_gettime() / 1000;
 
-                        jpginx = readRtpBuffer[1] * 0x100 + readRtpBuffer[0];
+                        jpginx =(uint16_t)( readRtpBuffer[1] * 0x100 + readRtpBuffer[0]);
                         jpg_pack_count = (uint8_t) readRtpBuffer[2];
                         jpg_udp_inx = (uint8_t) readRtpBuffer[3];
                         if (jpg_udp_inx >= 250)
@@ -5780,9 +5758,9 @@ void *doReceive_rtp(void *dat) {
                 } else if (nICType == IC_GPRTP) {
                     if (nRecEcho > 20) {
                         nCheckT_pre = av_gettime() / 1000;
-                        uint32_t timnap = readRtpBuffer[7] + readRtpBuffer[6] * 0x100 + readRtpBuffer[5] * 0x10000 + readRtpBuffer[4] * 0x1000000;
-                        uint16_t nIndex = (uint16_t) readRtpBuffer[2] * 0x100 + readRtpBuffer[3];
-                        listA = FindList(timnap);
+                        uint32_t timnapA =(uint32_t)( readRtpBuffer[7] + readRtpBuffer[6] * 0x100 + readRtpBuffer[5] * 0x10000 + readRtpBuffer[4] * 0x1000000);
+                        uint16_t nIndex = (uint16_t) (readRtpBuffer[2] * 0x100 + readRtpBuffer[3]);
+                        listA = FindList(timnapA);
                         bool bFind = false;
                         for (it = listA->begin(); it != listA->end(); it++) {
                             if ((*it)->nIndex == nIndex) {
@@ -5792,7 +5770,7 @@ void *doReceive_rtp(void *dat) {
                         }
                         if (!bFind) {
                             myRTP *rtp = new myRTP((uint8_t *) readRtpBuffer, nRecEcho);
-                            rtp->nTimestamp = timnap;
+                            rtp->nTimestamp = timnapA;
                             listA->push_back(rtp);
                         }
 
@@ -5975,7 +5953,7 @@ void *doReceive_cmd(void *dat) {
                     pHead = (NET_UTP_DATA *) readBuff;
                     nbytes -= sizeof(NET_UTP_DATA);
                     memcpy(readBuffA, &pHead->seq, 4);
-                    memcpy(readBuffA + 4, readBuff + sizeof(NET_UTP_DATA), nbytes);
+                    memcpy(readBuffA + 4, readBuff + sizeof(NET_UTP_DATA), (size_t)nbytes);
                     F_OnGetWifiData((byte *) readBuffA, nbytes + 4);
                 }
                 continue;
@@ -5989,10 +5967,10 @@ void *doReceive_cmd(void *dat) {
                         if (cmd_buffer != NULL)
                         {
                             memset(cmd_buffer, 0, 50);
-                            memcpy(cmd_buffer, readBuff + 7, nbytes - 7);
-                            int32_t dat = 0x55AA5500;
-                            dat |=((nbytes - 7)&0xFF);
-                            F_SentGp_Status2Jave(dat);
+                            memcpy(cmd_buffer, readBuff + 7, (size_t)(nbytes - 7));
+                            int32_t datA = 0x55AA5500;
+                            datA |=((nbytes - 7)&0xFF);
+                            F_SentGp_Status2Jave(datA);
                         }
                     }
                     else  if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 0x20 && readBuff[6] == 0x00)
@@ -6064,6 +6042,7 @@ void *doReceive_cmd(void *dat) {
                             nSdStatus_GP &= 0xFFFFFF00;
                             nSdStatus_GP |= readBuff[6];
                             F_SentGp_Status2Jave(nSdStatus_GP);
+                            F_SendKey2Jave((nSdStatus_GP & 0xFF));
                         }
                         if (readBuff[5] == 0x20)  //通道
                         {
@@ -6083,7 +6062,9 @@ void *doReceive_cmd(void *dat) {
 #endif
     }
     delete[]readBuff;
-    LOGE("Exit Thread cmd");
+    delete[]readBuffA;
+
+    LOGE("Exit ReadStatus Thread!");
     return NULL;
 }
 
@@ -6171,132 +6152,132 @@ Java_com_joyhonest_wifination_wifination_naFillFlyCmdByC(JNIEnv *env, jclass typ
     if (nType == 1) {
         fid = env->GetStaticFieldID(clazz, "Roll", "I");
         if (fid != NULL) {
-            cmd_Data.Roll = env->GetStaticIntField(clazz, fid);
+            cmd_Data.Roll = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "Pitch", "I");
         if (fid != NULL) {
-            cmd_Data.Pitch = env->GetStaticIntField(clazz, fid);
+            cmd_Data.Pitch = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "Thro", "I");
         if (fid != NULL) {
-            cmd_Data.Thro = env->GetStaticIntField(clazz, fid);
+            cmd_Data.Thro = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "Yaw", "I");
         if (fid != NULL) {
-            cmd_Data.Yaw = env->GetStaticIntField(clazz, fid);
+            cmd_Data.Yaw = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "TrimRoll", "I");
         if (fid != NULL) {
-            cmd_Data.TrimRoll = env->GetStaticIntField(clazz, fid);
+            cmd_Data.TrimRoll = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "TrimPitch", "I");
         if (fid != NULL) {
-            cmd_Data.TrimPitch = env->GetStaticIntField(clazz, fid);
+            cmd_Data.TrimPitch = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "TrimThro", "I");
         if (fid != NULL) {
-            cmd_Data.TrimThro = env->GetStaticIntField(clazz, fid);
+            cmd_Data.TrimThro = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "TrimYaw", "I");
         if (fid != NULL) {
-            cmd_Data.TrimYaw = env->GetStaticIntField(clazz, fid);
+            cmd_Data.TrimYaw = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "FastMode", "I");
         if (fid != NULL) {
-            cmd_Data.FastMode = env->GetStaticIntField(clazz, fid);
+            cmd_Data.FastMode = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "CFMode", "I");
         if (fid != NULL) {
-            cmd_Data.CFMode = env->GetStaticIntField(clazz, fid);
+            cmd_Data.CFMode = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "FlipMode", "I");
         if (fid != NULL) {
-            cmd_Data.FlipMode = env->GetStaticIntField(clazz, fid);
+            cmd_Data.FlipMode =(uint32_t)( env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "GpsMode", "I");
         if (fid != NULL) {
-            cmd_Data.GpsMode = env->GetStaticIntField(clazz, fid);
+            cmd_Data.GpsMode = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "Mode", "I");
         if (fid != NULL) {
-            cmd_Data.Mode = env->GetStaticIntField(clazz, fid);
+            cmd_Data.Mode = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "LevelCor", "I");
         if (fid != NULL) {
-            cmd_Data.LevelCor = env->GetStaticIntField(clazz, fid);
+            cmd_Data.LevelCor = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
 
         fid = env->GetStaticFieldID(clazz, "MagCor", "I");
         if (fid != NULL) {
-            cmd_Data.MagCor = env->GetStaticIntField(clazz, fid);
+            cmd_Data.MagCor = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "AutoTakeoff", "I");
         if (fid != NULL) {
-            cmd_Data.AutoTakeoff = env->GetStaticIntField(clazz, fid);
+            cmd_Data.AutoTakeoff =(uint32_t)( env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "AutoLand", "I");
         if (fid != NULL) {
-            cmd_Data.AutoLand = env->GetStaticIntField(clazz, fid);
+            cmd_Data.AutoLand = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "GoHome", "I");
         if (fid != NULL) {
-            cmd_Data.GoHome = env->GetStaticIntField(clazz, fid);
+            cmd_Data.GoHome =(uint32_t)( env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "Stop", "I");
         if (fid != NULL) {
-            cmd_Data.Stop = env->GetStaticIntField(clazz, fid);
+            cmd_Data.Stop = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "FollowMe", "I");
         if (fid != NULL) {
-            cmd_Data.FollowMe = env->GetStaticIntField(clazz, fid);
+            cmd_Data.FollowMe = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "CircleFly", "I");
         if (fid != NULL) {
-            cmd_Data.CircleFly = env->GetStaticIntField(clazz, fid);
+            cmd_Data.CircleFly = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "PointFly", "I");
         if (fid != NULL) {
-            cmd_Data.PointFly = env->GetStaticIntField(clazz, fid);
+            cmd_Data.PointFly = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "FollowMe_A", "I");
         if (fid != NULL) {
-            cmd_Data.FollowMe_A = env->GetStaticIntField(clazz, fid);
+            cmd_Data.FollowMe_A = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "Photo", "I");
         if (fid != NULL) {
-            cmd_Data.Photo = env->GetStaticIntField(clazz, fid);
+            cmd_Data.Photo = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "Video", "I");
         if (fid != NULL) {
-            cmd_Data.Video = env->GetStaticIntField(clazz, fid);
+            cmd_Data.Video = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "CamMovStep", "I");
         if (fid != NULL) {
-            cmd_Data.CamMovStep = env->GetStaticIntField(clazz, fid);
+            cmd_Data.CamMovStep = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "CamMovDir", "I");
         if (fid != NULL) {
-            cmd_Data.CamMovDir = env->GetStaticIntField(clazz, fid);
+            cmd_Data.CamMovDir = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "cmd", "[B");
@@ -6314,9 +6295,9 @@ Java_com_joyhonest_wifination_wifination_naFillFlyCmdByC(JNIEnv *env, jclass typ
         int nSi = min(nSize, chars_len - 3);
         memset(bytes, 0, chars_len);
         if (nType & 0x80) {
-            bytes[0] = 0xA6;
+            bytes[0] =(jbyte)0xA6;
         } else {
-            bytes[0] = 0xA5;
+            bytes[0] = (jbyte)0xA5;
         }
         bytes[1] = (jbyte) nType;
         bytes[2] = 0;
@@ -6390,70 +6371,7 @@ Java_com_joyhonest_wifination_wifination_naSetRecordWH(JNIEnv *env, jclass type,
 
 
 }
-/*
-void F_SentRevYUV(int32_t wh)
-{
-    int needsDetach = 0;
-    JNIEnv *evn = getJNIEnv(&needsDetach);
-    if (evn == NULL) {
-        return;
-    }
 
-    if (ReceiveYUV_mid != NULL) {
-        evn->CallStaticVoidMethod(objclass, ReceiveYUV_mid, wh);
-    }
-
-    if (needsDetach)
-        gJavaVM->DetachCurrentThread();
-}
-*/
-
-/*
-int F_Decord_JAVA(byte *data,int nLen)
-{
-    int needsDetach = 0;
-    JNIEnv *evn = getJNIEnv(&needsDetach);
-    if (evn == NULL) {
-        return -1;
-    }
-
-    if (ReceiveYUV_mid != NULL) {
-       // evn->CallStaticVoidMethod(objclass, Decord_JAVA_mid, wh);
-    }
-
-    if (needsDetach)
-        gJavaVM->DetachCurrentThread();
-
-    return 0;
-
-}
- */
-/*
-int F_GetH264Frame(byte *data,int nLen)
-{
-    int needsDetach = 0;
-    if (data == NULL)
-        return -2;
-    nCheckT_pre =  av_gettime()/1000;
-    JNIEnv *evn = getJNIEnv(&needsDetach);
-    if (evn == NULL) {
-        return -1;
-    }
-    int nCount = nLen;
-    if (nCount > 0) {
-        jbyteArray jbarray = evn->NewByteArray(nCount);
-        jbyte *jy = (jbyte *) data;
-        evn->SetByteArrayRegion(jbarray, 0, nCount, jy);
-        if (GetH264Frame_mid != NULL) {
-            evn->CallStaticVoidMethod(objclass, GetH264Frame_mid, jbarray);
-        }
-        evn->DeleteLocalRef(jbarray);
-    }
-    if (needsDetach)
-        gJavaVM->DetachCurrentThread();
-    return 0;
-}
-*/
 
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naGetFps(JNIEnv *env, jclass type)     //获取实际通过网络获得的fps
@@ -6577,7 +6495,7 @@ void F_ProcessDecordData(uint8_t *data, int32_t nLen, int width, int height, int
 
 extern AVFrame *gl_Frame;
 
-void frame_rotate_180(AVFrame *src, AVFrame *des);
+//void frame_rotate_180(AVFrame *src, AVFrame *des);
 
 void Adj23D(AVFrame *src, AVFrame *des);
 
@@ -6609,15 +6527,26 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
         AVFrame *frame_a = av_frame_alloc();
         frame_a->width = width;
         frame_a->height = height;
-        frame_a->format = AV_PIX_FMT_YUV420P;//AV_PIX_FMT_RGBA;
+        frame_a->format = AV_PIX_FMT_YUV420P;
         int ret = av_image_alloc(
                 frame_a->data, frame_a->linesize, width,
                 height,
                 AV_PIX_FMT_YUV420P, 4);
 
-        frame_rotate_180(myYUV, frame_a);
+
+        libyuv::I420Rotate(myYUV->data[0],myYUV->linesize[0],
+                           myYUV->data[1],myYUV->linesize[1],
+                           myYUV->data[2],myYUV->linesize[2],
+                            frame_a->data[0],frame_a->linesize[0],
+                           frame_a->data[1],frame_a->linesize[1],
+                           frame_a->data[2],frame_a->linesize[2],
+                            frame_a->width,frame_a->height,
+                           libyuv::kRotate180);
+
         av_frame_copy(myYUV, frame_a);
-        if (frame_a != NULL) {
+
+        if (frame_a != NULL)
+        {
             av_free(frame_a->data[0]);
             av_frame_free(&frame_a);
         }

@@ -1,29 +1,14 @@
 package com.joyhonest.wifination;
 
-import android.media.MediaCodec;
-import android.media.MediaCodecInfo;
-import android.media.MediaCodecList;
-import android.media.MediaFormat;
-import android.util.Log;
 
-import com.joyhonest.jh_ui.JH_App;
-//import com.joyhonest.wifination.hw.CodecManager;
-//import com.joyhonest.wifination.hw.EncoderDebugger;
-//import com.joyhonest.wifination.hw.NV21Convertor;
 
 import org.simple.eventbus.EventBus;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.nio.ByteBuffer;
+
 import java.util.ArrayList;
 import java.util.List;
 
-import static android.media.MediaCodec.BUFFER_FLAG_CODEC_CONFIG;
-import static android.media.MediaCodec.BUFFER_FLAG_KEY_FRAME;
+
 
 /**
  * Created by aiven on 2017/11/30.

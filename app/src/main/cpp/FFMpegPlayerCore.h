@@ -76,7 +76,7 @@ typedef unsigned char byte;
 #define  SD_Photo               0x10
 
 
-//#define D_BufferData
+
 
 //IC_GK = 0,      //192.168.234.X
 //IC_GP,          //192.168.25.X
@@ -116,7 +116,6 @@ class C_FFMpegPlayer {
 public:
 
     E_PlayerStatus m_Status;
-    bool  F_IsNeed2WriteH264Stream(void);
     uint64_t    nErrorFrame;
     C_FFMpegPlayer();
 
@@ -147,12 +146,13 @@ public:
     bool bContinue;
     unsigned char *Rgbabuffer;
     unsigned char *YUVbuffer;
-    uint8_t sps[1024];
-    int      sps_len;
-    uint8_t pps[1024];
-    int      pps_len;
+    //uint8_t sps[1024];
+    //int      sps_len;
+    //uint8_t pps[1024];
+    //int      pps_len;
+    //int64_t  nStartTime;
     int      nSecT;
-    int64_t  nStartTime;
+
 
     int nDisplayWidth;
     int nDisplayHeight;
@@ -175,13 +175,13 @@ public:
     AVPacket *F_GetPacket();
 
 
-    AVFrame *F_GetFrame();
+    //AVFrame *F_GetFrame();
 
     int decodeAndRender_GKA(MySocketData *dat);
 
     int decodeAndRender_GKA_B(MySocketData *dat);
 
-    static  void* F_DispThread(void *dat);
+    //static  void* F_DispThread(void *dat);
     void F_StartDispThread();
     pthread_t dispThreadid;
 
@@ -324,7 +324,7 @@ private:
 
     bool bNeedCheck;
 
-    int CreateEncodeStream();
+    //int CreateEncodeStream();
 
     int CloseVideo();
 
@@ -357,7 +357,7 @@ private:
     bool bPause;
 
     //Decode Media
-    AVPacket Mypkt;
+  //  AVPacket Mypkt;
 
     AVFormatContext *m_formatCtx;
     int m_videoStream;
@@ -375,9 +375,9 @@ private:
 
 
     struct SwsContext *img_convert_ctx;
-    struct SwsContext *img_convert_ctx_half;
-    struct SwsContext *img_convert_ctxBmp;
-    struct SwsContext *img_convert_ctxRecord;
+    //struct SwsContext *img_convert_ctx_half;
+    //struct SwsContext *img_convert_ctxBmp;
+    //struct SwsContext *img_convert_ctxRecord;
     unsigned char *out_buffer;
 
     //AVPicture         	m_frameRGBA;
@@ -433,7 +433,6 @@ public:
     AVFrame *pFrameYUV_Disp;
 
     char m_snapShotPath[256];
-    //   char m_VideoPath[256];
     char m_MediaPath[256];
 
     int  nfps;
@@ -447,18 +446,9 @@ public:
     MySocketData keyFrame;
     AVPacket packet;
 
-    bool    bReleaseSurface;
-
 
     ANativeWindow *nativeWindow;
-    ANativeWindow_Buffer windowBuffer;
-
-
-    int flush_encoder(AVFormatContext *fmt_ctx,unsigned int stream_index);
-
-#ifndef D_BufferData
     void F_DispH264NoBuffer(MySocketData *data);
-#endif
 
 
 };

@@ -122,7 +122,11 @@ public class SplashActivity extends AppCompatActivity
                     JH_App.b720P = true;
                 }
                 JH_App.bInitDispCtrol=true;
-               // handler.removeCallbacksAndMessages(null);
+
+
+                JH_App.bRecordVoice = true;
+
+
                 Intent mainIntent = new Intent(SplashActivity.this, Fly_PlayActivity.class);
                 startActivity(mainIntent);
             }

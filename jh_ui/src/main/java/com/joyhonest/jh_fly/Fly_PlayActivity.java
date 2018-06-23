@@ -123,7 +123,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         wifination.appContext = getApplicationContext();
-        wifination.naSetRecordAudio(true);
+        wifination.naSetRecordAudio(JH_App.bRecordVoice);
         wifination.naSetVrBackground(true);
         JH_App.bFlyDisableAll = true;
         JH_App.nType = JH_App.nStyle_fly;

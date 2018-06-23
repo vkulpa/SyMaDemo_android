@@ -382,7 +382,7 @@ public class wifination {
             EventBus.getDefault().post(cmd, "GetWifiInfoData");
         }
         else {
-            Integer ix = nStatus;
+            Integer ix = nStatus;                //返回 模块按键
             Log.e(TAG,"Get data = "+nStatus);
             EventBus.getDefault().post(ix, "OnGetGP_Status");
         }
@@ -434,10 +434,12 @@ public class wifination {
     }
 
     /////// 以下 SYMA 不使用 --------
-    private static void OnKeyPress(int nStatus) {
-
+    private static void OnKeyPress(int nStatus)
+    {
         Integer n = nStatus;
+        Log.e(TAG,"Get Key = "+nStatus);
         EventBus.getDefault().post(n, "key_Press");
+        EventBus.getDefault().post(n, "Key_Pressed");
     }
 
 

@@ -263,7 +263,7 @@ int MySocket_GKA::FindHead(MySocketData *dat, int pos) {
     int ix;
     if (dat->nLen < 4)
         return -1;
-    uint8_t  *pdata = (uint8_t *)(dat->data);
+    uint8_t  *pdata = dat->data;
     uint32_t magic = 0x01000000;
     uint32_t  data=0;
     for (ix = pos; ix <= dat->nLen - 4; ix++)
@@ -273,29 +273,7 @@ int MySocket_GKA::FindHead(MySocketData *dat, int pos) {
         {
                 return ix;
         }
-            /*
-
-        else
-        {
-            if(data & 0x0000FF00 &&
-               data & 0x00FF0000 &&
-               data & 0xFF000000)
-            {
-                ix+=3;
-            } else if(data & 0x0000FF00 &&
-                      data & 0x00FF0000)
-            {
-                ix+=2;
-            }
-            else if(data & 0x0000FF00)
-            {
-                ix++;
-            }
-        }
-             */
-
     }
-
     return -1;
 }
 
@@ -362,7 +340,8 @@ void *MySocket_GKA::ReadData(void *dat) {
     //F_SetRelinkerT(3000);
     nNexPos = 0;
     int next[4]={0};
-    while (self->bConnected) {
+    while (self->bConnected)
+    {
         struct timeval timeoutA = {0, 500};
         int nError;
         FD_ZERO(&set); // 在使用之前总是要清空
@@ -410,13 +389,9 @@ void *MySocket_GKA::ReadData(void *dat) {
 
 #if 1
             self->RevData.AppendData(buffer,nRet);
-            //bzero(next,4);
             int headpos = self->FindHead(&self->RevData,nNexPos);//nSerchPos);
-            //getNext(next);
-            //int headpos =kmp(0,next,self->RevData.nLen,self->RevData.data);
             if(headpos<0)
             {
-
                 if(self->RevData.nLen>4) {
                     nNexPos = self->RevData.nLen-4;
                 } else

@@ -98,7 +98,7 @@ ENDIF()
 
 
 
-
+#加入OpenCV
 
 set(OpenCV_STATIC ON) #1
 set(OpenCV_DIR /WORK/ffmpeg/OpenCV-android-sdk/sdk/native/jni) #2
@@ -107,7 +107,6 @@ find_package(OpenCV REQUIRED) #3
 
 target_link_libraries( # Specifies the target library.
                        jh_wifi
-#                       libopencv_java3
                        m
                        log
                        android
@@ -117,7 +116,7 @@ target_link_libraries( # Specifies the target library.
                        jnigraphics
                        GLESv2
 
-
+                       /WORK/ffmpeg/mp4v2-2.0.0/obj/local/${ANDROID_ABI}/libmp4v2.a
                        /WORK/ffmpeg/libyuv/obj/local/${ANDROID_ABI}/libyuv.a
                        /WORK/ffmpeg/ffmpeglib/libavformat.a
                        /WORK/ffmpeg/ffmpeglib/libavdevice.a
@@ -126,7 +125,6 @@ target_link_libraries( # Specifies the target library.
                        /WORK/ffmpeg/ffmpeglib/libavfilter.a
                        /WORK/ffmpeg/ffmpeglib/libswresample.a
                        /WORK/ffmpeg/ffmpeglib/libswscale.a
-
                         ${OpenCV_LIBS} #4
 
                         )
@@ -134,7 +132,7 @@ target_link_libraries( # Specifies the target library.
 
 
 #一下这些，需要根据具体情况来调整路径
-
+#/WORK/ffmpeg/mp4v2-2.0.0/obj/local/${ANDROID_ABI}/libmp4v2.a
 #/WORK/ffmpeg/libyuv/obj/local/${ANDROID_ABI}/libyuv.a
 #/WORK/ffmpeg/ffmpeglib/libavformat.a
 #/WORK/ffmpeg/ffmpeglib/libavdevice.a

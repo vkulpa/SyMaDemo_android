@@ -126,6 +126,7 @@ public class JH_App {
     public static boolean bBrowPhoto = false;
 
     public static boolean b720P = false;
+    public static boolean bRecordVoice = true;
 
     // private static JH_App singleton = null;
     public static String sWifi = "";
@@ -799,7 +800,8 @@ public class JH_App {
 
 
     //获取是否存在NavigationBar
-    public static void checkDeviceHasNavigationBar(Context context) {
+    public static void checkDeviceHasNavigationBar(Context context)
+    {
 
         /*
         Activity activity = (Activity) context;
@@ -1066,6 +1068,7 @@ public class JH_App {
         //JH_App.nICType = wifination.IC_GPRTSP;
         //JH_App.nICType = wifination.IC_SN;
         //JH_App.nICType = wifination.IC_GPRTP;
+
         wifination.naSetIcType(JH_App.nICType);
         if (JH_App.bIsSyMa)
             wifination.naSetCustomer("sima");
@@ -1093,15 +1096,14 @@ public class JH_App {
 
         if (JH_App.nICType == wifination.IC_GP) {
             str = "http://192.168.25.1:8080/?action=stream";
-
+            //str = "rtsp://192.168.25.1:8080/?action=stream";
             re = wifination.naInit(str);
             if (re == 0)
                 wifination.naPlay();
         }
 
         if (JH_App.nICType == wifination.IC_GPRTSP) {
-            //str = "rtsp://192.168.26.1:8080/?action=stream";
-            str = "rtsp://192.168.25.1:8080/?action=stream";
+            str = "rtsp://192.168.26.1:8080/?action=stream";
             re = wifination.naInit(str);
             if (re == 0)
                 wifination.naPlay();
