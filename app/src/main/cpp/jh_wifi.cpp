@@ -1974,8 +1974,7 @@ Java_com_joyhonest_wifination_wifination_naPlay(JNIEnv *env, jclass type) {
     //nCheckT_pre = av_gettime()*1000;
     //return m_FFMpegPlayer.PlayMedia();
     // return naPlay();
-    env;
-    type;
+
     return 0;
 }
 

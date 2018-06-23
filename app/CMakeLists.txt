@@ -115,6 +115,7 @@ target_link_libraries( # Specifies the target library.
                        z
                        jnigraphics
                        GLESv2
+                       GLESv3
 
                        /WORK/ffmpeg/mp4v2-2.0.0/obj/local/${ANDROID_ABI}/libmp4v2.a
                        /WORK/ffmpeg/libyuv/obj/local/${ANDROID_ABI}/libyuv.a
@@ -125,8 +126,7 @@ target_link_libraries( # Specifies the target library.
                        /WORK/ffmpeg/ffmpeglib/libavfilter.a
                        /WORK/ffmpeg/ffmpeglib/libswresample.a
                        /WORK/ffmpeg/ffmpeglib/libswscale.a
-                        ${OpenCV_LIBS} #4
-
+                       ${OpenCV_LIBS}    #4
                         )
 
 
