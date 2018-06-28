@@ -3,7 +3,7 @@ package com.joyhonest.jh_fly;
 
 import android.media.Image;
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;

@@ -1252,6 +1252,8 @@ int _naInit_(const char *pFileName)
         sServerIP = "192.168.240.1";
     }
 
+    m_FFMpegPlayer.nIC_Type = nICType;
+
     nSDStatus = 0;
     bInit = false;
     nCheckT_pre = av_gettime() / 1000;

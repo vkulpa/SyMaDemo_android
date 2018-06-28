@@ -2,7 +2,7 @@ package com.joyhonest.jh_fly;
 
 
 import android.os.Bundle;
-import android.app.Fragment;
+import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,7 +76,6 @@ public class BrowSelectFragment extends Fragment implements View.OnClickListener
             if (!JH_App.bBrowSD) {
                 activity.F_FillFilesData();
             }
-
             Integer nFragment = JH_Fly_Setting.Brow_Files_Fragment;
             EventBus.getDefault().post(nFragment, "gotoFragment");
         }
@@ -92,9 +91,6 @@ public class BrowSelectFragment extends Fragment implements View.OnClickListener
         if (v == btn_Phone) {
             if (JH_App.bBrowSD) {
                 JH_App.bBrowSD = false;
-
-                //activity.F_GetFilesNumber();
-                //activity.F_FillFilesData();
             }
             F_DispSelectSDorPhone();
 

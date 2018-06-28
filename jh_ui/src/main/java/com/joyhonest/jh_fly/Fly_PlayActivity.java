@@ -2,39 +2,38 @@ package com.joyhonest.jh_fly;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.content.Context;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+//import android.support.v4.FragmentManager;
+//import android.support.v4.FragmentTransaction;
+
 import android.content.DialogInterface;
-import android.content.Intent;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Rect;
-import android.location.Criteria;
+
 import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
+
 import android.os.Handler;
 import android.os.HandlerThread;
-import android.provider.Settings;
+
 import android.support.annotation.NonNull;
+
+
 
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.util.Log;
-import android.view.SurfaceHolder;
-import android.view.SurfaceView;
+
 import android.view.View;
-import android.view.WindowManager;
+
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
+
 
 import com.joyhonest.jh_ui.DispPhoto_Fragment;
 import com.joyhonest.jh_ui.DispVideo_Fragment;
@@ -42,12 +41,12 @@ import com.joyhonest.jh_ui.JH_App;
 import com.joyhonest.jh_ui.MyControl;
 import com.joyhonest.jh_ui.MyFilesItem;
 import com.joyhonest.jh_ui.MyItemData;
-import com.joyhonest.jh_ui.Path_Fragment;
+
 import com.joyhonest.jh_ui.PermissionAsker;
-import com.joyhonest.jh_ui.PlayActivity;
+
 import com.joyhonest.jh_ui.R;
 import com.joyhonest.wifination.JH_GLSurfaceView;
-import com.joyhonest.wifination.JH_Tools;
+
 import com.joyhonest.wifination.MyThumb;
 import com.joyhonest.wifination.fly_cmd;
 import com.joyhonest.wifination.jh_dowload_callback;
@@ -185,7 +184,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         JH_App.checkDeviceHasNavigationBar(this);
         JH_App.F_Clear_not_videoFiles();
 
-        mFragmentMan = getFragmentManager();// getSupportFragmentManager();
+        mFragmentMan = getSupportFragmentManager();//getFragmentManager();// getSupportFragmentManager();
         Fragment_Layout = (RelativeLayout) findViewById(R.id.Fragment_Layout);
         thread1 = new HandlerThread("MyHandlerThread_fly");
         thread1.start(); //创建一个HandlerThread并启动它
@@ -653,15 +652,14 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
+
+    boolean  bFirst=false;
     private void F_InitFragment() {
         flyPlayFragment = new FlyPlayFragment();
         browSelectFragment = new BrowSelectFragment();
         browFilesFragment = new BrowFilesFragment();
         dispVideo_fragment = new DispVideo_Fragment();
         dispPhoto_Fragment = new DispPhoto_Fragment();
-
-
-
         flyPathFragment = new FlyPathFragment();
 
         FragmentTransaction transaction = mFragmentMan.beginTransaction();
@@ -676,6 +674,13 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
         mFragmentMan.executePendingTransactions();
         F_OpenCamera(true);
+
+        bFirst = true;
+
+
+
+        /*
+
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -692,7 +697,21 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
                 }, 20);
             }
         }, 20);
+        */
+    }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(bFirst)
+        {
+            bFirst=false;
+            FragmentTransaction transactionA = mFragmentMan.beginTransaction();
+            hideFragments(transactionA);
+            transactionA.commit();
+            dispVideo_fragment.F_SetBackImg(R.mipmap.return_icon_black_fly_jh);
+            F_SetView(flyPlayFragment);
+        }
     }
 
     @Subscriber(tag = "SDStatus_Changed")

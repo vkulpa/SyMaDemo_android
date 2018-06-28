@@ -115,15 +115,9 @@ public class MySwitch extends RelativeLayout {
                 F_DispIcon();
 
             }
-
             SwitchMesage  msg = new SwitchMesage(this,bLeft);
-
-
             EventBus.getDefault().post(msg, "SwitchChanged");
-
         }
-
-
         return true;
     }
 

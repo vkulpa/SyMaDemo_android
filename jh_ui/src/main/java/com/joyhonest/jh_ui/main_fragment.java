@@ -1,7 +1,7 @@
 package com.joyhonest.jh_ui;
 
 
-import android.app.Fragment;
+//import android.app.Fragment;
 
 import android.content.pm.ActivityInfo;
 
@@ -11,6 +11,7 @@ import android.os.Handler;
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
 
+import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Surface;

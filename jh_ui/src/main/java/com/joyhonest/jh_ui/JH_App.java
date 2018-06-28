@@ -1068,7 +1068,7 @@ public class JH_App {
         //JH_App.nICType = wifination.IC_SN;
         //JH_App.nICType = wifination.IC_GPRTP;
 
-        wifination.naSetIcType(JH_App.nICType);
+        //wifination.naSetIcType(JH_App.nICType);
         if (JH_App.bIsSyMa)
             wifination.naSetCustomer("sima");
         else
@@ -1094,8 +1094,8 @@ public class JH_App {
         }
 
         if (JH_App.nICType == wifination.IC_GP) {
-            str = "http://192.168.25.1:8080/?action=stream";
-            //str = "rtsp://192.168.25.1:8080/?action=stream";
+            //str = "http://192.168.25.1:8080/?action=stream";
+            str = "rtsp://192.168.25.1:8080/?action=stream";
             re = wifination.naInit(str);
             if (re == 0)
                 wifination.naPlay();
