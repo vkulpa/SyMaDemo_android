@@ -2070,9 +2070,6 @@ void  MySonix::F_CreateRevSocket_and_Listen(void)
 
 
 
-int read_packet(void *opaque, uint8_t *buf, int buf_size);
-
-int64_t seek(void *opaque, int64_t offset, int whence);
 
 extern bool  bWhitClolor;
 void Adj23D(AVFrame *src, AVFrame *des) {
@@ -2142,57 +2139,3 @@ void Adj23D(AVFrame *src, AVFrame *des) {
     }
 
 }
-/*
-void frame_rotate_180(AVFrame *src, AVFrame *des) {
-    int n = 0, i = 0;
-    int hw = src->width >> 1;
-    int hh = src->height >> 1;
-    int pos = src->width * src->height;
-    pos--;
-    byte *pdes;
-    byte *pdes1;
-    byte *psrc;
-    byte *psrc1;
-
-    pdes = (byte *) des->data[0];
-    psrc = (byte *) (src->data[0] + pos);
-
-    for (i = 0; i < src->height; i++) {
-        for (int j = 0; j < src->width; j++) {
-            *(pdes++) = *(psrc--);
-        }
-    }
-
-    n = 0;
-    pos = src->width * src->height >> 2;
-    pos--;
-
-    pdes = (byte *) des->data[1];
-    pdes1 = (byte *) des->data[2];
-
-    psrc = (byte *) (src->data[1] + pos);
-    psrc1 = (byte *) (src->data[2] + pos);
-    for (i = 0; i < hh; i++) {
-        for (int j = 0; j < hw; j++) {
-            *(pdes++) = *(psrc--);
-            *(pdes1++) = *(psrc1--);
-        }
-    }
-
-    des->linesize[0] = src->width;
-    des->linesize[1] = src->width >> 1;
-    des->linesize[2] = src->width >> 1;
-
-
-    des->width = src->width;
-    des->height = src->height;
-    des->format = src->format;
-
-    des->pts = src->pts;
-    des->pkt_pts = src->pkt_pts;
-    des->pkt_dts = src->pkt_dts;
-
-    des->key_frame = src->key_frame;
-}
-
-*/

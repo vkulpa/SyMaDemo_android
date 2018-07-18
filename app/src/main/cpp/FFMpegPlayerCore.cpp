@@ -860,11 +860,6 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
 
     //m_codecCtx = stream->codec;  //ByAiven
 
-    {
-        AVCodec *codecA = avcodec_find_decoder(stream->codecpar->codec_id);
-        m_codecCtx = avcodec_alloc_context3(codecA);
-    }
-
     // Find the decoder for the video stream
     // pCodec = avcodec_find_decoder(m_codecCtx->codec_id);  Aiven
     pCodec = avcodec_find_decoder(stream->codecpar->codec_id);
@@ -878,8 +873,7 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
 
     m_codecCtx = avcodec_alloc_context3(pCodec);
     avcodec_parameters_to_context(m_codecCtx, stream->codecpar);
-    av_codec_set_pkt_timebase(m_codecCtx, stream->time_base);
-
+    //av_codec_set_pkt_timebase(m_codecCtx, stream->time_base);
 
     // Open codec
     F_ResetCheckT(5000);
@@ -2003,7 +1997,6 @@ int C_FFMpegPlayer::decodeAndRender() {
 
                 }
 
-
                 if (b3D) {
                     if (b3DA) {
                         libyuv::I420Scale(pFrameYUV->data[0],pFrameYUV->linesize[0],
@@ -2015,16 +2008,8 @@ int C_FFMpegPlayer::decodeAndRender() {
                                           frame_b->data[2],frame_b->linesize[2],
                                           frame_b->width,frame_b->height,
                                           libyuv::kFilterLinear);
-                        /*
-                        ret = sws_scale(img_convert_ctx_half,
-                                        (const uint8_t *const *) pFrameYUV->data,
-                                        pFrameYUV->linesize, 0,
-                                        m_codecCtx->height,
-                                        frame_b->data, frame_b->linesize);
-                                        */
 
                         Adj23D(frame_b, pFrameYUV);
-
                         if (m_decodedFrame != NULL) {
                             if (m_decodedFrame->key_frame != 0) {
                                 av_frame_copy(frame_SnapBuffer, pFrameYUV);
@@ -2301,7 +2286,7 @@ int C_FFMpegPlayer::writeFrame(AVFrame *pOutFrame) {
 //----------------------------------------------------------------------
 int C_FFMpegPlayer::writePacket(AVPacket *pPacket) {
 
-
+#if 0
     if (pCodecCtx->coded_frame->key_frame)
         pPacket->flags |= AV_PKT_FLAG_KEY;
     int64_t now = av_gettime();
@@ -2330,13 +2315,13 @@ int C_FFMpegPlayer::writePacket(AVPacket *pPacket) {
     pPacket->stream_index = video_st->index;
     writePacketDirectly(pPacket);
     m_prevTime = now;
-
+#endif
     return FFMPEGPLAYER_NOERROR;
 }
 
 //----------------------------------------------------------------------
 int C_FFMpegPlayer::writePacketDirectly(AVPacket *pPacket) {
-
+#if 0
     pPacket->pts = m_outFrameCnt;
     pPacket->dts = pPacket->pts;
 
@@ -2354,7 +2339,7 @@ int C_FFMpegPlayer::writePacketDirectly(AVPacket *pPacket) {
         av_packet_unref(pPacket);
         return i32Ret;
     }
-
+#endif
     return FFMPEGPLAYER_NOERROR;
 }
 #if 0
@@ -2573,13 +2558,26 @@ AVPacket *C_FFMpegPlayer::F_GetPacket() {
                 if (pFrameYUV->width != nRecordWidth || pFrameYUV->height != nRecordHeight)
                 {
 
-                    int psrc_w = pFrameYUV->width;
-                    int psrc_h = pFrameYUV->height;
-                    int pdst_w = nRecordWidth;
-                    int pdst_h = nRecordHeight;
+                    //int psrc_w = pFrameYUV->width;
+                    //int psrc_h = pFrameYUV->height;
+                    //int pdst_w = nRecordWidth;
+                    //int pdst_h = nRecordHeight;
 
-                    uint8 *i420_buf1 = pFrameYUV->data[0];
-                    uint8 *i420_buf2 = pFrameRecord->data[0];
+                    //uint8 *i420_buf1 = pFrameYUV->data[0];
+                    //uint8 *i420_buf2 = pFrameRecord->data[0];
+
+
+                    libyuv::I420Scale(pFrameYUV->data[0],pFrameYUV->linesize[0],
+                                      pFrameYUV->data[1],pFrameYUV->linesize[1],
+                                      pFrameYUV->data[2],pFrameYUV->linesize[2],
+                                      pFrameYUV->width,pFrameYUV->height,
+                                      pFrameRecord->data[0],pFrameRecord->linesize[0],
+                                      pFrameRecord->data[1],pFrameRecord->linesize[1],
+                                      pFrameRecord->data[2],pFrameRecord->linesize[2],
+                                      pFrameRecord->width,pFrameRecord->height,
+                                      libyuv::kFilterLinear);
+
+                    /*
                     libyuv::I420Scale(&i420_buf1[0], psrc_w,
                                       &i420_buf1[psrc_w * psrc_h], psrc_w >> 1,
                                       &i420_buf1[(psrc_w * psrc_h * 5) >> 2], psrc_w >> 1,
@@ -2589,6 +2587,7 @@ AVPacket *C_FFMpegPlayer::F_GetPacket() {
                                       &i420_buf2[(pdst_w * pdst_h * 5) >> 2], pdst_w >> 1,
                                       pdst_w, pdst_h,
                                       libyuv::kFilterBilinear);
+                                      */
                     frame_rec = pFrameRecord;
                 }
                 else
@@ -2712,14 +2711,27 @@ int C_FFMpegPlayer::EncodeSnapshot() {
                     pix_format, 4);
 
 
-            int psrc_w = frame_SnapBuffer->width;
-            int psrc_h = frame_SnapBuffer->height;
-            int pdst_w = nRecordWidth;
-            int pdst_h = nRecordHeight;
+            //int psrc_w = frame_SnapBuffer->width;
+            //int psrc_h = frame_SnapBuffer->height;
+            //int pdst_w = nRecordWidth;
+            //int pdst_h = nRecordHeight;
 
-            uint8 *i420_buf1 = frame_SnapBuffer->data[0];
-            uint8 *i420_buf2 = frame_Snap->data[0];
+            //uint8 *i420_buf1 = frame_SnapBuffer->data[0];
+            //uint8 *i420_buf2 = frame_Snap->data[0];
 
+
+        libyuv::I420Scale(frame_SnapBuffer->data[0],frame_SnapBuffer->linesize[0],
+                          frame_SnapBuffer->data[1],frame_SnapBuffer->linesize[1],
+                          frame_SnapBuffer->data[2],frame_SnapBuffer->linesize[2],
+                          frame_SnapBuffer->width,frame_SnapBuffer->height,
+                          frame_Snap->data[0],frame_Snap->linesize[0],
+                          frame_Snap->data[1],frame_Snap->linesize[1],
+                          frame_Snap->data[2],frame_Snap->linesize[2],
+                          frame_Snap->width,frame_Snap->height,
+                          libyuv::kFilterLinear);
+
+
+        /*
             libyuv::I420Scale(&i420_buf1[0], psrc_w,
                               &i420_buf1[psrc_w * psrc_h], psrc_w >> 1,
                               &i420_buf1[(psrc_w * psrc_h * 5) >> 2], psrc_w >> 1,
@@ -2729,6 +2741,7 @@ int C_FFMpegPlayer::EncodeSnapshot() {
                               &i420_buf2[(pdst_w * pdst_h * 5) >> 2], pdst_w >> 1,
                               pdst_w, pdst_h,
                               libyuv::kFilterBilinear);
+                              */
     }
     else
     {
@@ -2766,7 +2779,7 @@ int C_FFMpegPlayer::EncodeSnapshot() {
         DEBUG_PRINT("Write frame (size=%5d)\n", pkt.size);
         FILE *fp = fopen(m_snapShotPath, "wb");
         if (fp) {
-            fwrite(pkt.data, 1, pkt.size, fp);
+            fwrite(pkt.data, 1, (size_t)pkt.size, fp);
             fclose(fp);
         } else {
             DEBUG_PRINT("Failed to open file: %s\n", m_snapShotPath);
@@ -3005,14 +3018,12 @@ return 0;
 }
 #endif
 
+
 uint8_t *bufferA;
-//uint32_t   nLenA;
-//uint32_t   nInxA;
-
-
-//unsigned char buff[5000];
 int bufflen;
 int pos;
+
+#if 0
 
 int read_packet(void *opaque, uint8_t *buf, int buf_size) {
     int size = buf_size;
@@ -3042,15 +3053,15 @@ int64_t seek(void *opaque, int64_t offset, int whence) {
     }
     return pos;
 }
+#endif
 
 
 
-bool blocked = false;
 
 extern  bool bSentRevBMP;
-
 extern AVFrame *gl_Frame;
 extern int64_t  nRecStartTime;
+
 void C_FFMpegPlayer::F_DispSurface() {
 
     if(bSentRevBMP)

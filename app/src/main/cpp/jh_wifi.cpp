@@ -54,7 +54,7 @@ extern "C" {
 #include "MyDownLoad_GKA.h"
 #include "jh_wifi.h"
 #include "phone_rl_protocol.h"
-#include "JH_GK_UDP.h"
+//#include "JH_GK_UDP.h"
 #include "NativeCodec.h"
 #include "MyMediaCoder.h"
 #include "JH_TestInfo.h"
@@ -133,7 +133,7 @@ static jobject gInterfaceObject;
 pthread_mutex_t m_mutex;
 C_FFMpegPlayer m_FFMpegPlayer;
 
-JH_GK_UDP m_JhGK_udp;
+//JH_GK_UDP m_JhGK_udp;
 
 MySocket_GKA mysocket;
 
@@ -209,7 +209,7 @@ int PlatformDisplay();
 void F_RecRP_RTSP_Status_Service();
 
 int naPlay(void);
-
+void F_ResetRelinker(void);
 int Init_GKA(void);
 
 int localsocket = -1;
@@ -2023,7 +2023,7 @@ int naStop_B(void) {
         F_SendStatus2Jave();
     } else if (nICType == IC_GK_UDP) {
         F_SendStatus2Jave();
-        m_JhGK_udp.Stop();
+      //  m_JhGK_udp.Stop();
         //ret = m_FFMpegPlayer.Stop();
         return 0;
     } else if (nICType == IC_SN) {
@@ -2086,7 +2086,7 @@ int naStop(void)
     }
     if (nICType == IC_GK_UDP) {
         F_SendStatus2Jave();
-        m_JhGK_udp.Stop();
+        //m_JhGK_udp.Stop();
         ret = m_FFMpegPlayer.Stop();
         return 0;
     }
@@ -4865,6 +4865,24 @@ int F_GetThumb(uint8_t *data, uint32_t nLen, const char *filename) {
 
 
     if (ret == 0) {
+
+        if (avcodec_send_packet(m_codecCtx_abc, &packet_abc) == 0)
+        {
+            if (avcodec_receive_frame(m_codecCtx_abc, m_decodedFrame_abc) != 0) {
+                ret = -1;
+            } else {
+                ret = 0;
+            }
+        } else {
+            ret = -1;
+        }
+        if(ret<0)
+        {
+            SendThumb2java(NULL, 0, filename);
+            return -1;
+        }
+
+        /*
         int frameFinished;
         ret = avcodec_decode_video2(m_codecCtx_abc, m_decodedFrame_abc, &frameFinished,
                                     &packet_abc);
@@ -4872,6 +4890,7 @@ int F_GetThumb(uint8_t *data, uint32_t nLen, const char *filename) {
             SendThumb2java(NULL, 0, filename);
             return -1;
         }
+         */
 
         img_convert_ctxBmp_abc = sws_getContext(m_codecCtx_abc->width, m_codecCtx_abc->height,
                                                 AV_PIX_FMT_YUV420P,
@@ -4892,9 +4911,10 @@ int F_GetThumb(uint8_t *data, uint32_t nLen, const char *filename) {
                   m_decodedFrame_abc->linesize, 0, m_decodedFrame_abc->height,
                   pFrameRGB_abc->data, pFrameRGB_abc->linesize);
         ret = 0;
-        if (ret == 0) {
+        if (ret == 0)
+        {
             bufffff = pFrameRGB_abc->data[0];
-            nDataLen = pFrameRGB_abc->linesize[0] * pFrameRGB_abc->height;
+            nDataLen = (uint32_t)(pFrameRGB_abc->linesize[0] * pFrameRGB_abc->height);
             SendThumb2java(bufffff, nDataLen, filename);
         }
         avcodec_free_context(&m_codecCtx_abc);
@@ -4906,9 +4926,8 @@ int F_GetThumb(uint8_t *data, uint32_t nLen, const char *filename) {
     } else {
         avcodec_free_context(&m_codecCtx_abc);
         av_frame_free(&m_decodedFrame_abc);
-
+        SendThumb2java(NULL, 0, filename);
     }
-    //SendThumb2java(NULL, 0, filename);
     return -1;
 }
 
@@ -5196,7 +5215,7 @@ Java_com_joyhonest_wifination_wifination_naGetThumb(JNIEnv *env, jclass type, js
                 data.SetSize(nLen);
                 nret = serchSocket->Read(&data, 8000);
                 if (nret == nLen && nret > 0) {
-                    int ret = F_GetThumb(data.data, nLen, filename);
+                    F_GetThumb(data.data, nLen, filename);
                     serchSocket->DisConnect();
                     env->ReleaseStringUTFChars(filename_, filenameB);
                     return 0;
