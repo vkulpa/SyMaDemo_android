@@ -23,20 +23,26 @@ public class MyRipple extends View {
     private float mWaveStartWidth;// px
     private float mWaveEndWidth;// px
     private int mWaveColor;
-    /** 颜色渐变控制器 */
+    /**
+     * 颜色渐变控制器
+     */
     private Interpolator interpolator = new CycleInterpolator(0.5f);
     private float mViewCenterX;
     private float mViewCenterY;
     private final Paint mWavePaint = new Paint();
+
     {
         mWavePaint.setAntiAlias(true);
         mWavePaint.setStyle(Style.STROKE);
     }
+
     private final Paint mWaveCenterShapePaint = new Paint();
+
     {
         mWaveCenterShapePaint.setAntiAlias(true);
         mWaveCenterShapePaint.setStyle(Style.FILL);
     }
+
     private boolean mFillAllView = false;
     private float mFillWaveSourceShapeRadius;
     private final List<Wave> mWaves = new ArrayList<Wave>();
@@ -53,18 +59,18 @@ public class MyRipple extends View {
         init();
     }
 
-    private Runnable  mRunnable = new Runnable() {
+    private Runnable mRunnable = new Runnable() {
         @Override
         public void run() {
             stir();
             invalidate();
-            mHandler.postDelayed(this,FPS);
+            mHandler.postDelayed(this, FPS);
         }
     };
+
     private void init() {
         mHandler = new Handler();
         setWaveInfo(30f, 1f, 2f, 2f, Color.WHITE);
-
 
 
     }
@@ -142,12 +148,11 @@ public class MyRipple extends View {
     }
 
 
-    private  boolean  bPlaying = true;
-    private  boolean  bNeedClear = false;
+    private boolean bPlaying = true;
+    private boolean bNeedClear = false;
 
-    public   void F_SetPlay(boolean b)
-    {
-        bPlaying=b;
+    public void F_SetPlay(boolean b) {
+        bPlaying = b;
     }
 
     private Wave mLastRmoveWave;
@@ -156,35 +161,35 @@ public class MyRipple extends View {
      * 触发涌动传播
      */
     private void stir() {
-           if(!bNeedClear) {
-               Wave nearestWave = mWaves.isEmpty() ? null : mWaves.get(0);
-               if (nearestWave == null || nearestWave.radius >= mWaveIntervalSize) {
-                   Wave w = null;
-                   if (bPlaying) {
-                       if (mLastRmoveWave != null) {
-                           w = mLastRmoveWave;
-                           mLastRmoveWave = null;
-                           w.reset();
-                       } else {
-                           w = new Wave();
-                       }
-                       mWaves.add(0, w);
-                   }
-               }
-               float waveWidthIncrease = mWaveEndWidth - mWaveStartWidth;
-               int size = mWaves.size();
-               for (int i = 0; i < size; i++) {
-                   Wave w = mWaves.get(i);
-                   float rP = w.radius / mMaxWaveAreaRadius;
-                   if (rP > 1f) {
-                       rP = 1f;
-                   }
-                   w.width = mWaveStartWidth + rP * waveWidthIncrease;
-                   w.radius += mStirStep;
-                   float factor = interpolator.getInterpolation(rP);
-                   w.color = mWaveColor & 0x00FFFFFF | ((int) (255 * factor) << 24);
-               }
-           }
+        if (!bNeedClear) {
+            Wave nearestWave = mWaves.isEmpty() ? null : mWaves.get(0);
+            if (nearestWave == null || nearestWave.radius >= mWaveIntervalSize) {
+                Wave w = null;
+                if (bPlaying) {
+                    if (mLastRmoveWave != null) {
+                        w = mLastRmoveWave;
+                        mLastRmoveWave = null;
+                        w.reset();
+                    } else {
+                        w = new Wave();
+                    }
+                    mWaves.add(0, w);
+                }
+            }
+            float waveWidthIncrease = mWaveEndWidth - mWaveStartWidth;
+            int size = mWaves.size();
+            for (int i = 0; i < size; i++) {
+                Wave w = mWaves.get(i);
+                float rP = w.radius / mMaxWaveAreaRadius;
+                if (rP > 1f) {
+                    rP = 1f;
+                }
+                w.width = mWaveStartWidth + rP * waveWidthIncrease;
+                w.radius += mStirStep;
+                float factor = interpolator.getInterpolation(rP);
+                w.color = mWaveColor & 0x00FFFFFF | ((int) (255 * factor) << 24);
+            }
+        }
     }
 
     /**
@@ -198,22 +203,21 @@ public class MyRipple extends View {
     }
 
     public void resetWave() {
-            mHandler.removeCallbacksAndMessages(null);
-            //bNeedClear = true;
-            mWaves.clear();
-            bNeedClear = false;
-            bPlaying = true;
+        mHandler.removeCallbacksAndMessages(null);
+        //bNeedClear = true;
+        mWaves.clear();
+        bNeedClear = false;
+        bPlaying = true;
         mHandler.removeCallbacksAndMessages(null);
         mHandler.post(mRunnable);
-            //postInvalidate();
+        //postInvalidate();
 
     }
 
     /**
      * 填充波形起源的中心点
      *
-     * @param radius
-     *            半径大小
+     * @param radius 半径大小
      */
     public void setFillWaveSourceShapeRadius(float radius) {
         mFillWaveSourceShapeRadius = radius;
@@ -222,16 +226,11 @@ public class MyRipple extends View {
     /**
      * 设置波形属性
      *
-     * @param intervalSize
-     *            两个波形之间的间距
-     * @param stireStep
-     *            波形移动速度
-     * @param startWidth
-     *            起始波形宽度
-     * @param endWidth
-     *            终止波形宽度
-     * @param color
-     *            波形颜色
+     * @param intervalSize 两个波形之间的间距
+     * @param stireStep    波形移动速度
+     * @param startWidth   起始波形宽度
+     * @param endWidth     终止波形宽度
+     * @param color        波形颜色
      */
     public void setWaveInfo(float intervalSize, float stireStep,
                             float startWidth, float endWidth, int color) {

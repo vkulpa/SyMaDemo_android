@@ -16,7 +16,7 @@ import javax.microedition.khronos.opengles.GL10;
 public class JH_GLSurfaceView extends GLSurfaceView {
 
 
-    public  boolean  bDraw=true;
+    public boolean bDraw = true;
 
     public JH_GLSurfaceView(Context context_) {
         super(context_);
@@ -51,13 +51,12 @@ public class JH_GLSurfaceView extends GLSurfaceView {
             @Override
             public void onDrawFrame(GL10 gl) {
                 {
-                    if(bDraw)
+                    if (bDraw)
                         wifination.drawFrame();
                 }
             }
         });
     }
-
 
 
     public static native int naDecordInit();

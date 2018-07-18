@@ -10,6 +10,7 @@
 //#ifdef DEBUG
 #include <android/log.h>
 #ifdef DEBUG
+
 #if defined(ANDROID) || defined(__ANDROID__)
 
 #define DEBUG_PRINT(...) __android_log_print(ANDROID_LOG_ERROR  , "ffmpegJNI",__VA_ARGS__)

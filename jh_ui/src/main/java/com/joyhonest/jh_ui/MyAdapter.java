@@ -13,7 +13,6 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 
 
-
 /**
  * Created by aiven on 2017/6/5.
  */

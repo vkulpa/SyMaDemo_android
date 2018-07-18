@@ -161,12 +161,11 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     private Handler RssiHander;
     private Runnable RssiRunable;
     private byte[] mData = null;
-    private  boolean  bGoFly=false;
+    private boolean bGoFly = false;
     private PermissionAsker mAsker;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState)
-    {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         JH_App.F_InitMusic();
 
@@ -185,7 +184,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         wifination.appContext = getApplicationContext();
         wifination.naSetVrBackground(false);
 
-        mAsker=new PermissionAsker(10,new Runnable() {
+        mAsker = new PermissionAsker(10, new Runnable() {
             @Override
             public void run() {
                 setContentView(R.layout.activity_play_jh);
@@ -218,15 +217,13 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mAsker.onRequestPermissionsResult(grantResults);
     }
 
-    private void F_Init()
-    {
+    private void F_Init() {
         MyControl.bFlyType = false;
         wifination.F_AdjBackGround(this, R.mipmap.loginbackground_jh);
         JH_App.checkDeviceHasNavigationBar(this);
@@ -286,11 +283,10 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
     }
 
-    @Subscriber(tag="OnGetGP_Status")
-    private  void OnGetGP_Status(int n)
-    {
+    @Subscriber(tag = "OnGetGP_Status")
+    private void OnGetGP_Status(int n) {
 
-        Log.e("GetData","Key = "+n);
+        Log.e("GetData", "Key = " + n);
     }
 
 
@@ -346,12 +342,11 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-        if(bGoFly)
+        if (bGoFly)
             return;
         JH_App.checkDeviceHasNavigationBar(this);
-        if(bFirst)
-        {
-            bFirst=false;
+        if (bFirst) {
+            bFirst = false;
             FragmentTransaction transactionA = mFragmentMan.beginTransaction();
             hideFragments(transactionA);
             transactionA.commit();
@@ -377,13 +372,10 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
 
         Fragment_Layout.setVisibility(View.VISIBLE);
-        if(Grid_fragment !=null && fragment == Grid_fragment) {
-            if (JH_App.bBrowPhoto)
-            {
+        if (Grid_fragment != null && fragment == Grid_fragment) {
+            if (JH_App.bBrowPhoto) {
                 Grid_fragment.F_SetIcon(true);
-            }
-            else
-            {
+            } else {
                 Grid_fragment.F_SetIcon(false);
             }
         }
@@ -588,14 +580,12 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-
     @Override
     protected void onPause() {
         super.onPause();
-        if(bGoFly)
+        if (bGoFly)
             return;
-        if(main_fragment!=null)
-        {
+        if (main_fragment != null) {
             main_fragment.myControl.F_ReasetAll();
         }
         /*
@@ -608,15 +598,14 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         */
 
 
-
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if(bGoFly)
+        if (bGoFly)
             return;
-        if(openHandler!=null) {
+        if (openHandler != null) {
             wifination.naStop();
             wifination.release();
             EventBus.getDefault().unregister(this);
@@ -734,7 +723,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     ////////////// 回调函数
-
 
 
     @Subscriber(tag = "SavePhotoOK")
@@ -920,8 +908,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             main_fragment.F_DispRcordIcon(false);
         }
 */
-        if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0)
-        {
+        if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
             main_fragment.F_DispRcordIcon(true);
         } else {
 
@@ -964,9 +951,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             try {
                 fis = new FileInputStream(file);
                 size = fis.available();
-            }
-            catch (Exception e)
-            {
+            } catch (Exception e) {
                 ;
             }
 
@@ -1009,27 +994,22 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             files = f.listFiles();// 列出所有文件
             //Bitmap bitmap = null;
             for (File file : files) {
-                if (file.exists() && !file.isDirectory())
-                {
+                if (file.exists() && !file.isDirectory()) {
                     fileName = file.getAbsolutePath();
                     fileName = fileName.toLowerCase();
-                    if (fileName.endsWith(".mp4"))
-                    {
+                    if (fileName.endsWith(".mp4")) {
 
                         long nsize = getFileSize(file);
                         //bitmap = JH_App.getVideoThumbnail(fileName);
                         //if(bitmap!=null)
-                        if(nsize>1200)
-                        {
+                        if (nsize > 1200) {
                             JH_App.mLocal_VideosList.add(fileName);
-                        }
-                        else
-                        {
+                        } else {
                             file.delete();
                         }
 
                     } else {
-                        if((JH_App.nSdStatus & JH_App.LocalRecording)==0)
+                        if ((JH_App.nSdStatus & JH_App.LocalRecording) == 0)
                             file.delete();
                     }
                 }
@@ -1090,11 +1070,11 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         } else {
             JH_App.F_PlayAdj();
         }
-        if(main_fragment!=null) {
+        if (main_fragment != null) {
             JH_App.nAdjRota = main_fragment.myControl.F_GetRotateAdj();
-            JH_App.nAdjForwardBack=main_fragment.myControl.F_GetForwardBackAdj();
+            JH_App.nAdjForwardBack = main_fragment.myControl.F_GetForwardBackAdj();
             JH_App.nAdjLeftRight = main_fragment.myControl.F_GetLeftRightAdj();
-                    JH_App.F_ReadSaveSetting(true);
+            JH_App.F_ReadSaveSetting(true);
         }
 
         n = nn & 0xFF00;
@@ -1163,7 +1143,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         JH_App.mGridList.clear();
         Grid_fragment.F_UpdateLisetView();
         F_SetView(Grid_fragment);
-        final  PlayActivity activity = this;
+        final PlayActivity activity = this;
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -1181,7 +1161,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
                     locall.start();
                 }
             }
-        },500);
+        }, 500);
 
 
     }
@@ -1227,8 +1207,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
                     dispVideo_fragment.F_Play(data.sPhonePath);
                     F_SetView(dispVideo_fragment);
 
-                } else if (data.nDownloadStatus == JH_App.DownLoading)
-                {
+                } else if (data.nDownloadStatus == JH_App.DownLoading) {
                     ;
                 } else if (data.nDownloadStatus == JH_App.DownLoaded_NO ||
                         data.nDownloadStatus == JH_App.DownLoadNormal)
@@ -1591,8 +1570,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-
-
     private static class MyThread_GetAllLocalFile extends Thread {
         WeakReference<PlayActivity> mThreadActivityRef;
 
@@ -1642,8 +1619,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
                     bitmap = JH_App.getVideoThumbnail(filename);
                     if (bitmap != null)
                         bitmap = JH_App.F_AdjBitmp(bitmap);
-                    if (bitmap != null)
-                    {
+                    if (bitmap != null) {
                         data.image = bitmap;
                         data.sPhonePath = filename;
                         JH_App.mGridList.add(data);

@@ -6,13 +6,14 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.util.Log;
+
 import org.simple.eventbus.EventBus;
+
 import java.nio.ByteBuffer;
 
 
 /**
  * Created by aivenlau on 16/7/13.
- *
  */
 
 
@@ -31,7 +32,7 @@ public class wifination {
     public final static int IC_GK_UDP = 9;
 
 
-    public  static  AudioEncoder  AudioEncoder;
+    public static AudioEncoder AudioEncoder;
 
     public final static int TYPE_ONLY_PHONE = 0;
     public final static int TYPE_ONLY_SD = 1;
@@ -47,7 +48,7 @@ public class wifination {
     private static final wifination m_Instance = new wifination();
     private static final int BMP_Len = (((1280 + 3) / 4) * 4) * 4 * 720 + 1024;
 
-    public  static Context  appContext=null;
+    public static Context appContext = null;
 
     static {
         try {
@@ -63,8 +64,7 @@ public class wifination {
         }
     }
 
-    private wifination()
-    {
+    private wifination() {
 
     }
 
@@ -195,39 +195,35 @@ public class wifination {
     public static native void naSetAdjFps(boolean b); //对应国科IC，有些早期固件不支持调整FPS，所以需要增加这一条命令
 
 
-    public static native  void naSetRevBmp(boolean b); //是否把解码到的图像发送到JAVA，有APP自己来显示而不是通过SDK内部来渲染显示
+    public static native void naSetRevBmp(boolean b); //是否把解码到的图像发送到JAVA，有APP自己来显示而不是通过SDK内部来渲染显示
 
-    public static native  void naSetVrBackground(boolean b);
-    public static native  void naRotation(int n);  //N = 0  90    -90   //画面转90 度 显示
+    public static native void naSetVrBackground(boolean b);
 
-
-    public  static  native  boolean naSetWifiPassword(String sPassword);
+    public static native void naRotation(int n);  //N = 0  90    -90   //画面转90 度 显示
 
 
-    public  static native  void naSetScal(float fScal); //设定放大显示倍数
+    public static native boolean naSetWifiPassword(String sPassword);
 
 
-    public static native  void naSetRecordAudio(boolean b);
+    public static native void naSetScal(float fScal); //设定放大显示倍数
 
 
-
-
+    public static native void naSetRecordAudio(boolean b);
 
 
     public static native void init();
+
     public static native void release();
+
     public static native void changeLayout(int width, int height);
+
     public static native void drawFrame();
 
 
-    private static void G_StartAudio(int b)
-    {
-        if(b!=0)
-        {
+    private static void G_StartAudio(int b) {
+        if (b != 0) {
             AudioEncoder.start();
-        }
-        else
-        {
+        } else {
             AudioEncoder.stop();
         }
     }
@@ -269,12 +265,9 @@ public class wifination {
         BitmapFactory.decodeResource(context.getResources(), bakid, options);
         int imageHeight = options.outHeight;
         int imageWidth = options.outWidth;
-        if (imageWidth <= 640 && imageHeight <= 480)
-        {
+        if (imageWidth <= 640 && imageHeight <= 480) {
             bmp = BitmapFactory.decodeResource(context.getResources(), bakid);
-        }
-        else
-        {
+        } else {
             int scale = imageWidth / 640;
             if (scale <= 0) {
                 scale = 2;
@@ -289,8 +282,7 @@ public class wifination {
 
         int ww = bmp.getWidth();
         int hh = bmp.getHeight();
-        if (ww > 1280 || hh > 720)
-        {
+        if (ww > 1280 || hh > 720) {
             //获得图片的宽高
             int width = bmp.getWidth();
             int height = bmp.getHeight();
@@ -325,7 +317,6 @@ public class wifination {
     }
 
 
-
     private static void OnSave2ToGallery(String sName, int nPhoto)     //拍照或者录像完成。可以把它加入到系统图库中去
     {
         String Sn = String.format("%02d%s", nPhoto, sName);
@@ -341,14 +332,13 @@ public class wifination {
     }
 
 
-    private static void OnGetGP_Status(int nStatus)
-    {
-        if ((nStatus&0xFFFFFF00) == 0x55AA5500)  // wifi模块透传回来的数据
+    private static void OnGetGP_Status(int nStatus) {
+        if ((nStatus & 0xFFFFFF00) == 0x55AA5500)  // wifi模块透传回来的数据
         {
             //String s = "";
             int nLen = (nStatus & 0xFF);
-            if(nLen>50)
-                nLen=50;
+            if (nLen > 50)
+                nLen = 50;
 
             byte[] cmd = new byte[nLen];
 
@@ -358,11 +348,11 @@ public class wifination {
                 cmd[i] = buf.get(i + BMP_Len);
             }
             EventBus.getDefault().post(cmd, "GetWifiSendData");
-        }else if ((nStatus&0xFFFFFF00) == 0xAA55AA00)    //GP RTPB  回传 模块信息数据
+        } else if ((nStatus & 0xFFFFFF00) == 0xAA55AA00)    //GP RTPB  回传 模块信息数据
         {
             int nLen = (nStatus & 0xFF);
-            if(nLen>50)
-                nLen=50;
+            if (nLen > 50)
+                nLen = 50;
             byte[] cmd = new byte[nLen];
             ByteBuffer buf = wifination.mDirectBuffer;
             buf.rewind();
@@ -370,10 +360,9 @@ public class wifination {
                 cmd[i] = buf.get(i + BMP_Len);
             }
             EventBus.getDefault().post(cmd, "GetWifiInfoData");
-        }
-        else {
+        } else {
             Integer ix = nStatus;                //返回 模块按键
-            Log.e(TAG,"Get data = "+nStatus);
+            Log.e(TAG, "Get data = " + nStatus);
             EventBus.getDefault().post(ix, "OnGetGP_Status");
         }
     }
@@ -385,8 +374,7 @@ public class wifination {
     }
 
     // IC_GKA  获取SD卡文件列表回调函数
-    private static void GetFiles(byte[] filesname)
-    {
+    private static void GetFiles(byte[] filesname) {
         String s1 = null;
         s1 = new String(filesname);
         EventBus.getDefault().post(s1, "GetFiles");      //调用第三方库来发消息。
@@ -424,10 +412,9 @@ public class wifination {
     }
 
     /////// 以下 SYMA 不使用 --------
-    private static void OnKeyPress(int nStatus)
-    {
+    private static void OnKeyPress(int nStatus) {
         Integer n = nStatus;
-        Log.e(TAG,"Get Key = "+nStatus);
+        Log.e(TAG, "Get Key = " + nStatus);
         EventBus.getDefault().post(n, "key_Press");
         EventBus.getDefault().post(n, "Key_Pressed");
     }
@@ -438,15 +425,13 @@ public class wifination {
         //其中，i:bit00-bit15   为图像宽度
         //      i:bit16-bit31  为图像高度
         // 图像数据保存在mDirectBuffer中，格式为ARGB_8888
-        Bitmap bmp = Bitmap.createBitmap(i&0xFFFF,(i&0xFFFF0000)>>16,Bitmap.Config.ARGB_8888);
+        Bitmap bmp = Bitmap.createBitmap(i & 0xFFFF, (i & 0xFFFF0000) >> 16, Bitmap.Config.ARGB_8888);
         ByteBuffer buf = wifination.mDirectBuffer;
         buf.rewind();
         bmp.copyPixelsFromBuffer(buf);    //
         //Integer iw=i;
         EventBus.getDefault().post(bmp, "ReviceBMP");
     }
-
-
 
 
 }

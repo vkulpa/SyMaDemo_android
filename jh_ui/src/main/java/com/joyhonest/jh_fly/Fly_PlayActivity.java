@@ -22,7 +22,6 @@ import android.os.HandlerThread;
 import android.support.annotation.NonNull;
 
 
-
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -94,7 +93,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     private BrowFilesFragment browFilesFragment;
     private DispVideo_Fragment dispVideo_fragment;
     private DispPhoto_Fragment dispPhoto_Fragment;
-    private FlyPathFragment    flyPathFragment;
+    private FlyPathFragment flyPathFragment;
 
     //private Path_Fragment path_fragment;
 
@@ -109,7 +108,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             JH_App.F_OpenStream();
         }
     };
-    private  PermissionAsker  mAsker;
+    private PermissionAsker mAsker;
 
     public JH_GLSurfaceView glSurfaceView;
 
@@ -128,7 +127,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         JH_App.nType = JH_App.nStyle_fly;
         JH_App.F_InitMusic();
         //String str = wifination.naGetControlType();
-        mAsker=new PermissionAsker(10,new Runnable() {
+        mAsker = new PermissionAsker(10, new Runnable() {
             @Override
             public void run() {
                 setContentView(R.layout.activity_fly_play_jh);
@@ -136,17 +135,15 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             }
         }, new Runnable() {
             @Override
-            public void run()
-            {
+            public void run() {
                 F_DispAlert();
 
             }
-        }).askPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.RECORD_AUDIO);
+        }).askPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO);
 
     }
 
-    private  void F_DispAlert()
-    {
+    private void F_DispAlert() {
         AlertDialog dialog = new AlertDialog.Builder(this)
                 .setTitle("Waring")
                 .setMessage("The necessary permission denied, the application exit")
@@ -165,18 +162,17 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         mAsker.onRequestPermissionsResult(grantResults);
     }
-    @Subscriber(tag="GetWifiInfoData")
-    private  void GetWifiInfoData(byte[] cmd)
-    {
-         byte nType = cmd[40];
-         Log.e("GET Wifi Type",""+nType);
+
+    @Subscriber(tag = "GetWifiInfoData")
+    private void GetWifiInfoData(byte[] cmd) {
+        byte nType = cmd[40];
+        Log.e("GET Wifi Type", "" + nType);
     }
 
-    private  void F_Init()
-    {
+    private void F_Init() {
         JH_App.bFlying = false;
 
-        glSurfaceView = (JH_GLSurfaceView)findViewById(R.id.glSurfaceView);
+        glSurfaceView = (JH_GLSurfaceView) findViewById(R.id.glSurfaceView);
 
         MyControl.bFlyType = true;
 
@@ -195,45 +191,37 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             public void run() {
                 int nrssi = JH_App.F_GetWifiRssi();
                 {
-                    if(flyPlayFragment!=null)
-                    {
-                        F_DispRssi(flyPlayFragment.WifiSingle,nrssi);
+                    if (flyPlayFragment != null) {
+                        F_DispRssi(flyPlayFragment.WifiSingle, nrssi);
                     }
-                    if(flyPathFragment!=null)
-                    {
-                        F_DispRssi(flyPathFragment.WifiSingle,nrssi);
+                    if (flyPathFragment != null) {
+                        F_DispRssi(flyPathFragment.WifiSingle, nrssi);
                     }
                 }
-                RssiHander.postDelayed(this,1000);
+                RssiHander.postDelayed(this, 1000);
 
             }
         };
 
-        RssiHander.postDelayed(RssiRunable,100);
+        RssiHander.postDelayed(RssiRunable, 100);
         JH_App.F_CreateLocalFlyDefalutDir();
         F_InitFragment();
         EventBus.getDefault().register(this);
     }
 
-    @Subscriber(tag="HideSurfaceView")
-    private  void HideSurfaceView(boolean bHide)
-    {
-        if(bHide)
-        {
+    @Subscriber(tag = "HideSurfaceView")
+    private void HideSurfaceView(boolean bHide) {
+        if (bHide) {
             glSurfaceView.setVisibility(View.INVISIBLE);
-        }
-        else
-        {
+        } else {
             glSurfaceView.setVisibility(View.VISIBLE);
         }
     }
 
-    @Subscriber(tag="NeedEnable_123")
-    private  void NeedEnable_123(String str)
-    {
-        if(mActiveFragment == flyPlayFragment)
-        {
-            JH_App.bFlyDisableAll=false;
+    @Subscriber(tag = "NeedEnable_123")
+    private void NeedEnable_123(String str) {
+        if (mActiveFragment == flyPlayFragment) {
+            JH_App.bFlyDisableAll = false;
             flyPlayFragment.F_DispDisableAll();
         }
     }
@@ -342,15 +330,12 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     }
 
 
-
-
     @Override
     protected void onPause() {
         super.onPause();
         //sendCmdHandle.removeCallbacksAndMessages(null);
         //Exit2Spalsh("");
-        if(flyPlayFragment!=null)
-        {
+        if (flyPlayFragment != null) {
             flyPlayFragment.myControl.F_ReasetAll();
         }
 
@@ -398,7 +383,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         //    myHandler.removeCallbacksAndMessages(null);
         //}
 
-        if(openHandler!=null) {
+        if (openHandler != null) {
 
             wifination.naStop();
             wifination.release();
@@ -628,32 +613,10 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         mFragmentMan.executePendingTransactions();
         F_DispFramgent(fragment);
     }
-    @Subscriber(tag="B_TEST")
-    private  void B_TEST(Integer i)
-    {
-        if(i==1)
-        {
-            wifination.naInit("");
-        }
-        else
-        {
-            wifination.naStop();
-            glSurfaceView.bDraw=false;
-            try {
-                Thread.sleep(100);
-            }
-            catch (InterruptedException e)
-            {
-                e.printStackTrace();
-            }
-
-            wifination.F_AdjBackGround(getApplicationContext(),R.mipmap.loginbackground_fly_jh);
-            glSurfaceView.bDraw=true;
-        }
-    }
 
 
-    boolean  bFirst=false;
+    boolean bFirst = false;
+
     private void F_InitFragment() {
         flyPlayFragment = new FlyPlayFragment();
         browSelectFragment = new BrowSelectFragment();
@@ -674,38 +637,14 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
         mFragmentMan.executePendingTransactions();
         F_OpenCamera(true);
-
         bFirst = true;
-
-
-
-        /*
-
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                FragmentTransaction transactionA = mFragmentMan.beginTransaction();
-                hideFragments(transactionA);
-                transactionA.commit();
-                mFragmentMan.executePendingTransactions();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        dispVideo_fragment.F_SetBackImg(R.mipmap.return_icon_black_fly_jh);
-                        F_SetView(flyPlayFragment);
-                    }
-                }, 20);
-            }
-        }, 20);
-        */
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(bFirst)
-        {
-            bFirst=false;
+        if (bFirst) {
+            bFirst = false;
             FragmentTransaction transactionA = mFragmentMan.beginTransaction();
             hideFragments(transactionA);
             transactionA.commit();
@@ -760,21 +699,17 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
 
         if ((nStatus & JH_App.LocalRecording) != 0) {
-            if((JH_App.nSdStatus & JH_App.LocalRecording)==0)
-            {
+            if ((JH_App.nSdStatus & JH_App.LocalRecording) == 0) {
                 JH_App.nSdStatus |= JH_App.LocalRecording;
-                    if(flyPlayFragment!=null)
-                    {
-                        flyPlayFragment.F_DispPhoto_Record();
-                    }
+                if (flyPlayFragment != null) {
+                    flyPlayFragment.F_DispPhoto_Record();
+                }
             }
             JH_App.nSdStatus |= JH_App.LocalRecording;
         } else {
-            if((JH_App.nSdStatus & JH_App.LocalRecording)!=0)
-            {
+            if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
                 JH_App.nSdStatus &= ((JH_App.LocalRecording ^ 0xFFFF) & 0xFFFF);
-                if(flyPlayFragment!=null)
-                {
+                if (flyPlayFragment != null) {
                     flyPlayFragment.F_DispPhoto_Record();
                 }
             }
@@ -826,33 +761,28 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         }
 
     }
-    @Subscriber(tag ="MyControlTouched")
-    private  void MyControlTouched(String str)
-    {
-        if(mActiveFragment == flyPlayFragment)
-        {
+
+    @Subscriber(tag = "MyControlTouched")
+    private void MyControlTouched(String str) {
+        if (mActiveFragment == flyPlayFragment) {
             flyPlayFragment.F_DispNoMoremenu();
         }
     }
 
     @Subscriber(tag = "SwitchChanged")
     private void SwitchChanged(SwitchMesage b) {
-        if(mActiveFragment == flyPlayFragment)
-        {
-            if(b.mySwitch == flyPlayFragment.myswitch)
+        if (mActiveFragment == flyPlayFragment) {
+            if (b.mySwitch == flyPlayFragment.myswitch)
                 flyPlayFragment.F_SetPhoto(b.bLeft);
-            else
-            {
-                if(b.bLeft)
-                {
+            else {
+                if (b.bLeft) {
                     flyPlayFragment.F_SetNoGsensor();
                 }
                 flyPlayFragment.F_SetMenuLeftRight(b.bLeft);
             }
         }
 
-        if(mActiveFragment ==flyPathFragment)
-        {
+        if (mActiveFragment == flyPathFragment) {
             flyPathFragment.F_SetPhoto(b.bLeft);
         }
     }
@@ -1545,8 +1475,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             return;
         }
         if (mActiveFragment == flyPlayFragment) {
-            if (JH_App.bVR)
-            {
+            if (JH_App.bVR) {
                 JH_App.bVR = false;
                 flyPlayFragment.F_Disp3DUI();
                 flyPlayFragment.F_DispUI();

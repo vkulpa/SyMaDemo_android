@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import java.util.List;
+import java.util.Locale;
 
 import static android.content.Context.WIFI_SERVICE;
 
@@ -146,8 +147,7 @@ public class JH_App {
     public static List<String> mDispList = null;
 
 
-
-    public static boolean   bFlyDisableAll=true;
+    public static boolean bFlyDisableAll = true;
 
     public static String sRemotePhoto = null;
     public static String sRemoteVideo = null;
@@ -180,29 +180,25 @@ public class JH_App {
     private static String sVendor = "SyMa_GO_Data";
 
 
+    public static boolean bFlying = false;
 
-    public  static  boolean bFlying = false;
+    public static int nAdjRota = 0x80;
+    public static int nAdjLeftRight = 0x80;
+    public static int nAdjForwardBack = 0x80;
 
-    public static int  nAdjRota = 0x80;
-    public static int  nAdjLeftRight=0x80;
-    public static int  nAdjForwardBack=0x80;
-
-    public static void F_ReadSaveSetting(boolean bSave)
-    {
-        if(mContext==null)
+    public static void F_ReadSaveSetting(boolean bSave) {
+        if (mContext == null)
             return;
         SharedPreferences settings = mContext.getSharedPreferences("AdjSave", 0);
-        if(bSave)
-        {
+        if (bSave) {
             SharedPreferences.Editor editor = settings.edit();
-            editor.putInt("nAdjRota",nAdjRota);
-            editor.putInt("nAdjLeftRight",nAdjLeftRight);
-            editor.putInt("nAdjForwardBack",nAdjForwardBack);
+            editor.putInt("nAdjRota", nAdjRota);
+            editor.putInt("nAdjLeftRight", nAdjLeftRight);
+            editor.putInt("nAdjForwardBack", nAdjForwardBack);
 
 // 提交本次编辑
             editor.commit();
-        }
-        else {
+        } else {
             nAdjRota = settings.getInt("nAdjRota", 0x80);
             nAdjLeftRight = settings.getInt("nAdjLeftRight", 0x80);
             nAdjForwardBack = settings.getInt("nAdjForwardBack", 0x80);
@@ -216,28 +212,22 @@ public class JH_App {
     }
 
 
-    public static void  F_Clear_not_videoFiles()
-    {
+    public static void F_Clear_not_videoFiles() {
         File f = new File(JH_App.sLocalVideo);
-        File[] files  = f.listFiles();// 列出所有文件
-        if(files == null)
+        File[] files = f.listFiles();// 列出所有文件
+        if (files == null)
             return;
-        String fileName=" ";
-        for(File  file : files)
-        {
-            if(file.exists() && !file.isDirectory())
-            {
+        String fileName = " ";
+        for (File file : files) {
+            if (file.exists() && !file.isDirectory()) {
                 fileName = file.getAbsolutePath();
                 fileName = fileName.toLowerCase();
-                if(!fileName.endsWith(".mp4"))
-                {
+                if (!fileName.endsWith(".mp4")) {
                     file.delete();
                 }
             }
         }
     }
-
-
 
 
     public static void init(Context contextA, String LocalPhoto, String LocalVideo, String SDPhoto, String SDVideo) {
@@ -250,7 +240,7 @@ public class JH_App {
                     soundPool.unload(music_mid);
                 if (music_adj > 0)
                     soundPool.unload(music_adj);
-                if(music_photo>0)
+                if (music_photo > 0)
                     soundPool.unload(music_photo);
 
             }
@@ -272,12 +262,11 @@ public class JH_App {
             mNeedDownLoadList = new ArrayList<Integer>();
             mGridList = new ArrayList<MyItemData>();
         }
-        F_CreateLocalDir(LocalPhoto,LocalVideo,SDPhoto,SDVideo);
-      //  F_InitMusic();
+        F_CreateLocalDir(LocalPhoto, LocalVideo, SDPhoto, SDVideo);
+        //  F_InitMusic();
     }
 
-    public static void F_CreateLocalFlyDefalutDir()
-    {
+    public static void F_CreateLocalFlyDefalutDir() {
         if (mContext == null)
             return;
         String StroragePath = "";
@@ -292,13 +281,13 @@ public class JH_App {
         }
 
         File fdir;
-        boolean bCreateOK=false;
-        sLocalPhoto =   String.format("%s/SYMA fly/SYMA fly_P", StroragePath);
+        boolean bCreateOK = false;
+        sLocalPhoto = String.format("%s/SYMA fly/SYMA fly_P", StroragePath);
         fdir = new File(sLocalPhoto);
         if (!fdir.exists()) {
             fdir.mkdirs();
         }
-        sLocalVideo =   String.format("%s/SYMA fly/SYMA fly_V", StroragePath);
+        sLocalVideo = String.format("%s/SYMA fly/SYMA fly_V", StroragePath);
         fdir = new File(sLocalVideo);
         if (!fdir.exists()) {
             fdir.mkdirs();
@@ -307,19 +296,17 @@ public class JH_App {
 
     }
 
-    public static void F_CreateLocalDir(String LocalPhoto, String LocalVideo, String SDPhoto, String SDVideo)
-    {
+    public static void F_CreateLocalDir(String LocalPhoto, String LocalVideo, String SDPhoto, String SDVideo) {
         if (mContext == null)
             return;
         boolean bRemote = true;
         String StroragePath = "";
 
-        if (sVendor.length() != 0)
-        {
+        if (sVendor.length() != 0) {
 
             File fdir;
             String recDir;
-            boolean  bCreateOK=false;
+            boolean bCreateOK = false;
 
             try {
                 StroragePath = Storage.getNormalSDCardPath();
@@ -330,7 +317,7 @@ public class JH_App {
                 StroragePath = Storage.getNormalSDCardPath();
             }
 
-            bCreateOK=false;
+            bCreateOK = false;
             if (LocalPhoto != null) {
                 fdir = new File(LocalPhoto);
                 if (!fdir.exists()) {
@@ -341,8 +328,7 @@ public class JH_App {
                     bCreateOK = true;
                 }
             }
-            if(!bCreateOK)
-            {
+            if (!bCreateOK) {
                 recDir = String.format("%s/%s/Local/SYMA_Photo_JH", StroragePath, sVendor);
                 sLocalPhoto = recDir;
                 fdir = new File(recDir);
@@ -353,7 +339,7 @@ public class JH_App {
             }
 
 
-            bCreateOK=false;
+            bCreateOK = false;
             if (LocalVideo != null) {
                 fdir = new File(LocalVideo);
                 if (!fdir.exists()) {
@@ -364,8 +350,7 @@ public class JH_App {
                     bCreateOK = true;
                 }
             }
-            if(!bCreateOK)
-            {
+            if (!bCreateOK) {
                 recDir = String.format("%s/%s/Local/SYMA_Video_JH", StroragePath, sVendor);
                 sLocalVideo = recDir;
                 fdir = new File(recDir);
@@ -374,7 +359,7 @@ public class JH_App {
                 }
             }
 
-            bCreateOK=false;
+            bCreateOK = false;
             if (SDPhoto != null) {
                 fdir = new File(SDPhoto);
                 if (!fdir.exists()) {
@@ -385,8 +370,7 @@ public class JH_App {
                     bCreateOK = true;
                 }
             }
-            if(!bCreateOK)
-            {
+            if (!bCreateOK) {
                 recDir = String.format("%s/%s/SD/SYMA_SDPhoto_JH", StroragePath, sVendor);
                 sRemotePhoto = recDir;
                 fdir = new File(recDir);
@@ -395,7 +379,7 @@ public class JH_App {
                 }
             }
 
-            bCreateOK=false;
+            bCreateOK = false;
             if (SDVideo != null) {
                 fdir = new File(SDVideo);
                 if (!fdir.exists()) {
@@ -406,8 +390,7 @@ public class JH_App {
                     bCreateOK = true;
                 }
             }
-            if(!bCreateOK)
-            {
+            if (!bCreateOK) {
                 recDir = String.format("%s/%s/SD/SYMA_SDVideo_JH", StroragePath, sVendor);
                 sRemoteVideo = recDir;
                 fdir = new File(recDir);
@@ -442,13 +425,15 @@ public class JH_App {
         public void onLocationChanged(Location location) {
             EventBus.getDefault().post(location, "GPS_LocationChanged");
         }
+
         public void onProviderDisabled(String provider) {
             Location location = new Location(provider);
             location.setLatitude(-400);
             location.setLongitude(-400);
             EventBus.getDefault().post(location, "GPS_LocationChanged");
         }
-            public void onProviderEnabled(String provider) {
+
+        public void onProviderEnabled(String provider) {
         }
 
         @Override
@@ -463,7 +448,7 @@ public class JH_App {
     /**
      * 如果开启正常，则会直接进入到显示页面，如果开启不正常，则会进行到GPS设置页面
      */
-    protected static void getLocation() {
+    private static void getLocation() {
         //String serviceName = Context.LOCATION_SERVICE;
         // 查找到服务信息
         Criteria criteria = new Criteria();
@@ -504,52 +489,44 @@ public class JH_App {
     }
 
     public static void F_InitMusic() {
-        if(soundPool==null) {
+        if (soundPool == null) {
             if (Build.VERSION.SDK_INT >= 21) {
                 SoundPool.Builder builder = new SoundPool.Builder();
-                builder.setMaxStreams(4);//传入音频数量
+                builder.setMaxStreams(10);//传入音频数量
                 AudioAttributes.Builder attrBuilder = new AudioAttributes.Builder();
                 attrBuilder.setLegacyStreamType(AudioManager.STREAM_MUSIC);//设置音频流的合适的属性
                 builder.setAudioAttributes(attrBuilder.build());//加载一个AudioAttributes
                 soundPool = builder.build();
             } else {
-                soundPool = new SoundPool(2, AudioManager.STREAM_MUSIC, 0);
-
+                soundPool = new SoundPool(10, AudioManager.STREAM_MUSIC, 0);
             }
         }
-        if(music_mid!=-1)
-        {
+        if (music_mid != -1) {
             soundPool.unload(music_mid);
             music_mid = -1;
         }
-        if(music_adj!=-1)
-        {
+        if (music_adj != -1) {
             soundPool.unload(music_adj);
             music_adj = -1;
         }
-        if(music_photo!=-1)
-        {
+        if (music_photo != -1) {
             soundPool.unload(music_photo);
             music_photo = -1;
         }
 
-        if(music_speed_L!=-1)
-        {
+        if (music_speed_L != -1) {
             soundPool.unload(music_speed_L);
             music_speed_L = -1;
         }
-        if(music_speed_H!=-1)
-        {
+        if (music_speed_H != -1) {
             soundPool.unload(music_speed_H);
             music_speed_H = -1;
         }
-        if(music_video_start!=-1)
-        {
+        if (music_video_start != -1) {
             soundPool.unload(music_video_start);
             music_video_start = -1;
         }
-        if(music_video_stop!=-1)
-        {
+        if (music_video_stop != -1) {
             soundPool.unload(music_video_stop);
             music_video_stop = -1;
         }
@@ -557,15 +534,13 @@ public class JH_App {
 
         music_mid = soundPool.load(mContext, R.raw.center_fly, 1);
         music_adj = soundPool.load(mContext, R.raw.adjian_fly, 1);
-        if(nType == JH_App.nStyle_fly) {
+        if (nType == JH_App.nStyle_fly) {
             music_photo = soundPool.load(mContext, R.raw.photo_fly, 1);
-            music_speed_L = soundPool.load(mContext, R.raw.speed_low_fly, 1);;
-            music_speed_H = soundPool.load(mContext, R.raw.speed_h_fly, 1);;
-            music_video_start = soundPool.load(mContext, R.raw.video_start_fly, 1);;
-            music_video_stop = soundPool.load(mContext, R.raw.video_stop_fly, 1);;
-        }
-        else
-            {
+            music_speed_L = soundPool.load(mContext, R.raw.speed_low_fly, 1);
+            music_speed_H = soundPool.load(mContext, R.raw.speed_h_fly, 1);
+            music_video_start = soundPool.load(mContext, R.raw.video_start_fly, 1);
+            music_video_stop = soundPool.load(mContext, R.raw.video_stop_fly, 1);
+        } else {
             music_photo = soundPool.load(mContext, R.raw.photo_m_fly, 1);
         }
 
@@ -578,62 +553,57 @@ public class JH_App {
         //保存图片后发送广播通知更新数据库
         if (mContext == null)
             return;
-        try
-        {
-            ContentResolver contentResolver=mContext.getContentResolver();
+        try {
+            ContentResolver contentResolver = mContext.getContentResolver();
             final ContentValues values = new ContentValues();
-            if (bPhoto)
-            {
+            if (bPhoto) {
                 values.put(MediaStore.Images.Media.MIME_TYPE, "image/jpeg");
                 values.put(MediaStore.Images.Media.DATA, filename);
-                 Uri uri = contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                        values);
-            }
-            else
-            {
+                //Uri uri =
+                contentResolver.insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+            } else {
                 values.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
                 values.put(MediaStore.Video.Media.DATA, filename);
-                 Uri uri = contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                        values);
+                //Uri uri =
+                contentResolver.insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, values);
             }
             Uri uri1 = Uri.parse("file://" + filename);
             mContext.sendBroadcast(new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, uri1));
-        }
-        catch (NullPointerException e)
-        {
-
+        } catch (NullPointerException e) {
+            e.printStackTrace();
         }
     }
 
 
     //删除图片或者视频，并且把它从系统图库中清除
-    public static void DeleteImage(String imgPath)
-    {
-        String stype = imgPath.substring(imgPath.length()-3,imgPath.length());
+    public static void DeleteImage(String imgPath) {
+        String stype = imgPath.substring(imgPath.length() - 3, imgPath.length());
         stype = stype.toUpperCase();
         ContentResolver resolver = mContext.getContentResolver();
         Cursor cursor;
         {
-           // cursor = MediaStore.Images.Media.query(resolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=?",
+            // cursor = MediaStore.Images.Media.query(resolver, MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=?",
             //        new String[]{imgPath}, null);
-            if(stype.equalsIgnoreCase("jpg") || stype.equalsIgnoreCase("png")) {
+            if (stype.equalsIgnoreCase("jpg") || stype.equalsIgnoreCase("png")) {
                 cursor = resolver.query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Images.Media._ID}, MediaStore.Images.Media.DATA + "=?",
                         new String[]{imgPath}, null);
-            }
-            else
-            {
+            } else {
                 cursor = resolver.query(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, new String[]{MediaStore.Video.Media._ID}, MediaStore.Video.Media.DATA + "=?",
                         new String[]{imgPath}, null);
             }
         }
 
-        boolean result = false;
-        if (cursor.moveToFirst()) {
-            long id = cursor.getLong(0);
-            Uri contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-            Uri uri = ContentUris.withAppendedId(contentUri, id);
-            int count = resolver.delete(uri, null, null);
-            result = count == 1;
+        //boolean result = false;
+        if (cursor != null) {
+            if (cursor.moveToFirst()) {
+                long id = cursor.getLong(0);
+                Uri contentUri = MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+                Uri uri = ContentUris.withAppendedId(contentUri, id);
+                //int count =
+                resolver.delete(uri, null, null);
+                //result = count == 1;
+            }
+            cursor.close();
         }
         {
             File file = new File(imgPath);
@@ -665,30 +635,26 @@ public class JH_App {
 
     public static void F_PlayPhoto() {
 
-        if (music_photo >0)
+        if (music_photo > 0)
             soundPool.play(music_photo, 1, 1, 0, 0, 1);
     }
 
-    public  static void F_PlayStartRecord()
-    {
-        if (music_video_start>0)
+    public static void F_PlayStartRecord() {
+        if (music_video_start > 0)
             soundPool.play(music_video_start, 1, 1, 0, 0, 1);
     }
-    public  static void F_PlayStopRecord()
-    {
-        if (music_video_stop>0)
+
+    public static void F_PlayStopRecord() {
+        if (music_video_stop > 0)
             soundPool.play(music_video_stop, 1, 1, 0, 0, 1);
     }
-    public  static void F_PlaySpeed(boolean bHiSpeedA)
-    {
-        if(bHiSpeedA)
-        {
-            if (music_speed_H>0)
+
+    public static void F_PlaySpeed(boolean bHiSpeedA) {
+        if (bHiSpeedA) {
+            if (music_speed_H > 0)
                 soundPool.play(music_speed_H, 1, 1, 0, 0, 1);
-        }
-        else
-        {
-            if (music_speed_L>0)
+        } else {
+            if (music_speed_L > 0)
                 soundPool.play(music_speed_L, 1, 1, 0, 0, 1);
         }
 
@@ -696,11 +662,11 @@ public class JH_App {
 
     public static void F_PlayButton() {
 
-        if (music_btn >0)
+        if (music_btn > 0)
             soundPool.play(music_btn, 1, 1, 0, 0, 1);
     }
 
-    public void Clear() {
+    public static void Clear() {
         if (mGridList == null) {
             mSD_PhotosList.clear();
             mSD_VideosList.clear();
@@ -721,12 +687,17 @@ public class JH_App {
     public static int F_GetWifiRssi() {
         if (mContext == null)
             return -1;
-        if(nICType==wifination.IC_NO)
-        {
+
+        if (nICType == wifination.IC_NO) {
             return -1;
         }
         WifiManager wifi_service = (WifiManager) mContext.getSystemService(WIFI_SERVICE);
-        WifiInfo info = wifi_service.getConnectionInfo();
+        WifiInfo info = null;
+        if (wifi_service != null)
+            info = wifi_service.getConnectionInfo();
+
+        if (info == null)
+            return -1;
 
         int level = info.getRssi();
         int nrssi;
@@ -743,15 +714,17 @@ public class JH_App {
             nrssi = -1;
         }
         return nrssi;
-
     }
 
     public static int F_GetWifiType() {
+        nICType = wifination.IC_NO;
         if (mContext == null)
-            return -1;
+            return nICType;
         WifiManager wifi_service = (WifiManager) mContext.getSystemService(WIFI_SERVICE);
 
-        WifiInfo info = wifi_service.getConnectionInfo();
+        WifiInfo info = null;
+        if (wifi_service != null)
+            info = wifi_service.getConnectionInfo();
 
         String wifiId;
         wifiId = (info != null ? info.getSSID() : null);
@@ -761,12 +734,12 @@ public class JH_App {
                 wifiId = wifiId.substring(wifiId.length() - 4);
         } else {
             wifiId = "nowifi";
+            return nICType;
         }
         sWifi = wifiId;
 
         String sIP = intToIp(info.getIpAddress());
 
-        nICType = wifination.IC_NO;
         if (sIP.startsWith("175.16.10")) {
             nICType = wifination.IC_GKA;
         } else if (sIP.startsWith("192.168.234")) {
@@ -785,8 +758,7 @@ public class JH_App {
             nICType = wifination.IC_GPH264A;
         } else if (sIP.startsWith("192.168.123")) {
             nICType = wifination.IC_SN;
-        }
-        else if (sIP.startsWith("192.168.16")) {
+        } else if (sIP.startsWith("192.168.16")) {
             nICType = wifination.IC_GK_UDP;
             //nICType = wifination.IC_GPH264;
         }
@@ -799,8 +771,7 @@ public class JH_App {
 
 
     //获取是否存在NavigationBar
-    public static void checkDeviceHasNavigationBar(Context context)
-    {
+    public static void checkDeviceHasNavigationBar(Context context) {
 
         /*
         Activity activity = (Activity) context;
@@ -896,7 +867,7 @@ public class JH_App {
         int end = pathandname.length();
         if (start == -1)
             return pathandname;
-        if (start != -1 && end != 0) {
+        if (end != 0) {
             return pathandname.substring(start + 1, end);
         } else {
             return null;
@@ -931,17 +902,11 @@ public class JH_App {
     }
 
 
-
-
-
-
-
     public static boolean F_CheckFileIsExist(String sFileName, int size) {
         File file = new File(sFileName);
         int nSize = -1;
-        if (file.exists() && !file.isDirectory())
-        {
-            FileInputStream fis = null;
+        if (file.exists() && !file.isDirectory()) {
+            FileInputStream fis;
             try {
                 fis = new FileInputStream(file);
                 nSize = fis.available();
@@ -950,8 +915,7 @@ public class JH_App {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            if (nSize == size)
-                return true;
+            return nSize == size;
         }
         return false;
     }
@@ -987,15 +951,13 @@ public class JH_App {
  * getRealMetrics - 屏幕的原始尺寸，即包含状态栏。
  * version >= 4.2.2
  */
-        int width=0;
+        int width = 0;
         int height = 1;
-        if (Build.VERSION.SDK_INT >= 17) {
+        if (Build.VERSION.SDK_INT >= 18) {
             wm.getDefaultDisplay().getRealMetrics(metrics);
             width = metrics.widthPixels;
             height = metrics.heightPixels;
-        }
-        else
-        {
+        } else {
             Point outSize = new Point();
             wm.getDefaultDisplay().getSize(outSize);
             width = outSize.x;
@@ -1024,7 +986,7 @@ public class JH_App {
     public static String getAppVersionName() {
         String versionName = "";
         try {
-            if (mContext == null) {
+            if (mContext != null) {
                 // ---get the package info---
                 PackageManager pm = mContext.getPackageManager();
                 PackageInfo pi = pm.getPackageInfo(mContext.getPackageName(), 0);
@@ -1057,7 +1019,8 @@ public class JH_App {
     public static void F_OpenStream() {
 
         int ictype = JH_App.F_GetWifiType();
-        wifination.naSetAdjFps(true);
+
+        wifination.naSetAdjFps(false); //针对GKA模块 有效
 
 
         JH_App.nICType = ictype;
@@ -1073,7 +1036,7 @@ public class JH_App {
             wifination.naSetCustomer("sima");
         else
             wifination.naSetCustomer(" ");
-       // wifination.naSetVideoSurface(surface); //surfaceHolder.getSurface());
+        // wifination.naSetVideoSurface(surface); //surfaceHolder.getSurface());
         String str = "";
         int re = -1;
         if (JH_App.nICType == wifination.IC_GK) {
@@ -1094,8 +1057,8 @@ public class JH_App {
         }
 
         if (JH_App.nICType == wifination.IC_GP) {
-            //str = "http://192.168.25.1:8080/?action=stream";
-            str = "rtsp://192.168.25.1:8080/?action=stream";
+            str = "http://192.168.25.1:8080/?action=stream";
+            //str = "rtsp://192.168.25.1:8080/?action=stream";
             re = wifination.naInit(str);
             if (re == 0)
                 wifination.naPlay();
@@ -1159,7 +1122,7 @@ public class JH_App {
         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
         try {
             retriever.setDataSource(videoPath);
-           // bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            // bitmap = retriever.getFrameAtTime(0, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
             bitmap = retriever.getFrameAtTime();
         } catch (IllegalArgumentException e) {
             e.printStackTrace();
@@ -1197,53 +1160,47 @@ public class JH_App {
     private static List<String> lstFile = new ArrayList<String>();  //结果 List
 
 
-    public static  void GetFilesA(String Path, String Extension, boolean IsIterative)  //搜索目录，扩展名，是否进入子文件夹
+    public static void GetFilesA(String Path, String Extension, boolean IsIterative)  //搜索目录，扩展名，是否进入子文件夹
     {
-        if(lstFile==null)
-        {
+        if (lstFile == null) {
             lstFile = new ArrayList<String>();
         }
-        File fa =  new File(Path);
-        if(fa.isFile())
-        {
+        File fa = new File(Path);
+        if (fa.isFile()) {
             lstFile.clear();
             return;
         }
         File[] files = new File(Path).listFiles();
 
+
         File wfile = new File(sLocalVideo + "/s8.txt");
-        if (wfile.exists())
-        {
+
+        if (wfile.exists()) {
             wfile.delete();
         }
+        try {
+            wfile.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (SecurityException e) {
+            e.printStackTrace();
+        }
 
-            try {
-                wfile.createNewFile();
-            }catch (IOException e)
-            {
-
-            }
         wfile.setWritable(true);
 
-        BufferedWriter wr=null;
+        BufferedWriter wr = null;
         try {
             wr = new BufferedWriter(new FileWriter(wfile));
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        catch (IOException e)
-        {
-
-        }
-        for (int i = 0; i < files.length; i++)
-        {
+        for (int i = 0; i < files.length; i++) {
             File f = files[i];
-            if (f.isFile())
-            {
-                if(Extension!=null) {
+            if (f.isFile()) {
+                if (Extension != null) {
                     if (f.getPath().substring(f.getPath().length() - Extension.length()).equals(Extension))  //判断扩展名
                         lstFile.add(f.getName());
-                }
-                else
-                {
+                } else {
                     StringBuffer sb = new StringBuffer();
                     try {
                         BufferedReader br = new BufferedReader(new FileReader(f));
@@ -1252,38 +1209,33 @@ public class JH_App {
                             sb.append(line);
                         }
                         br.close();
-                    }catch (FileNotFoundException e)
-                    {
-
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
-                    catch ( IOException e)
-                    {
-
-                    }
-                    String str =  f.getName()+"  "+sb+"\n";
+                    String str = f.getName() + "  " + sb + "\n";
 
                     lstFile.add(str);
                     try {
-                        if(wr!=null)
+                        if (wr != null)
                             wr.write(str);
-                    }catch (IOException e)
-                    {
-
+                    } catch (IOException e) {
+                        e.printStackTrace();
                     }
                 }
-            }
-            else if (f.isDirectory() && f.getPath().indexOf("/.") == -1)  //忽略点文件（隐藏文件/文件夹）
+            } else if (f.isDirectory() && !f.getPath().contains("/."))  //忽略点文件（隐藏文件/文件夹）
             {
-                if(IsIterative)
-                    GetFilesA(f.getPath(), Extension, IsIterative);
+                if (IsIterative) {
+                    //GetFilesA(f.getPath(), Extension, IsIterative);
+                    GetFilesA(f.getPath(), Extension, true);
+                }
             }
         }
         try {
             wr.close();
-        }
-        catch (IOException e)
-        {
-
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
     }

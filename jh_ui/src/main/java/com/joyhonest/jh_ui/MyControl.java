@@ -237,9 +237,13 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
     int topPx;
     int botPx;
 
+    private  Bitmap bbitbmp; //= BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_back_fly_jh_fig);
+
     private void init() {
         setWillNotDraw(false);
         Context context = this.getContext();
+        bbitbmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_back_fly_jh_fig);
+
         if (bFlyType) {
             topPx = Storage.dip2px(context, 40);
             botPx = Storage.dip2px(context, 40);
@@ -328,12 +332,12 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
         int WW = width;
         int height = MeasureSpec.getSize(heightMeasureSpec);
         setMeasuredDimension(width, height);
-        int sdd = width;
+   //     int sdd = width;
 
-        int swww = width / 2;
+     //   int swww = width / 2;
         if (width > nCentWidth) {
             width -= nCentWidth;
-            swww -= (nCentWidth / 2);
+          //  swww -= (nCentWidth / 2);
         }
         width /= 2;
 
@@ -623,12 +627,14 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             RockeLeft = RockeLeftA;
             RockeRight = RockeRightA;
 
+            /*
             if(bFlyType)
             {
              //   Bitmap bmp = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_back_fly_jh_fig);
              //   RockeRight.F_SetImage(bmp);
 
             }
+            */
 
             int nType = 0;
             nType |= MyRockeViewA.TYPE_No_ADJY;
@@ -690,7 +696,8 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             nType |= MyRockeViewA.TYPE_RestCentX;
             RockeRight.F_SetType(nType);
             RockeRight.F_SetVLR(false);
-        } else if (nMode == 5)          //右手模式1+重力
+        }
+        else // if (nMode == 5)          //右手模式1+重力
         {
             RockeLeft = RockeRightA;
             RockeRight = RockeLeftA;
@@ -1569,6 +1576,8 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
 
         }
 
+        private  RectF  dstrect = new RectF(0,0,1,1);
+
         @Override
         protected void onDraw(Canvas canvas) {
             Paint paint = new Paint();
@@ -1583,29 +1592,35 @@ public class MyControl extends RelativeLayout implements SensorEventListener {
             }
             paint.setAntiAlias(true);
             int nSize = Storage.dip2px(getContext(), 15);
-            RectF dstRect = new RectF(centx - Radius, centy - Radius, centx + Radius, centy + Radius);
+           // RectF dstRect = new RectF(centx - Radius, centy - Radius, centx + Radius, centy + Radius);
+            dstrect.left = centx - Radius;
+            dstrect.top = centy - Radius;
+            dstrect.right = centx + Radius;
+            dstrect.bottom = centy + Radius;
+
             if(bFlyType)
             {
                 if((nType & TYPE_X_Acceleration)!=0 || (nType &TYPE_Y_Acceleration)!=0 )
                 {
                     if(bTouched)
                     {
-                        canvas.drawBitmap(backBmp, null, dstRect, paint);
+                        canvas.drawBitmap(backBmp, null, dstrect, paint);
                     }
                     else
                     {
-                        Bitmap bb = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_back_fly_jh_fig);
-                        canvas.drawBitmap(bb, null, dstRect, paint);
+                       // Bitmap bb = BitmapFactory.decodeResource(this.getContext().getResources(), R.mipmap.cir_back_fly_jh_fig);
+                        if(bbitbmp!=null)
+                            canvas.drawBitmap(bbitbmp, null, dstrect, paint);
                     }
                 }
                 else
                 {
-                    canvas.drawBitmap(backBmp, null, dstRect, paint);
+                    canvas.drawBitmap(backBmp, null, dstrect, paint);
                 }
             }
             else
             {
-                canvas.drawBitmap(backBmp, null, dstRect, paint);
+                canvas.drawBitmap(backBmp, null, dstrect, paint);
             }
 
             paint.setColor(Color.RED);

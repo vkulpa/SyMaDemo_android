@@ -11,72 +11,72 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 
 
-
-
 public class AudioEncoder implements AudioCodec {
     //private Client mClient;
     private Worker mWorker;
-    private final String TAG="AudioEncoder";
+    private final String TAG = "AudioEncoder";
     private byte[] mFrameByte;
+
     public AudioEncoder() {
-      //  mClient=client;
+        //  mClient=client;
     }
-    public void start(){
-        if(mWorker==null){
-            mWorker=new Worker();
+
+    public void start() {
+        if (mWorker == null) {
+            mWorker = new Worker();
             mWorker.setRunning(true);
             mWorker.start();
         }
 
     }
-    public void stop(){
-        if(mWorker!=null){
+
+    public void stop() {
+        if (mWorker != null) {
             mWorker.setRunning(false);
-            mWorker=null;
+            mWorker = null;
         }
         //if(!mClient.hasRelease()){
         //    mClient.release();
-       // }
+        // }
     }
 
 
-
-    private class Worker extends Thread{
+    private class Worker extends Thread {
         private int mFrameSize = 2048;
         private byte[] mBuffer;
-        private boolean isRunning=false;
+        private boolean isRunning = false;
         private MediaCodec mEncoder;
         private AudioRecord mRecord;
         MediaCodec.BufferInfo mBufferInfo;
+
         @Override
         public void run() {
-            if(!prepare()){
-                Log.d(TAG,"音频编码器初始化失败");
-                isRunning=false;
+            if (!prepare()) {
+                Log.d(TAG, "音频编码器初始化失败");
+                isRunning = false;
             }
 
-            int re=0;
-            while(isRunning)
-            {
+            int re = 0;
+            while (isRunning) {
                 re = mRecord.read(mBuffer, 0, mFrameSize);
                 encode(mBuffer);
             }
             release();
         }
 
-        public void setRunning(boolean run){
-            isRunning=run;
+        public void setRunning(boolean run) {
+            isRunning = run;
         }
 
         /**
          * 释放资源
          */
         private void release() {
-            if(mEncoder!=null){
+            if (mEncoder != null) {
                 mEncoder.stop();
                 mEncoder.release();
             }
-            if(mRecord!=null){
+            if (mRecord != null) {
                 mRecord.stop();
                 mRecord.release();
                 mRecord = null;
@@ -85,19 +85,20 @@ public class AudioEncoder implements AudioCodec {
 
         /**
          * 连接服务端，编码器配置
+         *
          * @return true配置成功，false配置失败
          */
         private boolean prepare() {
             try {
-              //  mClient.connectToServer();
+                //  mClient.connectToServer();
                 mBufferInfo = new MediaCodec.BufferInfo();
 
                 mEncoder = MediaCodec.createEncoderByType(MIME_TYPE);
-                MediaFormat mediaFormat = MediaFormat.createAudioFormat(MIME_TYPE,KEY_SAMPLE_RATE, KEY_CHANNEL_COUNT);
+                MediaFormat mediaFormat = MediaFormat.createAudioFormat(MIME_TYPE, KEY_SAMPLE_RATE, KEY_CHANNEL_COUNT);
                 mediaFormat.setInteger(MediaFormat.KEY_BIT_RATE, KEY_BIT_RATE);
                 mediaFormat.setInteger(MediaFormat.KEY_SAMPLE_RATE, KEY_SAMPLE_RATE);
                 mediaFormat.setInteger(MediaFormat.KEY_CHANNEL_COUNT, KEY_CHANNEL_COUNT);
-                mediaFormat.setInteger(MediaFormat.KEY_AAC_PROFILE,KEY_AAC_PROFILE);
+                mediaFormat.setInteger(MediaFormat.KEY_AAC_PROFILE, KEY_AAC_PROFILE);
                 //mediaFormat.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, BUFFER_SIZE_IN_BYTES);
                 mEncoder.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
                 mEncoder.start();
@@ -107,7 +108,7 @@ public class AudioEncoder implements AudioCodec {
             }
 
             int minBufferSize = AudioRecord.getMinBufferSize(KEY_SAMPLE_RATE, CHANNEL_MODE,
-                    AUDIO_FORMAT)*2;
+                    AUDIO_FORMAT) * 2;
             mRecord = new AudioRecord(MediaRecorder.AudioSource.MIC,
                     KEY_SAMPLE_RATE, CHANNEL_MODE, AUDIO_FORMAT, minBufferSize);
             int buffSize = Math.min(4096, minBufferSize);
@@ -116,10 +117,12 @@ public class AudioEncoder implements AudioCodec {
             mRecord.startRecording();
             return true;
         }
+
+
         private void encode(byte[] data) {
             ByteBuffer[] inputBuffers = mEncoder.getInputBuffers();
             ByteBuffer[] outputBuffers = mEncoder.getOutputBuffers();
-            int inputBufferId = mEncoder.dequeueInputBuffer(1000*50);
+            int inputBufferId = mEncoder.dequeueInputBuffer(1000 * 50);
             if (inputBufferId >= 0) {
                 ByteBuffer bb = inputBuffers[inputBufferId];
                 bb.put(data, 0, data.length);
@@ -128,9 +131,8 @@ public class AudioEncoder implements AudioCodec {
             }
 
             MediaCodec.BufferInfo aBufferInfo = new MediaCodec.BufferInfo();
-            int outputBufferIndex = mEncoder.dequeueOutputBuffer(aBufferInfo, 1000*10);
-            while (outputBufferIndex >= 0)
-            {  //编码器有可能一次性突出多条数据 所以使用while
+            int outputBufferIndex = mEncoder.dequeueOutputBuffer(aBufferInfo, 1000 * 10);
+            while (outputBufferIndex >= 0) {  //编码器有可能一次性突出多条数据 所以使用while
                 // outputBuffers[outputBufferId] is ready to be processed or rendered.
                 ByteBuffer bb = outputBuffers[outputBufferIndex];
 
@@ -182,26 +184,26 @@ public class AudioEncoder implements AudioCodec {
 
         /**
          * 给编码出的aac裸流添加adts头字段
-         * @param packet 要空出前7个字节，否则会搞乱数据
+         *
+         * @param packet    要空出前7个字节，否则会搞乱数据
          * @param packetLen
          */
 
-        private void addADTStoPacket(byte[] packet, int packetLen)
-        {
+        private void addADTStoPacket(byte[] packet, int packetLen) {
             int profile = 2;  //AAC LC
             int freqIdx = 4;  //44.1KHz
             int chanCfg = 2;  //CPE
-            packet[0] = (byte)0xFF;
-            packet[1] = (byte)0xF9;
-            packet[2] = (byte)(((profile-1)<<6) + (freqIdx<<2) +(chanCfg>>2));
-            packet[3] = (byte)(((chanCfg&3)<<6) + (packetLen>>11));
-            packet[4] = (byte)((packetLen&0x7FF) >> 3);
-            packet[5] = (byte)(((packetLen&7)<<5) + 0x1F);
-            packet[6] = (byte)0xFC;
+            packet[0] = (byte) 0xFF;
+            packet[1] = (byte) 0xF9;
+            packet[2] = (byte) (((profile - 1) << 6) + (freqIdx << 2) + (chanCfg >> 2));
+            packet[3] = (byte) (((chanCfg & 3) << 6) + (packetLen >> 11));
+            packet[4] = (byte) ((packetLen & 0x7FF) >> 3);
+            packet[5] = (byte) (((packetLen & 7) << 5) + 0x1F);
+            packet[6] = (byte) 0xFC;
         }
     }
 
 
-    private  static native  boolean naSentVoiceData(byte[] data,int nLen);
+    private static native boolean naSentVoiceData(byte[] data, int nLen);
 
 }

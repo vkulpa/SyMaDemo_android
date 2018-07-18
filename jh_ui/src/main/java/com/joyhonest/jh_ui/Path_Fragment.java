@@ -2,6 +2,7 @@ package com.joyhonest.jh_ui;
 
 
 //import android.app.Fragment;
+
 import android.os.Bundle;
 import android.os.Handler;
 //import android.support.v4.app.Fragment;
@@ -278,7 +279,6 @@ public class Path_Fragment extends Fragment {
         Y_ADJ2 = myControl.F_GetForwardBackAdj();
 
 
-
         X2_bak = X2;
         Y2_bak = Y2;
 
@@ -324,16 +324,14 @@ Data8(Bit3)=1 中速档标志，Data8(Bit3)=0无效
 Data9：Data0- Data8异或后，再加0X55
 
  */
-        if(JH_App.bIsSyMa)
-        {
+        if (JH_App.bIsSyMa) {
 
             if (X1 > (0x80 - 0x25) && X1 < (0x80 + 0x25)) {
                 X1 = 0x80;
             }
 
 
-            if (Y2 > 0x80)
-            {
+            if (Y2 > 0x80) {
                 Y2 -= 0x80;
             } else if (Y2 < 0x80) {
                 Y2 = 0x80 - Y2;
@@ -343,21 +341,16 @@ Data9：Data0- Data8异或后，再加0X55
                 }
             }
 
-            if (X1 > 0x80)
-            {
+            if (X1 > 0x80) {
                 ;
-            }
-            else if (X1 < 0x80)
-            {
+            } else if (X1 < 0x80) {
                 X1 = 0x80 - X1;
-                if (X1 > 0x7F)
-                {
+                if (X1 > 0x7F) {
                     X1 = 0x7F;
                 }
             }
 
-            if (X2 > 0x80)
-            {
+            if (X2 > 0x80) {
                 ;
             } else if (X2 < 0x80) {
                 X2 = 0x80 - X2;

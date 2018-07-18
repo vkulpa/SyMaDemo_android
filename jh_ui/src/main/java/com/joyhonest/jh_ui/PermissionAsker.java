@@ -2,9 +2,9 @@
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *  
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- *  
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -25,50 +25,51 @@ import android.support.v4.app.ActivityCompat;
  */
 public class PermissionAsker {
 
-    private Runnable mOkRun=RUN;
-    private Runnable mDeniRun=RUN;
-    private int mReqCode=1;
+    private Runnable mOkRun = RUN;
+    private Runnable mDeniRun = RUN;
+    private int mReqCode = 1;
 
-    public PermissionAsker(){}
-
-    public PermissionAsker(int code,Runnable ok,Runnable deni){
-        this.mReqCode=code;
-        this.mOkRun=ok;
-        this.mDeniRun=deni;
+    public PermissionAsker() {
     }
 
-    public void setReqCode(int code){
-        this.mReqCode=code;
+    public PermissionAsker(int code, Runnable ok, Runnable deni) {
+        this.mReqCode = code;
+        this.mOkRun = ok;
+        this.mDeniRun = deni;
     }
 
-    public void setSuccedCallback(Runnable run){
-        this.mOkRun=run;
+    public void setReqCode(int code) {
+        this.mReqCode = code;
     }
 
-    public void setFailedCallback(Runnable run){
-        this.mDeniRun=run;
+    public void setSuccedCallback(Runnable run) {
+        this.mOkRun = run;
     }
 
-    public PermissionAsker askPermission(Activity context,String ... permission){
-        int result=0;
+    public void setFailedCallback(Runnable run) {
+        this.mDeniRun = run;
+    }
+
+    public PermissionAsker askPermission(Activity context, String... permission) {
+        int result = 0;
         //PackageManager.PERMISSION_GRANTED
-        for (String p:permission){
-            result+=ActivityCompat.checkSelfPermission(context,p);
+        for (String p : permission) {
+            result += ActivityCompat.checkSelfPermission(context, p);
         }
-        if(result==0){
+        if (result == 0) {
             mOkRun.run();
-        }else{
-            ActivityCompat.requestPermissions(context,permission,mReqCode);
+        } else {
+            ActivityCompat.requestPermissions(context, permission, mReqCode);
         }
         return this;
     }
 
-    public void onRequestPermissionsResult(int[] grantResults){
-        boolean b=true;
-        for (int a:grantResults){
-            b&=(a== PackageManager.PERMISSION_GRANTED);
+    public void onRequestPermissionsResult(int[] grantResults) {
+        boolean b = true;
+        for (int a : grantResults) {
+            b &= (a == PackageManager.PERMISSION_GRANTED);
         }
-        if (grantResults.length > 0&&b) {
+        if (grantResults.length > 0 && b) {
             mOkRun.run();
         } else {
             mDeniRun.run();
@@ -76,7 +77,7 @@ public class PermissionAsker {
     }
 
 
-    private static final Runnable RUN=new Runnable() {
+    private static final Runnable RUN = new Runnable() {
         @Override
         public void run() {
 

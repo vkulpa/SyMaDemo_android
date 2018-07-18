@@ -26,7 +26,7 @@ import org.simple.eventbus.EventBus;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class FlyPathFragment extends Fragment implements View.OnClickListener{
+public class FlyPathFragment extends Fragment implements View.OnClickListener {
 
 
     private MyControl myControl;
@@ -34,39 +34,37 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
 
     private MySwitch myswitch;
     private Button Photo_Record_Start_Btn;
-   // private Button Floder_Btn;
+    // private Button Floder_Btn;
     private Button Return_Btn;
 
 
     private Button StopFly_Btn;
 
 
-
     private boolean bControlUI = true;
     private boolean bPhoto = true;
 
 
-   // private TextView Location_TxtView;
+    // private TextView Location_TxtView;
     //private LinearLayout Layout_LeftMenu;
 
     //private LinearLayout Layout_Menu;
 
 
-
     private TextView snapshot;
 
-    private  boolean  bOpenEye = true;
+    private boolean bOpenEye = true;
 
 
     //private  boolean  bStop = false;
 
 
-    private  RelativeLayout  rootlayout;
-    private  TextView Record_Time_TextCtrl;
+    private RelativeLayout rootlayout;
+    private TextView Record_Time_TextCtrl;
 
 
-    public ImageView  WifiSingle;
-    private  RelativeLayout  photo_mask;
+    public ImageView WifiSingle;
+    private RelativeLayout photo_mask;
 
     public FlyPathFragment() {
         // Required empty public constructor
@@ -77,15 +75,15 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        View view =  inflater.inflate(R.layout.fragment_fly_path, container, false);
+        View view = inflater.inflate(R.layout.fragment_fly_path, container, false);
 
         view.findViewById(R.id.rooglayout).setBackgroundColor(0x00010000);
-        photo_mask = (RelativeLayout)view.findViewById(R.id.photo_mask);
+        photo_mask = (RelativeLayout) view.findViewById(R.id.photo_mask);
         photo_mask.setVisibility(View.GONE);
 
-        WifiSingle = (ImageView)view.findViewById(R.id.WifiSingle);
+        WifiSingle = (ImageView) view.findViewById(R.id.WifiSingle);
 
-        rootlayout = (RelativeLayout)view.findViewById(R.id.rooglayout);
+        rootlayout = (RelativeLayout) view.findViewById(R.id.rooglayout);
         rootlayout.setBackgroundColor(0x00000000);
 
 
@@ -93,10 +91,8 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
         snapshot.setVisibility(View.INVISIBLE);
 
 
-
-
-    //    Location_TxtView = (TextView) view.findViewById(R.id.Location_TxtView);
-     //   Location_TxtView.setText("");
+        //    Location_TxtView = (TextView) view.findViewById(R.id.Location_TxtView);
+        //   Location_TxtView.setText("");
         myControl = (MyControl) view.findViewById(R.id.myControl);
         myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
         myControl.F_SetDispText(false);
@@ -122,15 +118,13 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
 
         bPhoto = true;
 
-      //  Location_TxtView.setTextColor(0xFFFF0000);
-
+        //  Location_TxtView.setTextColor(0xFFFF0000);
 
 
         myControl.F_DispPahtView(true);
 
 
-
-            myControl.F_SetDispText(false);
+        myControl.F_SetDispText(false);
 
         /*
         else {
@@ -145,20 +139,16 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
         }
         */
         F_DispPhoto_Record();
-        return  view;
+        return view;
     }
 
 
-    public void F_DispOpenEye(boolean b)
-    {
+    public void F_DispOpenEye(boolean b) {
         bOpenEye = b;
-        if(bOpenEye)
-        {
+        if (bOpenEye) {
             rootlayout.setBackgroundColor(0x00000000);
             Open_Close_eye_Btn.setBackgroundResource(R.mipmap.open_eye_fly);
-        }
-        else
-        {
+        } else {
             rootlayout.setBackgroundResource(R.mipmap.loginbackground_fly_jh);
             Open_Close_eye_Btn.setBackgroundResource(R.mipmap.close_eye_fly);
         }
@@ -177,18 +167,15 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
     }
 
     @Override
-    public void onClick(View v)
-    {
-         if(v == Return_Btn )
-         {
-             F_StopPaht();
-             EventBus.getDefault().post("abc", "GoTo_Main");
-         }
-         if(v == Open_Close_eye_Btn)
-         {
-             bOpenEye =!bOpenEye;
-             F_DispOpenEye(bOpenEye);
-         }
+    public void onClick(View v) {
+        if (v == Return_Btn) {
+            F_StopPaht();
+            EventBus.getDefault().post("abc", "GoTo_Main");
+        }
+        if (v == Open_Close_eye_Btn) {
+            bOpenEye = !bOpenEye;
+            F_DispOpenEye(bOpenEye);
+        }
         if (v == StopFly_Btn) {
             JH_App.bStop = true;
             StopFly_Btn.setBackgroundResource(R.mipmap.stop_sel_fly_jh);
@@ -197,7 +184,7 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
                 public void run() {
                     JH_App.bStop = false;
                     {
-                      //  StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+                        //  StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
                         StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
                     }
 
@@ -232,7 +219,7 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
                     public void run() {
                         photo_mask.setVisibility(View.GONE);
                     }
-                },120);
+                }, 120);
 
             } else {
                 if ((JH_App.nSdStatus & JH_App.Status_Connected) == 0) {
@@ -273,9 +260,8 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
     }
 
     public void F_DispRecorTime() {
-        if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0)
-        {
-            int sec =wifination.naGetRecordTime()/1000;
+        if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
+            int sec = wifination.naGetRecordTime() / 1000;
             int nMin = (sec / 60);
             if (nMin > 99)
                 nMin = 0;
@@ -306,25 +292,20 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
 
     public void F_DispPhoto_Record() {
 
-        if (bPhoto)
-        {
+        if (bPhoto) {
             Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_icon_fly_jh);
-            if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0)
-            {
+            if ((JH_App.nSdStatus & JH_App.LocalRecording) != 0) {
                 Record_Time_TextCtrl.setVisibility(View.VISIBLE);
-            }
-            else
-            {
+            } else {
                 Record_Time_TextCtrl.setVisibility(View.INVISIBLE);
             }
-        }
-        else {
-                Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_record_icon_fly_jh);
-                //myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
-                myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
-                myControl.F_SetFlyRecord(false);
-                F_DispOpenEye(bOpenEye);
-                //StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
+        } else {
+            Photo_Record_Start_Btn.setBackgroundResource(R.mipmap.photo_record_icon_fly_jh);
+            //myControl.F_SetImage(R.mipmap.cir_back_fly_jh_b, R.mipmap.cir_fly_jh);
+            myControl.F_SetImage(R.mipmap.cir_back_fly_jh, R.mipmap.cir_fly_jh);
+            myControl.F_SetFlyRecord(false);
+            F_DispOpenEye(bOpenEye);
+            //StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh_b);
             StopFly_Btn.setBackgroundResource(R.mipmap.stop_nor_fly_jh);
         }
     }
@@ -352,8 +333,8 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
     };
 
 
-
     byte[] cmd = new byte[20];
+
     private void F_SentCmd()        //司马demo  协议
     {
 
@@ -371,7 +352,6 @@ public class FlyPathFragment extends Fragment implements View.OnClickListener{
         X_ADJ1 = myControl.F_GetRotateAdj();
         X_ADJ2 = myControl.F_GetLeftRightAdj();
         Y_ADJ2 = myControl.F_GetForwardBackAdj();
-
 
 
         X2_bak = X2;
@@ -419,16 +399,14 @@ Data8(Bit3)=1 中速档标志，Data8(Bit3)=0无效
 Data9：Data0- Data8异或后，再加0X55
 
  */
-        if(JH_App.bIsSyMa)
-        {
+        if (JH_App.bIsSyMa) {
 
             if (X1 > (0x80 - 0x25) && X1 < (0x80 + 0x25)) {
                 X1 = 0x80;
             }
 
 
-            if (Y2 > 0x80)
-            {
+            if (Y2 > 0x80) {
                 Y2 -= 0x80;
             } else if (Y2 < 0x80) {
                 Y2 = 0x80 - Y2;
@@ -438,21 +416,16 @@ Data9：Data0- Data8异或后，再加0X55
                 }
             }
 
-            if (X1 > 0x80)
-            {
+            if (X1 > 0x80) {
                 ;
-            }
-            else if (X1 < 0x80)
-            {
+            } else if (X1 < 0x80) {
                 X1 = 0x80 - X1;
-                if (X1 > 0x7F)
-                {
+                if (X1 > 0x7F) {
                     X1 = 0x7F;
                 }
             }
 
-            if (X2 > 0x80)
-            {
+            if (X2 > 0x80) {
                 ;
             } else if (X2 < 0x80) {
                 X2 = 0x80 - X2;
@@ -529,7 +502,7 @@ Data9：Data0- Data8异或后，再加0X55
             cmd[9] = (byte) (((cmd[0] ^ cmd[1] ^ cmd[2] ^ cmd[3] ^ cmd[4] ^ cmd[5] ^ cmd[6] ^ cmd[7] ^ cmd[8]) & 0xFF) + 0x55);
 
             wifination.naSentCmd(cmd, 10);
-         //   Log.e("Cmd:  ","Sent Path  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2);
+            //   Log.e("Cmd:  ","Sent Path  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2);
             /*
             if(Y2!=0x80 || X2!=0x80) {
                 String str = String.format("X2=%02X  Y2=%02X", X2, Y2);

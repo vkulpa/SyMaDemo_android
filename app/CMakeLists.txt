@@ -45,10 +45,9 @@ add_library( # Sets the name of the library.
              )
 
 # 设置opencv的动态库
-
-add_library(libopencv_java3 SHARED IMPORTED)
-set_target_properties(libopencv_java3 PROPERTIES IMPORTED_LOCATION
-            /WORK/ffmpeg/OpenCV/libs/${ANDROID_ABI}/libopencv_java3.so)
+#add_library(libopencv_java3 SHARED IMPORTED)
+#set_target_properties(libopencv_java3 PROPERTIES IMPORTED_LOCATION
+#            /WORK/ffmpeg/OpenCV/libs/${ANDROID_ABI}/libopencv_java3.so)
 
 
 # Searches for a specified prebuilt library and stores the path as a

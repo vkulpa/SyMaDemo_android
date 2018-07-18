@@ -28,7 +28,7 @@ public class MySwitch extends RelativeLayout {
     private Bitmap bmpRight;
     private ImageView img;
 
-    public  boolean  bMenu=false;
+    public boolean bMenu = false;
 
     int firstX = 0;
     int firstY = 0;
@@ -52,10 +52,9 @@ public class MySwitch extends RelativeLayout {
     private int nWidth = 0;
     private int nHeght = 0;
 
-    public  void  F_SetMenu(boolean b)
-    {
+    public void F_SetMenu(boolean b) {
         bMenu = b;
-        if(bMenu)
+        if (bMenu)
             img.setBackgroundResource(R.mipmap.left_menu_icon_fly_jh);
         else
             img.setBackgroundResource(R.mipmap.photo_icon_a_fly_jh);
@@ -115,7 +114,7 @@ public class MySwitch extends RelativeLayout {
                 F_DispIcon();
 
             }
-            SwitchMesage  msg = new SwitchMesage(this,bLeft);
+            SwitchMesage msg = new SwitchMesage(this, bLeft);
             EventBus.getDefault().post(msg, "SwitchChanged");
         }
         return true;
@@ -123,22 +122,17 @@ public class MySwitch extends RelativeLayout {
 
 
     private void F_DispIcon() {
-        if (nOp == 1)
-        {
-            if(bMenu)
-            {
+        if (nOp == 1) {
+            if (bMenu) {
                 img.setBackgroundResource(R.mipmap.left_menu_icon_fly_jh);
-            }
-            else
+            } else
                 img.setBackgroundResource(R.mipmap.photo_icon_a_fly_jh);
             ObjectAnimator.ofFloat(img, "X", nWidth - (nHeght), 0).setDuration(200).start();
         }
         if (nOp == 2) {
-            if(bMenu)
-            {
+            if (bMenu) {
                 img.setBackgroundResource(R.mipmap.right_menu_icon_fly_jh);
-            }
-            else
+            } else
                 img.setBackgroundResource(R.mipmap.record_icon_fly_jh);
             ObjectAnimator.ofFloat(img, "X", 0, nWidth - (nHeght)).setDuration(200).start();
         }

@@ -1182,12 +1182,16 @@ int _naInit_(const char *pFileName)
 //IC_GPRTP,    //192.168.28.X
 //IC_GPH264A,   //192.168.30.X
 //IC_GPRTPB,   //192.168.29.X
-    int type = F_GetIP();
-    type &=0x00FFFFFF;
-    F_AdjIcType(type);
 
-    if(nICType == IC_NO)
+    //int type =
+     F_GetIP();
+    //type &=0x00FFFFFF;
+    //F_AdjIcType(type);
+
+    if(nICType == IC_NO) {
+        LOGE("No Model!");
         return -100;
+    }
 
     idx = sServerIP.find("rtsp://192.168.26.1");
     if (idx != std::string::npos)
@@ -1611,8 +1615,8 @@ int naInit_Re(void) {
         }
 
         m_FFMpegPlayer.nErrorFrame = 0;
-        m_FFMpegPlayer.nDisplayWidth = 1280;
-        m_FFMpegPlayer.nDisplayHeight = 720;
+        m_FFMpegPlayer.nDisplayWidth = 640;
+        m_FFMpegPlayer.nDisplayHeight = 360;
 
      //   F_RecRP_RTSP_Status_Service();  //GPH264A
 
@@ -1754,7 +1758,7 @@ int naInit_Re(void) {
         nCheckT_pre = av_gettime() / 1000;
         F_SetRelinkerT(1000 * 5);
         m_FFMpegPlayer.nfps = 20;
-        m_FFMpegPlayer.nDisplayHeight = 480;  //
+        m_FFMpegPlayer.nDisplayHeight = 360;  //
         m_FFMpegPlayer.nDisplayWidth = 640;
      //   F_RecRP_RTSP_Status_Service();              //GP
         if (nICType == IC_GPRTP || nICType == IC_GPRTPB)       //自定义RTP    IC_GPRTP 凌通的自定义RTP    IC_GPRTPB 乐信的自定义RTP
@@ -1762,7 +1766,6 @@ int naInit_Re(void) {
 
             m_FFMpegPlayer.InitMedia("");
             F_Rec_RTP_Data_Service();
-
 
 
             msg[0] = 'J';
@@ -2309,6 +2312,7 @@ void F_OnSave2ToGallery_mid(int n) {
 int F_GetIP(void)
 {
 
+    nICType = IC_NO;
     int s, i;
     int numif;
 
@@ -2344,15 +2348,37 @@ int F_GetIP(void)
     numif = ifc.ifc_len / sizeof(struct ifreq);
 
     int ss = 0;
+    string sname="";
     for (i = 0; i < numif; i++)
     {
         struct ifreq *r = &ifr[i];
         struct sockaddr_in *sin = (struct sockaddr_in*)&r->ifr_addr;
-        if (!strcmp(r->ifr_name, "lo"))
-            continue; // skip loopback interface
         char *a = inet_ntoa(sin->sin_addr);
         ip =(int32_t)sin->sin_addr.s_addr;
-        break;
+        F_AdjIcType(ip&0x00FFFFFF);
+        if(nICType != IC_NO)
+        {
+            break;
+        }
+
+        /*
+        sname = r->ifr_name;
+        std::string::size_type  postion = sname.find("wlan");
+        if(postion!=std::string::npos)
+        {
+            char *a = inet_ntoa(sin->sin_addr);
+            ip =(int32_t)sin->sin_addr.s_addr;
+            break;
+        }
+        postion = sname.find("wifi");
+        if(postion!=std::string::npos)
+        {
+            char *a = inet_ntoa(sin->sin_addr);
+            ip =(int32_t)sin->sin_addr.s_addr;
+            break;
+        }
+         */
+
 
     }
     delete []ffp;
@@ -3676,6 +3702,7 @@ int Connect_gk_c(void) {
         LOGE_B("Error 5");
         return -1;
     }
+
     if (bAdjFps) {
         if (nGKA_StreamNo == 1) {
             LOGE_B("SetFps");
@@ -3693,6 +3720,7 @@ int Connect_gk_c(void) {
             }
         }
     }
+
     LOGE_B("Get Ver");
     sver = F_GetFirewareVer(); //SYMA_X5UW
     if (req_msg.ret != 0) {

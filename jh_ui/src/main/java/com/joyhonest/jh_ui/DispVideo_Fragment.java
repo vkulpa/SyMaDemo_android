@@ -2,6 +2,7 @@ package com.joyhonest.jh_ui;
 
 
 //import android.app.Fragment;
+
 import android.net.Uri;
 import android.os.Bundle;
 //import android.support.v4.app.Fragment;
@@ -84,8 +85,7 @@ public class DispVideo_Fragment extends Fragment {
     }
 
 
-    public  void F_SetBackImg(int id)
-    {
+    public void F_SetBackImg(int id) {
         backBut.setBackgroundResource(id);
     }
 

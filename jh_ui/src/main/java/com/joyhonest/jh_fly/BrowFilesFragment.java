@@ -47,7 +47,7 @@ public class BrowFilesFragment extends Fragment implements View.OnClickListener,
     private Button button_yes;
     private Button button_no;
 
-    private RelativeLayout  Layout_Bar;
+    private RelativeLayout Layout_Bar;
 
 
     public BrowFilesFragment() {
@@ -63,7 +63,7 @@ public class BrowFilesFragment extends Fragment implements View.OnClickListener,
         bSelectAll = false;
 
 
-        Layout_Bar = (RelativeLayout)view.findViewById(R.id.Layout_Bar);
+        Layout_Bar = (RelativeLayout) view.findViewById(R.id.Layout_Bar);
 
 
         AlartView = (RelativeLayout) view.findViewById(R.id.AlartView);
@@ -179,27 +179,22 @@ public class BrowFilesFragment extends Fragment implements View.OnClickListener,
     }
 
 
-    private void F_TranSelect2System()
-    {
+    private void F_TranSelect2System() {
         String sFileName;
-            for (MyItemData data : JH_App.mGridList) {
-                if (data.bSelected)
-                {
-                    sFileName = data.sPhonePath;
-                    if(JH_App.bBrowPhoto)
-                    {
-                        JH_App.F_Save2ToGallery(sFileName, true);
-                    }
-                    else
-                    {
-                        JH_App.F_Save2ToGallery(sFileName, false);
-                    }
-                    data.bSelected = false;
-                    data.nSelectedStatus = 0;
-
+        for (MyItemData data : JH_App.mGridList) {
+            if (data.bSelected) {
+                sFileName = data.sPhonePath;
+                if (JH_App.bBrowPhoto) {
+                    JH_App.F_Save2ToGallery(sFileName, true);
+                } else {
+                    JH_App.F_Save2ToGallery(sFileName, false);
                 }
+                data.bSelected = false;
+                data.nSelectedStatus = 0;
+
             }
-            F_DispInit();
+        }
+        F_DispInit();
 
 
     }
@@ -233,8 +228,7 @@ public class BrowFilesFragment extends Fragment implements View.OnClickListener,
             }
         }
 
-        if(v==button_trash_2)
-        {
+        if (v == button_trash_2) {
             F_TranSelect2System();
             JH_App.F_DispMesate("Download Finished!");
         }

@@ -2,6 +2,7 @@ package com.joyhonest.jh_ui;
 
 
 //import android.app.Fragment;
+
 import android.graphics.ColorMatrixColorFilter;
 import android.os.Bundle;
 //import android.support.v4.app.Fragment;
@@ -175,13 +176,10 @@ public class MyGrid_Fragment extends Fragment implements View.OnClickListener, A
 
     }
 
-    public  void F_SetIcon(boolean bPhoto)
-    {
-        if(bPhoto) {
+    public void F_SetIcon(boolean bPhoto) {
+        if (bPhoto) {
             logoImgView.setBackgroundResource(R.mipmap.photofolder_nor_jh);
-        }
-        else
-        {
+        } else {
             logoImgView.setBackgroundResource(R.mipmap.videofolder_nor_jh);
         }
     }
