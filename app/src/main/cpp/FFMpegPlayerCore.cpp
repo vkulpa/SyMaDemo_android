@@ -25,145 +25,23 @@
 
 extern MyMediaCoder myMediaCoder;
 
-
-#if 0
-#include <SoftwareRenderer.h>
-#include <android_runtime/AndroidRuntime.h>
-#include <android_runtime/android_view_Surface.h>
-#include <binder/IPCThreadState.h>
-#include <binder/ProcessState.h>
-#include <binder/IServiceManager.h>
-#include <media/stagefright/foundation/ADebug.h>
-#include <surfaceflinger/Surface.h>
-#include <surfaceflinger/SurfaceComposerClient.h>
-#include <surfaceflinger/ISurfaceComposer.h>
-#include <ui/DisplayInfo.h>
-#include <ui/GraphicBuffer.h>
-#include <hardware/gralloc.h>
-#include <ui/GraphicBufferMapper.h>
-
-#include <android/native_window.h>
-#include <system/window.h>
-#include <ui/GraphicBufferMapper.h>
-#include <assert.h>
-using namespace android;
-
-#define TAG "DisplayYUV"
-#define BUFSIZE 176*144
-static sp<Surface> native_surface;
-static android::Surface::SurfaceInfo info;
-static android::Region dirtyRegion;
-char buf[BUFSIZE] = {0};
-char * bufYUV = NULL;
-FILE *fp = NULL;
-jsize len = 0;
-
-
-
-static android::Surface* getNativeSurface(JNIEnv* env, jobject jsurface, jint version)
-{
-    jclass clazz = env->FindClass("android/view/Surface");
-    jfieldID field_surface;
-    if(version <=8)
-    {
-        field_surface = env->GetFieldID(clazz, "mSurface", "I");
-    }
-    else
-        field_surface = env->GetFieldID(clazz, ANDROID_VIEW_SURFACE_JNI_ID, "I");
-
-    if (field_surface == NULL)
-    {
-        return NULL;
-    }
-    return (android::Surface *) env->GetIntField(jsurface, field_surface);
-}
-int setSurface(JNIEnv *env, jobject jsurface, jint version)
-{
-    native_surface = getNativeSurface(env, jsurface, version);
-
-    if(android::Surface::isValid(native_surface))
-    {
-        __android_log_print(ANDROID_LOG_INFO, "libjni", "native_surface is valid");
-        return 1;
-    }
-    else
-        __android_log_print(ANDROID_LOG_ERROR, "libjni", "native_surface is invalid");
-
-    return 0;
-}
-
-void Java_com_example_displayyuv_MainActivity_test(JNIEnv *env, jobject thiz, jobject jsurface)
-{
-    __android_log_print(ANDROID_LOG_INFO, TAG, "get good cpp test surface!");
-    setSurface(env, jsurface, 9);
-    //dirtyRegion.set(android::Rect(0x3fff, 0x3fff));
-    dirtyRegion.set(android::Rect(0, 0, 176, 144));
-    status_t err = native_surface->lock(&info, &dirtyRegion);
-    int sformat;
-    switch(info.format)
-    {
-        case PIXEL_FORMAT_RGBA_8888:
-        case PIXEL_FORMAT_RGBX_8888:
-        case PIXEL_FORMAT_BGRA_8888:
-            sformat = 4;
-            break;
-        case PIXEL_FORMAT_RGB_888:
-            sformat = 3;
-            break;
-
-        case PIXEL_FORMAT_RGB_565:
-        case PIXEL_FORMAT_RGBA_5551:
-        case PIXEL_FORMAT_RGBA_4444:
-            sformat = 2;
-            break;
-
-        default:
-            sformat = -1;
-    }
-    sprintf(buf, "width - %d -- height %d-- format %d---Locked -- %d", info.w, info.h, sformat, err);
-    __android_log_print(ANDROID_LOG_INFO, TAG, buf);
-    memset(buf, 0x77, BUFSIZE);
-    memcpy(info.bits, buf, BUFSIZE);
-    //memcpy(info.bits, bufYUV, len);
-    native_surface->unlockAndPost();
-}
-
-
-#endif
 using namespace std;
-
-
 extern float  nScal;
-
 extern uint8_t nSDStatus;
 extern bool     bRealRecording;
 extern uint32_t  nRecTime;
-
 extern int nFrameCount;
-
-
 extern int PlatformDisplay();
-
 extern void F_CloseSocket();
 
-
 typedef std::queue<AVFrame *> WriteFrameQueue;
+
 typedef std::vector<AVFrame *>::iterator WriteFrameQueue_iterator;
-
-
 typedef std::queue<MyFrame *> WriteFrameQueue_h264;
-
 typedef std::vector<MyFrame *>::iterator WriteFrameQueue_iterator_h264;
-
-
 typedef std::queue<MySocketData *> WriteFrameQueue_Disp;
 
-//WriteFrameQueue m_FrameQueue;
-
-
-
 WriteFrameQueue_h264 m_FrameQueue_H264;
-
 
 int64_t time_out = 0;
 int64_t time_out_dat = 5000;
@@ -171,16 +49,11 @@ int64_t time_out_dat = 5000;
 
 bool firsttimeplay = true;
 
-//void frame_rotate_180(AVFrame *src, AVFrame *des);
 
 void Adj23D(AVFrame *src, AVFrame *des);
 
-
 int64_t getCurrentTime() {
     return av_gettime() / 1000;
-    //struct timeval tv;
-    //gettimeofday(&tv, NULL);
-    //return tv.tv_sec * 1000 + tv.tv_usec / 1000;
 }
 
 
@@ -232,10 +105,8 @@ C_FFMpegPlayer::C_FFMpegPlayer() :
         out_buffer(NULL), out_bufferBmp(NULL), m_parser(NULL), codec(NULL), bFlip(false),
         nDisplayWidth(640), nDisplayHeight(360), nNeedRedraw(false), nativeWindow(NULL), b3D(false),
         frame_b(NULL), frame_a(NULL), b480(false), bFollow(false), Rgbabuffer(NULL), video(MP4_INVALID_TRACK_ID), fileHandle(MP4_INVALID_FILE_HANDLE), bIsH264(false), nSpsSet(0), nSecT(0),
-        bContinue(true), b3DA(false), nfps(20), nErrorFrame(0), h64fileHandle(-1), bStatWrite(false), YUVbuffer(NULL),  pFrameRecord(NULL), nRecordWidth(1280),
-        nRecordHeight(720) {
-    //img_convert_ctxRecord(NULL),
-    //img_convert_ctxBmp(NULL),
+        bContinue(true), b3DA(false), nfps(20), nErrorFrame(0), h64fileHandle(-1), bStatWrite(false), YUVbuffer(NULL),  pFrameRecord(NULL), nRecordWidth(640),
+        nRecordHeight(360) {
     m_snapShotPath[0] = 0;  //= m_VideoPath[0]
     pthread_mutex_init(&m_Frame_Queuelock, NULL);
     pthread_cond_init(&m_Frame_condition, NULL);
@@ -251,7 +122,7 @@ void C_FFMpegPlayer::F_ReSetRecordWH(int w, int h) {
     nRecordWidth = w;
     nRecordHeight = h;
     if (pFrameRecord != NULL) {
-        av_free(pFrameRecord->data[0]);
+        av_freep(&pFrameRecord->data[0]);
         av_frame_free(&pFrameRecord);
         pFrameRecord = NULL;
     }
@@ -263,17 +134,6 @@ void C_FFMpegPlayer::F_ReSetRecordWH(int w, int h) {
             pFrameRecord->data, pFrameRecord->linesize, nRecordWidth,
             nRecordHeight,
             AV_PIX_FMT_YUVJ420P, 4);
-
-    /*
-    if (img_convert_ctxRecord != NULL) {
-        sws_freeContext(img_convert_ctxRecord);
-        img_convert_ctxRecord = NULL;
-    }
-
-    img_convert_ctxRecord = sws_getContext(m_codecCtx->width, m_codecCtx->height, AV_PIX_FMT_YUVJ420P,
-                                           nRecordWidth, nRecordHeight, AV_PIX_FMT_YUVJ420P,
-                                           SWS_AREA, NULL, NULL, NULL); //
-                                           */
 
 }
 
@@ -309,16 +169,12 @@ int C_FFMpegPlayer::InitMediaSN(void) {
         codec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
         m_codecCtx = avcodec_alloc_context3(codec);
         m_codecCtx->codec_id = AV_CODEC_ID_MJPEG;
-        //m_codecCtx->width = nDisplayWidth;
-        //m_codecCtx->height = nDisplayHeight;
         m_codecCtx->pix_fmt = AV_PIX_FMT_YUVJ422P;
-        //m_codecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
         m_codecCtx->time_base.den = 1;
         m_codecCtx->time_base.num = 1;
         int ret = avcodec_open2(m_codecCtx, codec, NULL);
         if (ret != 0) {
             m_bOpenOK = false;
-            LOGE("open codec failed :%d", ret);
         }
         return 0;
     }
@@ -332,7 +188,7 @@ int C_FFMpegPlayer::InitMediaSN(void) {
 
     pix_format = AV_PIX_FMT_YUV420P;
     disp_pix_format = AV_PIX_FMT_RGBA;
-    dispCodeID = AV_CODEC_ID_BMP;// AV_CODEC_ID_MJPEG;
+
 
     pFrameYUV = av_frame_alloc();
     pFrameRGB = av_frame_alloc();
@@ -460,7 +316,7 @@ int C_FFMpegPlayer::InitMediaGPRTP(void) {
 
     pix_format = AV_PIX_FMT_YUV420P;
     disp_pix_format = AV_PIX_FMT_RGBA;
-    dispCodeID = AV_CODEC_ID_BMP;// AV_CODEC_ID_MJPEG;
+
 
     pFrameYUV = av_frame_alloc();
     pFrameRGB = av_frame_alloc();
@@ -584,7 +440,7 @@ int C_FFMpegPlayer::InitMediaGK(void) {
 
     pix_format = AV_PIX_FMT_YUV420P;
     disp_pix_format = AV_PIX_FMT_RGBA;
-    dispCodeID = AV_CODEC_ID_BMP;// AV_CODEC_ID_MJPEG;
+
 
     pFrameYUV = av_frame_alloc();
     pFrameRGB = av_frame_alloc();
@@ -829,15 +685,7 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
             return FFMPEGPLAYER_INITMEDIAFAILED;
         }
     }
-    /*
-        else
-        {
-            if (init_decode(m_formatCtx) != 0) {
-                LOGE("Start 1-1");
-                return FFMPEGPLAYER_INITMEDIAFAILED;
-            }
-        }
-        */
+
     F_ResetCheckT(5000);
     int videoindex = -1;
     int i = 0;
@@ -905,7 +753,7 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
 
     pix_format = AV_PIX_FMT_YUV420P;
     disp_pix_format = AV_PIX_FMT_RGBA;
-    dispCodeID = AV_CODEC_ID_BMP;// AV_CODEC_ID_MJPEG;
+
 
     pFrameYUV = av_frame_alloc();
     pFrameRGB = av_frame_alloc();
@@ -953,21 +801,6 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
     img_convert_ctx = sws_getContext(m_codecCtx->width, m_codecCtx->height, m_codecCtx->pix_fmt,
                                      m_codecCtx->width, m_codecCtx->height, pix_format,
                                      SWS_FAST_BILINEAR, NULL, NULL, NULL); //
-
-    //img_convert_ctxBmp = sws_getContext(m_codecCtx->width, m_codecCtx->height, pix_format,
-    //                                    nDisplayWidth, nDisplayHeight, disp_pix_format,
-    //                                    SWS_FAST_BILINEAR, NULL, NULL, NULL); //
-    //img_convert_ctxRecord = sws_getContext(m_codecCtx->width, m_codecCtx->height, pix_format,
-    //                                       nRecordWidth, nRecordHeight, pix_format,
-    //                                       SWS_FAST_BILINEAR, NULL, NULL, NULL); //
-
-
-
-    //img_convert_ctx_half = sws_getContext(m_codecCtx->width, m_codecCtx->height, pix_format,
-    //                                      m_codecCtx->width / 2, m_codecCtx->height / 2, pix_format,
-    //                                      SWS_FAST_BILINEAR, NULL, NULL, NULL); //
-
-
     if (frame_a == NULL) {
         frame_a = av_frame_alloc();
         frame_a->format = AV_PIX_FMT_YUV420P;
@@ -992,7 +825,6 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
 
     return FFMPEGPLAYER_NOERROR;
 }
-//----------------------------------------------------------------------
 
 int C_FFMpegPlayer::PlayMedia() {
     if (nIC_Type == IC_GKA)
@@ -1064,7 +896,7 @@ int C_FFMpegPlayer::WriteMp4Frame(uint8_t *data, int nLen, bool b) {
         data[2] = (uint8_t) ((nL & 0x0000FF00) >> 8);
         data[3] = (uint8_t) ((nL & 0x000000FF));
         {
-            MP4WriteSample(fileHandle, video, data, nLen, ds, 0, b);
+            MP4WriteSample(fileHandle, video, data,(uint32_t) nLen, (MP4Duration)ds, 0, b);
         }
         return 0;
     }
@@ -1127,8 +959,8 @@ int C_FFMpegPlayer::AddMp4Video(uint8_t *sps, int len1, uint8_t *pps, int len2) 
             fileHandle = MP4_INVALID_FILE_HANDLE;
             return -1;
         } else {
-            MP4AddH264SequenceParameterSet(fileHandle, video, sps, len1);
-            MP4AddH264PictureParameterSet(fileHandle, video, pps, len2);
+            MP4AddH264SequenceParameterSet(fileHandle, video, sps, (uint16_t)len1);
+            MP4AddH264PictureParameterSet(fileHandle, video, pps, (uint16_t)len2);
             //MP4SetVideoProfileLevel(fileHandle, 0x7F);
             LOGE("SPS PPS");
         }
@@ -1195,7 +1027,7 @@ int C_FFMpegPlayer::SaveVideo(const char *path, bool bisH264) {
         return -1;
     }
 
-    if (bisH264)
+    //if (bisH264)
     {
 
 
@@ -1220,57 +1052,15 @@ int C_FFMpegPlayer::SaveVideo(const char *path, bool bisH264) {
 //----------------------------------------------------------------------
 void C_FFMpegPlayer::ClearQueue() {
     pthread_mutex_lock(&m_Frame_Queuelock);
-
-    WriteFrameQueue_iterator iterator;
-    /*
-    for (iterator = m_FrameQueue.begin(); iterator != m_FrameQueue.end(); ++iterator)
-        delete (*iterator);
-
-    m_FrameQueue.clear();
-     */
-
-    AVFrame *pFrame = NULL;
-    /*
-    while (m_FrameQueue.size()) {
-        pFrame = m_FrameQueue.front();
-        m_FrameQueue.pop();
-        av_free(pFrame->data[0]);
-        av_frame_free(&pFrame);
-
-    }
-     */
     while (m_FrameQueue_H264.size()) {
         MyFrame *fa = m_FrameQueue_H264.front();
         m_FrameQueue_H264.pop();
         delete fa;
     }
-
     pthread_mutex_unlock(&m_Frame_Queuelock);
 }
 
-//----------------------------------------------------------------------
-int C_FFMpegPlayer::SetResolution(int Width, int Height) {
-    m_width = Width;
-    m_height = Height;
 
-    sws_freeContext(m_sws_ctx);
-
-    // Setup scaler
-    m_sws_ctx = sws_getContext(
-            m_codecCtx->width,
-            m_codecCtx->height,
-            m_codecCtx->pix_fmt,
-            m_width,
-            m_height,
-            AV_PIX_FMT_RGBA,
-            SWS_BILINEAR,
-            NULL,
-            NULL,
-            NULL
-    );
-
-    return FFMPEGPLAYER_NOERROR;
-}
 
 //----------------------------------------------------------------------
 void *C_FFMpegPlayer::decodeThreadFunction(void *param) {
@@ -1841,7 +1631,7 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
                                pFrameYUV_D->width,pFrameYUV_D->height,
                                libyuv::kFilterLinear);
 
-            av_free(pFrameYUV->data[0]);
+            av_freep(&pFrameYUV->data[0]);
             av_frame_free(&pFrameYUV);
             pFrameYUV = av_frame_alloc();
 
@@ -1899,7 +1689,7 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
                 //memset(pdes,0,(size_t )pFrameYUV->linesize[1]);
             }
 
-            av_free(pFrameYUV_D->data[0]);
+            av_freep(&pFrameYUV_D->data[0]);
             av_frame_free(&pFrameYUV_D);
 
         }
@@ -2156,17 +1946,6 @@ int C_FFMpegPlayer::writeVideo() {
         bool bNeedDelete=false;
         while (m_bSaveVideo && m_Status == E_PlayerStatus_Playing)
         {
-
-/*
-            T2 = av_gettime() / 1000;
-            int daa = (int) (T2 - T1);
-            if (daa < nDelay)
-            {
-                usleep(1000*5);
-                continue;
-            }
-            T1 = av_gettime() / 1000;
-*/
             pMyFrame = NULL;
             struct timespec timespec1;
             timespec1.tv_sec = 0;
@@ -2193,50 +1972,24 @@ int C_FFMpegPlayer::writeVideo() {
                 myMediaCoder.offerEncoder(pMyFrame->data, pMyFrame->nLen);
                 if(bNeedDelete)
                     delete pMyFrame;
-
-
                 T2 = av_gettime() / 1000;
                 int daa = (int) (T2 - T1);
                 if (daa < nDelay)
                 {
-                    usleep((nDelay - daa) * 1000);
+                    usleep((useconds_t)((nDelay - daa) * 1000));
                 }
                 T1 = av_gettime() / 1000;
             }
-
-
-
-
-
-            //usleep(2*1000); //delay 10ms  让出CPU给其他线程
+            else
+            {
+                usleep(5 * 1000); //delay 10ms  让出CPU给其他线程
+            }
         }
 
 
         CloseVideo();
-        /*
-        while (!m_FrameQueue.empty()) {
-            AVFrame *pFrame = NULL;
-            pFrame = m_FrameQueue.front();
-            m_FrameQueue.pop();
-            if (pFrame == NULL) {
-                continue;
-            }
-            if (pFrame != NULL) {
-                if (pFrame->data[0] != NULL)
-                    av_free(pFrame->data[0]);
-                av_frame_free(&pFrame);
-            }
-        }
-         */
 
-
-        while (!m_FrameQueue_H264.empty()) {
-            pMyFrame = m_FrameQueue_H264.front();
-            //m_FrameQueue.pop();
-            delete pMyFrame;
-        }
         LOGE("Exit Write Frame!");
-
 
         return 0;
     }
@@ -2244,240 +1997,6 @@ int C_FFMpegPlayer::writeVideo() {
     return FFMPEGPLAYER_NOERROR;
 }
 
-//----------------------------------------------------------------------
-#if 0
-int C_FFMpegPlayer::writeFrame(AVFrame *pOutFrame) {
-    int ret;
-    AVPacket pkt;
-    av_init_packet(&pkt);
-    pkt.data = NULL;
-    pkt.size = 0;
-
-    int got_output;
-    pOutFrame->pts = nSaveInx * (video_st->time_base.den) / ((video_st->time_base.num) * 25);
-    nSaveInx++;
-    ret = avcodec_encode_video2(pCodecCtx, &pkt, pOutFrame, &got_output);
-    if (ret < 0) {
-        return FFMPEGPLAYER_SAVEVIDEOFAILED;
-    }
-    if (got_output) {
-        pkt.stream_index = video_st->index;
-        writePacket(&pkt);
-    }
-
-
-    for (got_output = 1; got_output;) {
-
-        ret = avcodec_encode_video2(pCodecCtx, &pkt, NULL, &got_output);
-        if (ret < 0) {
-            //DEBUG_PRINT("Error encoding frame\n");
-            //return FFMPEGPLAYER_SAVEVIDEOFAILED;
-        }
-
-        if (got_output) {
-            writePacket(&pkt);
-        }
-    }
-
-    return FFMPEGPLAYER_NOERROR;
-}
-#endif
-
-//----------------------------------------------------------------------
-int C_FFMpegPlayer::writePacket(AVPacket *pPacket) {
-
-#if 0
-    if (pCodecCtx->coded_frame->key_frame)
-        pPacket->flags |= AV_PKT_FLAG_KEY;
-    int64_t now = av_gettime();
-    pPacket->stream_index = video_st->index;
-    if (m_prevTime != 0) {
-        float frameTime =
-                ((float) pCodecCtx->time_base.num / (float) pCodecCtx->time_base.den) *
-                1000;
-        int timeEsc = ((now - m_prevTime) / 1000) + m_prevLeft;
-        m_prevLeft = timeEsc % (int) frameTime;
-        int frameNeed = (timeEsc / frameTime) - 1;
-        if (frameNeed >= 1) {
-            for (int i = 0; i < frameNeed; i++) {
-                AVPacket tempkt;
-                av_init_packet(&tempkt);
-                av_packet_ref(&tempkt, &m_prevPkt);
-                writePacketDirectly(&tempkt);
-            }
-        }
-    }
-    if (m_EncodeID == AV_CODEC_ID_MJPEG) {
-        av_packet_unref(&m_prevPkt);
-        av_init_packet(&m_prevPkt);
-        av_packet_ref(&m_prevPkt, pPacket);
-    }
-    pPacket->stream_index = video_st->index;
-    writePacketDirectly(pPacket);
-    m_prevTime = now;
-#endif
-    return FFMPEGPLAYER_NOERROR;
-}
-
-//----------------------------------------------------------------------
-int C_FFMpegPlayer::writePacketDirectly(AVPacket *pPacket) {
-#if 0
-    pPacket->pts = m_outFrameCnt;
-    pPacket->dts = pPacket->pts;
-
-    if (pPacket->pts != AV_NOPTS_VALUE) {
-        pPacket->pts = av_rescale_q(pPacket->pts, video_st->codec->time_base,
-                                    video_st->time_base);
-    }
-    //video_st->codecpar->sample_aspect_ratio;
-    if (pPacket->dts != AV_NOPTS_VALUE)
-        pPacket->dts = av_rescale_q(pPacket->dts, video_st->codec->time_base,
-                                    video_st->time_base);
-    m_outFrameCnt++;
-    int i32Ret = av_interleaved_write_frame(pFormatCtx, pPacket);
-    if (i32Ret != 0) {
-        av_packet_unref(pPacket);
-        return i32Ret;
-    }
-#endif
-    return FFMPEGPLAYER_NOERROR;
-}
-#if 0
-int C_FFMpegPlayer::CreateEncodeStream() {
-
-
-    fmt = av_guess_format("mp4", NULL, NULL);
-    if (!fmt) {
-        DEBUG_PRINT("av_guess_format failed\n");
-        return FFMPEGPLAYER_CREATESAVESTREAMFAILED;
-    }
-
-    fmt->video_codec = m_EncodeID;
-    int err = avformat_alloc_output_context2(&pFormatCtx, fmt, NULL, NULL);
-
-    if (err < 0 || !pFormatCtx) {
-        DEBUG_PRINT("avformat_alloc_output_context2 failed\n");
-        return FFMPEGPLAYER_CREATESAVESTREAMFAILED;
-    }
-
-    AVCodec *codec;
-    codec = avcodec_find_encoder(m_EncodeID);//  m_EncodeID);
-    if (!codec) {
-        DEBUG_PRINT("Codec not found\n");
-        return FFMPEGPLAYER_CREATESAVESTREAMFAILED;
-    }
-
-    pCodecCtx = avcodec_alloc_context3(codec);
-    if (!pCodecCtx) {
-        DEBUG_PRINT("Could not allocate video codec context\n");
-        return FFMPEGPLAYER_CREATESAVESTREAMFAILED;
-    }
-
-
-    if (nIC_Type == IC_SN) {
-        pCodecCtx->width = m_codecCtx->width;
-        pCodecCtx->height = m_codecCtx->height;
-        pCodecCtx->time_base.num = 1;
-        pCodecCtx->time_base.den = 25;
-    } else {
-        //streaming format
-        pCodecCtx->width = m_codecCtx->width;
-        pCodecCtx->height = m_codecCtx->height;
-        pCodecCtx->time_base.num = 1;//m_codecCtx->time_base.num;
-        pCodecCtx->time_base.den = 25;//m_codecCtx->time_base.den;
-    }
-
-
-    if (m_EncodeID == AV_CODEC_ID_MJPEG) {
-        pCodecCtx->bit_rate = m_codecCtx->bit_rate;
-        pCodecCtx->pix_fmt = m_codecCtx->pix_fmt;
-
-    } else {
-        if (m_codecCtx->height >= 720) {
-            pCodecCtx->bit_rate = 4 * 1000 * 1000;//m_codecCtx->bit_rate;
-        } else {
-            pCodecCtx->bit_rate = 2 * 1000 * 1000;// m_codecCtx->bit_rate;
-        }
-
-        pCodecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
-        pCodecCtx->gop_size = 30;
-        pCodecCtx->qmin = 8;
-        pCodecCtx->qmax = 41;
-        pCodecCtx->thread_count = 2;
-        //pCodecCtx->max_b_frames=0;
-        pCodecCtx->profile = FF_PROFILE_MPEG4_SIMPLE;
-
-
-    }
-
-    //Optional Param
-    pCodecCtx->has_b_frames = 0;
-    pCodecCtx->max_b_frames = 0;
-
-    if (pFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)
-        pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
-
-
-    int ret = avcodec_open2(pCodecCtx, codec, NULL);
-    if (ret < 0) {
-        DEBUG_PRINT("Could not open codeca\n");
-        return FFMPEGPLAYER_CREATESAVESTREAMFAILED;
-    }
-
-    //header format
-
-    video_st = avformat_new_stream(pFormatCtx, codec);
-    //AVCodecContext *tmpcodeContext=video_st->codec;  //aivenlau
-    AVCodecContext *tmpcodeContext = pCodecCtx;
-
-    //tmpcodeContext->thread_count =  pCodecCtx->thread_count;
-    //tmpcodeContext->gop_size=pCodecCtx->gop_size;
-    //tmpcodeContext->qmin = pCodecCtx->qmin;
-    //tmpcodeContext->qmax = pCodecCtx->qmax;
-
-    //video_st->codec->coder_type = AVMEDIA_TYPE_VIDEO;
-
-
-    //avienlau
-    pCodecCtx->codec_type = AVMEDIA_TYPE_VIDEO;
-    if (pFormatCtx->oformat->flags & AVFMT_GLOBALHEADER)
-        pCodecCtx->flags |= CODEC_FLAG_GLOBAL_HEADER;
-
-//    tmpcodeContext->sample_aspect_ratio = video_st->sample_aspect_ratio = pCodecCtx->sample_aspect_ratio;// = m_codecCtx->sample_aspect_ratio;
-    //   tmpcodeContext->bits_per_raw_sample = pCodecCtx->bits_per_raw_sample;// = m_codecCtx->bits_per_raw_sample;
-    pCodecCtx->chroma_sample_location = AVCHROMA_LOC_LEFT;// = m_codecCtx->chroma_sample_location;
-    pCodecCtx->codec_id = m_EncodeID;
-    //tmpcodeContext->width = pCodecCtx->width;
-    //tmpcodeContext->height = pCodecCtx->height;
-    //tmpcodeContext->time_base = pCodecCtx->time_base;
-
-
-    avcodec_parameters_from_context(video_st->codecpar, pCodecCtx);
-
-    av_stream_set_r_frame_rate(video_st, (AVRational) {1, 25});
-
-    err = avio_open(&pFormatCtx->pb, sRecordFileName_tmp.c_str(), AVIO_FLAG_WRITE);
-    if (err < 0) {
-        return FFMPEGPLAYER_CREATESAVESTREAMFAILED;
-    }
-
-    if (pCodecCtx->extradata) {
-        unsigned char *newData = (unsigned char *) malloc(pCodecCtx->extradata_size);
-        memcpy(newData, pCodecCtx->extradata, pCodecCtx->extradata_size);
-        tmpcodeContext->extradata = newData;
-        tmpcodeContext->extradata_size = pCodecCtx->extradata_size;
-    }
-
-    int rea = avformat_write_header(pFormatCtx, NULL);
-    if (rea < 0) {
-        LOGE("Write Video error1");
-        return FFMPEGPLAYER_CREATESAVESTREAMFAILED;
-    }
-
-
-    return FFMPEGPLAYER_NOERROR;
-}
-#endif
 
 //----------------------------------------------------------------------
 
@@ -2511,32 +2030,13 @@ int C_FFMpegPlayer::CloseVideo() {
     return FFMPEGPLAYER_NOERROR;
 }
 
-//----------------------------------------------------------------------
-/*
-AVFrame *C_FFMpegPlayer::F_GetFrame() {
-    int ret = sws_scale(img_convert_ctxBmp,
-                        (const uint8_t *const *) m_decodedFrame->data,
-                        m_decodedFrame->linesize, 0, m_codecCtx->height,
-                        pFrameRGB->data, pFrameRGB->linesize);
-    if (ret == 0)
-        return pFrameRGB;
-    else
-        return NULL;
-}
-*/
 
 
 int nSteppp = 0;
-
 void F_SentRevBmp(int32_t wh);
-
-
 extern int nBufferLen;
-
-
-
-
 extern int encord_colorformat;
+
 
 AVPacket *C_FFMpegPlayer::F_GetPacket() {
     int ret, got_output;
@@ -2688,9 +2188,9 @@ int C_FFMpegPlayer::EncodeSnapshot() {
     pkt.data = NULL;
     pkt.size = 0;
     ret = 0;
-    if (ret != 0) {
-        return FFMPEGPLAYER_SAVESNAPSHOTFAILED;
-    }
+    //if (ret != 0) {
+    //    return FFMPEGPLAYER_SAVESNAPSHOTFAILED;
+    //}
     AVFrame *frame_Snap;
 
     bool  bAlloc=false;
@@ -2763,7 +2263,7 @@ int C_FFMpegPlayer::EncodeSnapshot() {
 
     if (frame_Snap != NULL) {
         if (bAlloc) {
-            av_free(frame_Snap->data[0]);
+            av_freep(&frame_Snap->data[0]);
             av_frame_free(&frame_Snap);
             frame_Snap = NULL;
         }
@@ -2800,7 +2300,8 @@ int C_FFMpegPlayer::Releaseffmpeg() {
     //avpicture_free(&m_frameRGBA);
     // Free the YUV frame
     m_Status = E_PlayerStatus_Stoped;
-    av_free(m_decodedFrame);
+    //av_frame_free(&m_decodedFrame);
+    //av_free(m_decodedFrame);
 
     // Close the codec
     avcodec_close(m_codecCtx);
@@ -2816,13 +2317,13 @@ int C_FFMpegPlayer::Releaseffmpeg() {
      */
 
     if (pFrameYUV != NULL) {
-        av_free(pFrameYUV->data[0]);
+        av_freep(&pFrameYUV->data[0]);
         av_frame_free(&pFrameYUV);
         pFrameYUV = 0;
     }
 
     if (pFrameYUV_Disp != NULL) {
-        av_free(pFrameYUV_Disp->data[0]);
+        av_freep(&pFrameYUV_Disp->data[0]);
         av_frame_free(&pFrameYUV_Disp);
         pFrameYUV_Disp = NULL;
     }
@@ -2853,17 +2354,17 @@ int C_FFMpegPlayer::Releaseffmpeg() {
         out_bufferBmp = NULL;
     }
     if (frame_a != NULL) {
-        av_free(frame_a->data[0]);
+        av_freep(&frame_a->data[0]);
         av_frame_free(&frame_a);
         frame_a = NULL;
     }
     if (frame_b != NULL) {
-        av_free(frame_b->data[0]);
+        av_freep(&frame_b->data[0]);
         av_frame_free(&frame_b);
         frame_b = NULL;
     }
     if (pFrameRGB != NULL) {
-        av_free(pFrameRGB->data[0]);
+        av_freep(&pFrameRGB->data[0]);
         av_frame_free(&pFrameRGB);
         pFrameRGB = NULL;
     }
@@ -2872,13 +2373,13 @@ int C_FFMpegPlayer::Releaseffmpeg() {
         nativeWindow = NULL;
     }
     if (frame_SnapBuffer != NULL) {
-        av_free(frame_SnapBuffer->data[0]);
+        av_freep(&frame_SnapBuffer->data[0]);
         av_frame_free(&frame_SnapBuffer);
         frame_SnapBuffer = NULL;
 
     }
     if (pFrameRecord != NULL) {
-        av_free(pFrameRecord->data[0]);
+        av_freep(&pFrameRecord->data[0]);
         av_frame_free(&pFrameRecord);
         pFrameRecord = NULL;
     }
@@ -2889,7 +2390,7 @@ int C_FFMpegPlayer::Releaseffmpeg() {
     if (bInitMediaA) {
         bInitMediaA = false;
         if (m_decodedFrame != NULL) {
-            av_free(m_decodedFrame->data[0]);
+            av_freep(&m_decodedFrame->data[0]);
             av_frame_free(&m_decodedFrame);
             m_decodedFrame = NULL;
         }
@@ -2899,164 +2400,10 @@ int C_FFMpegPlayer::Releaseffmpeg() {
     return FFMPEGPLAYER_NOERROR;
 }
 
-//----------------------------------------------------------------------
-#if 0
-int C_FFMpegPlayer::init_decode(AVFormatContext *s) {
-int video_index = -1;
-int audio_index = -1;
-int ret = -1;
-if (s == NULL) {
-LOGE("error!");
-return -1;
-}
-/*
-Get video stream index, if no video stream then create it.
-And audio so on.
-*/
-if (0 == s->nb_streams) {
-create_stream(s, AVMEDIA_TYPE_VIDEO);
-create_stream(s, AVMEDIA_TYPE_AUDIO);
-video_index = 0;
-audio_index = 1;
-LOGE("intiD:1");
-} else if (1 == s->nb_streams) {
-if (AVMEDIA_TYPE_VIDEO ==
-    s->streams[0]->codec->codec_type)//  s->streams[0]->codec->codec_type)
-{
-    create_stream(s, AVMEDIA_TYPE_AUDIO);
-    video_index = 0;
-    audio_index = 1;
-    LOGE("intiD:2");
-} else if (AVMEDIA_TYPE_AUDIO ==
-           s->streams[0]->codec->codec_type) {  //s->streams[0]->codec->codec_type
-    create_stream(s, AVMEDIA_TYPE_VIDEO);
-    video_index = 1;
-    audio_index = 0;
-    LOGE("intiD:3");
-}
-} else if (2 == s->nb_streams) {
-if (AVMEDIA_TYPE_VIDEO == s->streams[0]->codec->codec_type) {
-    video_index = 0;
-    audio_index = 1;
-    LOGE("intiD:4");
-} else if (AVMEDIA_TYPE_VIDEO == s->streams[1]->codec->codec_type) {
-    video_index = 1;
-    audio_index = 0;
-    LOGE("intiD:5");
-}
-}
-/*Error. I can't find video stream.*/
-if (video_index != 0 && video_index != 1) {
-LOGE("intiD:6");
-return ret;
-}
-//Init the audio codec(AAC).
-#if 1
-s->streams[audio_index]->codec->codec_id = AV_CODEC_ID_PCM_ALAW;
-s->streams[audio_index]->codec->sample_rate = 8000;
-s->streams[audio_index]->codec->time_base.den = 8000;
-s->streams[audio_index]->codec->time_base.num = 1;
-s->streams[audio_index]->codec->bits_per_coded_sample = 8;
-s->streams[audio_index]->codec->channels = 1;
-s->streams[audio_index]->codec->channel_layout = 0;
-s->streams[audio_index]->pts_wrap_bits = 32;
-s->streams[audio_index]->time_base.den = 8000;
-s->streams[audio_index]->time_base.num = 1;
-#endif
-#if 1
-//Init the video codec(H264).
-s->streams[video_index]->codec->codec_id = AV_CODEC_ID_H264;
-s->streams[video_index]->codec->width = 640;
-if (b480)
-s->streams[video_index]->codec->height = 480;
-else
-s->streams[video_index]->codec->height = 360;
-s->streams[video_index]->codec->ticks_per_frame = 2;
-s->streams[video_index]->codec->bit_rate_tolerance = 1024000;
-s->streams[video_index]->codec->pix_fmt = AV_PIX_FMT_YUV420P;
-s->streams[video_index]->pts_wrap_bits = 32;
-s->streams[video_index]->time_base.den = 90000;
-s->streams[video_index]->time_base.num = 1;
-s->streams[video_index]->avg_frame_rate.den = 0;
-s->streams[video_index]->avg_frame_rate.num = 0;
-/*Need to change, different condition has different frame_rate. 'r_frame_rate' is new in ffmepg2.3.3*/
-s->streams[video_index]->r_frame_rate.den = 2;
-s->streams[video_index]->r_frame_rate.num = 40;
-LOGE("intiD:7");
-#else
-s->streams[video_index]->codec->codec_id = AV_CODEC_ID_H264;
-s->streams[video_index]->codec->width = 1280;
-s->streams[video_index]->codec->height = 720;
-s->streams[video_index]->codec->ticks_per_frame = 2;
-s->streams[video_index]->codec->bit_rate_tolerance = 1000000;
-s->streams[video_index]->codec->pix_fmt = AV_PIX_FMT_YUV420P;
-s->streams[video_index]->pts_wrap_bits = 32;
-s->streams[video_index]->time_base.den = 90000;
-s->streams[video_index]->time_base.num = 1;
-s->streams[video_index]->avg_frame_rate.den = 0;
-s->streams[video_index]->avg_frame_rate.num = 0;
-/*Need to change, different condition has different frame_rate. 'r_frame_rate' is new in ffmepg2.3.3*/
-s->streams[video_index]->r_frame_rate.den = 2;
-s->streams[video_index]->r_frame_rate.num = 40;
-
-#endif
-
-/* H264 need sps/pps for decoding, so read it from the first video tag.*/
-ret = get_video_extradata(s, video_index);
-LOGE("intiD:8");
-/*Update the AVFormatContext Info*/
-//s->nb_streams = 2;
-/*empty the buffer.*/
-//  s->pb->buf_ptr = s->pb->buf_end;
-/*
-something wrong.
-TODO: find out the 'pos' means what.
-then set it.
-*/
-//s->pb->pos = s->pb->buf_end;
-return 0;
-}
-#endif
-
 
 uint8_t *bufferA;
 int bufflen;
 int pos;
-
-#if 0
-
-int read_packet(void *opaque, uint8_t *buf, int buf_size) {
-    int size = buf_size;
-    if (bufflen - pos < buf_size)
-        size = bufflen - pos;
-    if (size > 0) {
-        memcpy(buf, bufferA + pos, size);
-        pos += size;
-    }
-    return size;
-}
-
-int64_t seek(void *opaque, int64_t offset, int whence) {
-    switch (whence) {
-        case SEEK_SET:
-            pos = offset;
-            break;
-        case SEEK_CUR:
-            pos += offset;
-            break;
-        case SEEK_END:
-            pos = bufflen - offset;
-            break;
-        case AVSEEK_SIZE:
-            return bufflen;
-            break;
-    }
-    return pos;
-}
-#endif
-
-
-
 
 extern  bool bSentRevBMP;
 extern AVFrame *gl_Frame;

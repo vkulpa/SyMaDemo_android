@@ -59,7 +59,7 @@ extern "C" {
 #include "MyMediaCoder.h"
 #include "JH_TestInfo.h"
 
-#include "myOpenCV.h"
+//#include "myOpenCV.h"
 
 using namespace std;
 
@@ -1193,6 +1193,32 @@ int _naInit_(const char *pFileName)
         return -100;
     }
 
+    if (nICType == IC_GK) {
+        sServerIP = "192.168.234.1";
+    } else if (nICType == IC_GP) {
+        sServerIP = "192.168.25.1";
+    } else if (nICType == IC_SN) {
+        sServerIP = "192.168.123.1";
+    } else if (nICType == IC_GKA) {
+        sServerIP = "175.16.10.2";
+    }
+    else if (nICType == IC_GPRTSP) {
+        sServerIP = "192.168.26.1";
+    }
+    else if (nICType == IC_GPH264) {
+        sServerIP = "192.168.27.1";
+    } else if (nICType == IC_GPRTP) {
+        sServerIP = "192.168.28.1";
+    } else if (nICType == IC_GPRTPB) {
+        sServerIP = "192.168.29.1";
+    } else if (nICType == IC_GPH264A) {
+        sServerIP = "192.168.30.1";
+    } else if (nICType == IC_GK_UDP) {
+        sServerIP = "192.168.16.1";
+    } else {
+        sServerIP = "192.168.240.1";
+    }
+
     idx = sServerIP.find("rtsp://192.168.26.1");
     if (idx != std::string::npos)
     {
@@ -1220,43 +1246,8 @@ int _naInit_(const char *pFileName)
         sServerIP = "192.168.25.1";
     }
 
-    if (nICType == IC_GK) {
-        sServerIP = "192.168.234.1";
-    } else if (nICType == IC_GP) {
-        ;
-        /*
-        if (idx != std::string::npos) {
-            sServerIP = "192.168.25.1";
-        } else {
-            sServerIP = "192.168.26.1";
-        }
-         */
-    } else if (nICType == IC_SN) {
-        sServerIP = "192.168.123.1";
-    } else if (nICType == IC_GKA) {
-        sServerIP = "175.16.10.2";
-    }
-        else if (nICType == IC_GPRTSP) {
-            ;
-         }
-    //else if (nICType == IC_GPRTSP) {
-    //    sServerIP = "192.168.26.1";
-    // }
-    else if (nICType == IC_GPH264) {
-        sServerIP = "192.168.27.1";
-    } else if (nICType == IC_GPRTP) {
-        sServerIP = "192.168.28.1";
-    } else if (nICType == IC_GPRTPB) {
-        sServerIP = "192.168.29.1";
-    } else if (nICType == IC_GPH264A) {
-        sServerIP = "192.168.30.1";
-    } else if (nICType == IC_GK_UDP) {
-        sServerIP = "192.168.16.1";
-    } else {
-        sServerIP = "192.168.240.1";
-    }
 
-    m_FFMpegPlayer.nIC_Type = nICType;
+    m_FFMpegPlayer.nIC_Type = (uint8_t)nICType;
 
     nSDStatus = 0;
     bInit = false;
@@ -4918,7 +4909,7 @@ int F_GetThumb(uint8_t *data, uint32_t nLen, const char *filename) {
             SendThumb2java(bufffff, nDataLen, filename);
         }
         avcodec_free_context(&m_codecCtx_abc);
-        av_free(pFrameRGB_abc->data[0]);
+        av_freep(&pFrameRGB_abc->data[0]);
         av_frame_free(&pFrameRGB_abc);
         av_frame_free(&m_decodedFrame_abc);
         av_packet_unref(&packet_abc);
@@ -6595,7 +6586,7 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
 
         if (frame_a != NULL)
         {
-            av_free(frame_a->data[0]);
+            av_freep(&frame_a->data[0]);
             av_frame_free(&frame_a);
         }
     }
@@ -6623,7 +6614,7 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
 
         Adj23D(frame_b, myYUV);
         if (frame_b != NULL) {
-            av_free(frame_b->data[0]);
+            av_freep(&frame_b->data[0]);
             av_frame_free(&frame_b);
         }
     }
@@ -6638,7 +6629,7 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
 
     ret = 1;
     if (myYUV != NULL) {
-        av_free(myYUV->data[0]);
+        av_freep(&myYUV->data[0]);
         av_frame_free(&myYUV);
     }
     return true;

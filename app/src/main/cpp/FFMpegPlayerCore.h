@@ -40,7 +40,7 @@ extern "C" {
 #include "h264_rbsp.h"
 #include "sps_parse.h"
 #include "pps_parse.h"
-#include "myOpenCV.h"
+//#include "myOpenCV.h"
 
 
 #define  FFMPEG3_3_3
@@ -233,9 +233,7 @@ public:
         return &m_frameRGBA;
     }
 */
-    int SetResolution(int Width, int Height);
 
-    int convertFrame();
     int AddMp4Video(uint8_t *sps,int len1,uint8_t * pps,int len2);
     int WriteMp4Frame(uint8_t * data,int nLen,bool b);
 
@@ -244,75 +242,7 @@ public:
     static void *decodeThreadFunction(void *param);
 
     static void *WriteThreadFunction(void *param);
-
-    //static void *WriteThreadFunctionA(void *param);
-
-    int init_decode(AVFormatContext *s);
-#if 0
-    AVStream *create_stream(AVFormatContext *s, AVMediaType codec_type) {
-        AVStream *st = avformat_new_stream(s, NULL);
-        if (!st)
-            return NULL;
-        st->codec->codec_type = codec_type;
-        return st;
-    }
-
-    int get_video_extradata(AVFormatContext *s, int video_index) {
-
-        int size;//, type, flags, pos, stream_type;
-        int ret = -1;
-        //    int64_t dts;
-        //    bool got_extradata = false;
-
-        if (!s || video_index < 0 || video_index > 2)
-            return ret;
-#if 1
-        size = 32;
-        s->streams[video_index]->codec->extradata = (uint8_t *) malloc(
-                size + FF_INPUT_BUFFER_PADDING_SIZE);
-        if (NULL == s->streams[video_index]->codec->extradata)
-            return ret;
-        memset(s->streams[video_index]->codec->extradata, 0, size + FF_INPUT_BUFFER_PADDING_SIZE);
-        s->streams[video_index]->codec->extradata_size = size;
-        return 1;
-#else
-        for (;; avio_skip(s->pb, 4))
-    {
-        pos  = (int)avio_tell(s->pb);
-        type = avio_r8(s->pb);
-        size = avio_rb24(s->pb);
-        dts  = avio_rb24(s->pb);
-        dts |= avio_r8(s->pb) << 24;
-        avio_skip(s->pb, 3);
-        if (0 == size)
-            break;
-        if (FLV_TAG_TYPE_AUDIO == type || FLV_TAG_TYPE_META == type) {
-            /*if audio or meta tags, skip them.*/
-            avio_seek(s->pb, size, SEEK_CUR);
-        } else if (type == FLV_TAG_TYPE_VIDEO) {
-            /*if the first video tag, read the sps/pps info from it. then break.*/
-            size -= 5;
-            s->streams[video_index]->codec->extradata = malloc(size + FF_INPUT_BUFFER_PADDING_SIZE);
-            if (NULL == s->streams[video_index]->codec->extradata)
-                break;
-            memset(s->streams[video_index]->codec->extradata, 0, size + FF_INPUT_BUFFER_PADDING_SIZE);
-            memcpy(s->streams[video_index]->codec->extradata, s->pb->buf_ptr + 5, size);
-            s->streams[video_index]->codec->extradata_size = size;
-            ret = 0;
-            got_extradata = true;
-        } else  {
-            /*The type unknown,something wrong.*/
-            break;
-        }
-        if (got_extradata)
-            break;
-    }
-    return ret;
-#endif
-    }
-#endif
     void ClearQueue();
-
     AVCodecContext *My_EncodecodecCtx;
     AVFrame *pFrameRGB;
     AVFrame *pFrameRecord;
@@ -337,9 +267,9 @@ private:
    // int writeFrame(AVFrame *pOutFrame);
 
 
-    int writePacket(AVPacket *pPacket);
 
-    int writePacketDirectly(AVPacket *pPacket);
+
+
 
 
 
@@ -405,7 +335,6 @@ private:
 
     AVPixelFormat pix_format;
     AVPixelFormat disp_pix_format;
-    AVCodecID dispCodeID;
 
     pthread_mutex_t m_Frame_Queuelock;
     pthread_mutex_t m_Frame_Queuelock_Display;

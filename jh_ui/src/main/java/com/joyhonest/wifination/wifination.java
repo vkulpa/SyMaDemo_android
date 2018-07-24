@@ -72,113 +72,117 @@ public class wifination {
     public static wifination getInstance() {
         return m_Instance;
     }
-
     private static native void naSetDirectBuffer(Object buffer, int nLen);
-
     private static native void naSetDirectBufferYUV(Object buffer, int nLen);
 
-    //Display
+    //初始化，开始接受wifi数据，显示图像
+    /*
+        IC_GKA：  sPath=@“1”  720P   sPath=@“2” VGA
+        IC_GP：       sPath=@"http://192.168.25.1:8080/?action=stream"
+        IC_GPRTSP     sPath = @"rtsp://192.168.26.1:8080/?action=stream"
+        其他模块：      sPath=@“”;
+    */
     public static native int naInit(String pFileName);
 
-    public static native int naPlay();
-
+    //停止播放
     public static native int naStop();
-
+    //向飞控发送命令
     public static native int naSentCmd(byte[] cmd, int nLen);
 
-    public static native int naStartCheckSDStatus(boolean bStart);
-
-    public static native void naSetIcType(int nICType);
-
+    //图像是否翻转
     public static native void naSetFlip(boolean b);
-
+    // 是否VR显示
     public static native void naSet3D(boolean b);
 
-    public static native void naSet3DA(boolean b);
 
-    //public static native boolean naSetVideoSurface(Object surface);
 
+
+
+
+
+    //TYPE_ONLY_PHONE   ==  录像或者拍照到手机
+    //TYPE_ONLY_SD     ==  录像或者拍照到模块的SD卡（目前只对应GKA模块有效)
+    // TYPE_BOTH_PHONE_SD  ==  录像或者拍照同时到模块的SD卡和手机
+    //
+    //拍照
+    public static native int naSnapPhoto(String pFileName, int PhoneOrSD);
+    //录像
+    public static native int naStartRecord(String pFileName, int PhoneOrSD);
+    // 获取录像时间 ms
+    public static native int naGetRecordTime();
+    //停止录像
+    public static native void naStopRecord(int PhoneOrSD);
+    //停止所有录像
+    public static native int naStopRecord_All();
+    //录像到手机时，是否录音
+    public static native void naSetRecordAudio(boolean b);
+
+
+    //手机是否在录像
+    public static native boolean isPhoneRecording();
+   //设定录像的分辨率，一般无需设定，默认位模块传回视频分辨率
+    public static native int naSetRecordWH(int ww, int hh);
+
+    //设定是否需要SDK内部来显示，b = true， SDK 把解码到的图像发送到JAVA，由APP自己来显示而不是通过SDK内部来渲染显示
+    // SDK解码后图像 由 ReceiveBmp 返回
+    public static native void naSetRevBmp(boolean b);
+
+
+
+
+
+    //设定 客户 只针对 GKA， “sima” 表示 客户是司马 ，目前只有这一个设定
     public static native void naSetCustomer(String sCustomer);
-
-    //获取SD卡列表 (针对  IC_GK)A
+    //获取SD卡列表 (针对  IC_GK_A 以下只对 IC_GKA
     public static native int naGetPhotoDir();
-
     public static native int naGetVideoDir();
-
     public static native int naGetFiles(int nType);
-
     public static native int naDownloadFile(String sPath, String dPath);
-
     public static native int naCancelDownload();
-
     public static native int naDeleteSDFile(String fileName);
 
-    public static native int naSetGPFps(int nFps);
+
 
 
     //获取SD卡中视频的的缩略图(针对  IC_GKA),一般建议如果已经下载到手机的视频文件,利用系统函数来获取缩略图,本函数主要是用于获取没有下载到手机
 //的SD卡中的视频文件缩略图,调用次函数后,SDK会回调 GetThumb(byte[] data,String sFilename), data 是缩略图数据,filename是表明是哪个视频文件
 //一般,我们在调用naGetVideoDir()时, 在回调函数GetFiles(byte[] filesname)得到文件名,在调用此函数来获取缩略图
-
     public static native int naGetThumb(String filename);
-
     public static native int naCancelGetThumb();
 
-    //拍照和录像
-    public static native int naSnapPhoto(String pFileName, int PhoneOrSD);
-
-    public static native int naStartRecord(String pFileName, int PhoneOrSD);
-
-    public static native int naGetRecordTime();
-
-    public static native void naStopRecord(int PhoneOrSD);
-
-    public static native int naStopRecord_All();
-
-    public static native int naGkASetRecordResolution(boolean b20P);
-
-
-    public static native int naGetSessionId();
-
-    public static native boolean isPhoneRecording();
-
-    public static native void naSetGKA_SentCmdByUDP(boolean bUdp);
-
-
-    //GP_RTSP
-
-    public static native int naGetGP_RTSP_Status();
 
     ///旧接口,不建议用....
+    public static native int naPlay();
+    public static native int naStartCheckSDStatus(boolean bStart);
+    public static native void naSetIcType(int nICType);
+    public static native void naSet3DA(boolean b);
+    public static native int naSetGPFps(int nFps);
+    public static native int naGkASetRecordResolution(boolean b20P);
+    public static native int naGetSessionId();
+    public static native void naSetGKA_SentCmdByUDP(boolean bUdp);
+    //GP_RTSP
+    //获取模块类型
+    public static native int naGetGP_RTSP_Status();
+
     public static native void naSetdispRect(int w, int h);
-
     public static native int naRemoteSnapshot();
-
     public static native int naRemoteSaveVideo();
 
     //public static native void naSN_WriteFrame(byte[] data, int nLen);
-
     public static native int naGetSettings();
-
     public static native boolean naCheckDevice();
-
     public static native int naSaveSnapshot(String pFileName);
-
     public static native int naSaveVideo(String pFileName);
-
     public static native int naStopSaveVideo();
-
     public static native int naStatus();
 
     //跟随
     public static native void naSetFollow(boolean bFollow);
-
     public static native void naSetContinue();
 
     //Sunbplus
     public static native int naSetMenuFilelanguage(int nLanguage);
 
-    public static native int naSetRecordWH(int ww, int hh);
 
     public static native void naFillFlyCmdByC(int nType);
 
@@ -195,7 +199,7 @@ public class wifination {
     public static native void naSetAdjFps(boolean b); //对应国科IC，有些早期固件不支持调整FPS，所以需要增加这一条命令
 
 
-    public static native void naSetRevBmp(boolean b); //是否把解码到的图像发送到JAVA，有APP自己来显示而不是通过SDK内部来渲染显示
+
 
     public static native void naSetVrBackground(boolean b);
 
@@ -208,7 +212,7 @@ public class wifination {
     public static native void naSetScal(float fScal); //设定放大显示倍数
 
 
-    public static native void naSetRecordAudio(boolean b);
+
 
 
     public static native void init();
@@ -424,6 +428,7 @@ public class wifination {
     private static void ReceiveBmp(int i) {
         //其中，i:bit00-bit15   为图像宽度
         //      i:bit16-bit31  为图像高度
+        // 此函数需要把数据尽快处理和保存。
         // 图像数据保存在mDirectBuffer中，格式为ARGB_8888
         Bitmap bmp = Bitmap.createBitmap(i & 0xFFFF, (i & 0xFFFF0000) >> 16, Bitmap.Config.ARGB_8888);
         ByteBuffer buf = wifination.mDirectBuffer;

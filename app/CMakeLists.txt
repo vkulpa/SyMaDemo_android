@@ -99,9 +99,9 @@ ENDIF()
 
 #加入OpenCV
 
-set(OpenCV_STATIC ON) #1
-set(OpenCV_DIR /WORK/ffmpeg/OpenCV-android-sdk/sdk/native/jni) #2
-find_package(OpenCV REQUIRED) #3
+#set(OpenCV_STATIC ON) #1
+#set(OpenCV_DIR /WORK/ffmpeg/OpenCV-android-sdk/sdk/native/jni) #2
+#find_package(OpenCV REQUIRED) #3
 
 
 target_link_libraries( # Specifies the target library.
@@ -125,7 +125,7 @@ target_link_libraries( # Specifies the target library.
                        /WORK/ffmpeg/ffmpeglib/libavfilter.a
                        /WORK/ffmpeg/ffmpeglib/libswresample.a
                        /WORK/ffmpeg/ffmpeglib/libswscale.a
-                       ${OpenCV_LIBS}    #4
+                       # ${OpenCV_LIBS}    #4
                         )
 
 
