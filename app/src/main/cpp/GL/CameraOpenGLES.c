@@ -311,10 +311,9 @@ Java_com_joyhonest_wifination_wifination_drawFrame(JNIEnv *env, jobject obj) //,
 #endif
 }
 
-JNIEXPORT
-void
-Java_com_joyhonest_wifination_wifination_release(JNIEnv *env, jobject obj) {
-    LOGI_EU("release()");
+
+void F_Release_OpenGL(void)
+{
 #ifndef NO_Fuc
     if (instance != 0) {
         free(instance->yBuffer);
@@ -330,6 +329,13 @@ Java_com_joyhonest_wifination_wifination_release(JNIEnv *env, jobject obj) {
         free(maMVPMatrix);
     }
 #endif
+}
+
+JNIEXPORT
+void
+Java_com_joyhonest_wifination_wifination_release(JNIEnv *env, jobject obj) {
+    LOGI_EU("release()");
+    F_Release_OpenGL();
 }
 
 

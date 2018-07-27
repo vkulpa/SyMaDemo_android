@@ -58,6 +58,11 @@ public class JH_GLSurfaceView extends GLSurfaceView {
         });
     }
 
+    @Override
+    protected void onDetachedFromWindow() {
+        super.onDetachedFromWindow();
+        wifination.release();
+    }
 
     public static native int naDecordInit();
 

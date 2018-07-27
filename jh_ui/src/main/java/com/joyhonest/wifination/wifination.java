@@ -75,6 +75,11 @@ public class wifination {
     private static native void naSetDirectBuffer(Object buffer, int nLen);
     private static native void naSetDirectBufferYUV(Object buffer, int nLen);
 
+
+    ////// ------------- -------------------------
+
+
+
     //初始化，开始接受wifi数据，显示图像
     /*
         IC_GKA：  sPath=@“1”  720P   sPath=@“2” VGA
@@ -93,11 +98,6 @@ public class wifination {
     public static native void naSetFlip(boolean b);
     // 是否VR显示
     public static native void naSet3D(boolean b);
-
-
-
-
-
 
 
     //TYPE_ONLY_PHONE   ==  录像或者拍照到手机
@@ -128,9 +128,6 @@ public class wifination {
     public static native void naSetRevBmp(boolean b);
 
 
-
-
-
     //设定 客户 只针对 GKA， “sima” 表示 客户是司马 ，目前只有这一个设定
     public static native void naSetCustomer(String sCustomer);
     //获取SD卡列表 (针对  IC_GK_A 以下只对 IC_GKA
@@ -152,6 +149,9 @@ public class wifination {
 
 
     ///旧接口,不建议用....
+
+    public static  native void naSetDislplayData(byte[]data,int width,int height);
+
     public static native int naPlay();
     public static native int naStartCheckSDStatus(boolean bStart);
     public static native void naSetIcType(int nICType);

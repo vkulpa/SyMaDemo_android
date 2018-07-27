@@ -95,26 +95,44 @@ int C_FFMpegPlayer::GetStatus() {
 C_FFMpegPlayer::C_FFMpegPlayer() :
         m_Status(E_PlayerStatus_Stoped), nRecFps(20),
         m_formatCtx(NULL), m_videoStream(0), m_codecCtx(NULL), m_decodedFrame(NULL),
-        My_EncodecodecCtx(NULL),
-        m_sws_ctx(NULL), m_width(0), m_height(0), fmt(NULL), pFormatCtx(NULL), pFrameRGB(NULL),
-        pCodecCtx(NULL), video_st(NULL), m_bSaveSnapshot(false), m_bSaveVideo(false),
+        //My_EncodecodecCtx(NULL),
+         m_width(0), m_height(0),
+        //m_sws_ctx(NULL),
+        //pFrameRGB(NULL),
+        //video_st(NULL),
+        //m_outsws_ctx(NULL),
+          m_bSaveSnapshot(false), m_bSaveVideo(false),
 
-        m_writeThread(0), m_outsws_ctx(NULL), m_EncodeID(AV_CODEC_ID_MPEG4), m_bOpenOK(false),  //AV_CODEC_ID_MPEG4
+        m_writeThread(0),   m_bOpenOK(false),  //AV_CODEC_ID_MPEG4
         bPause(true), nIC_Type(IC_GK),
-        buffer_a(NULL), frame_c(NULL),
-        out_buffer(NULL), out_bufferBmp(NULL), m_parser(NULL), codec(NULL), bFlip(false),
-        nDisplayWidth(640), nDisplayHeight(360), nNeedRedraw(false), nativeWindow(NULL), b3D(false),
+         frame_c(NULL),
+          m_parser(NULL), codec(NULL), bFlip(false),
+        nDisplayWidth(640), nDisplayHeight(360), nNeedRedraw(false),  b3D(false),
         frame_b(NULL), frame_a(NULL), b480(false), bFollow(false), Rgbabuffer(NULL), video(MP4_INVALID_TRACK_ID), fileHandle(MP4_INVALID_FILE_HANDLE), bIsH264(false), nSpsSet(0), nSecT(0),
-        bContinue(true), b3DA(false), nfps(20), nErrorFrame(0), h64fileHandle(-1), bStatWrite(false), YUVbuffer(NULL),  pFrameRecord(NULL), nRecordWidth(640),
+        bContinue(true), b3DA(false), nfps(20), nErrorFrame(0),  bStatWrite(false), YUVbuffer(NULL),  pFrameRecord(NULL), nRecordWidth(640),
         nRecordHeight(360) {
     m_snapShotPath[0] = 0;  //= m_VideoPath[0]
     pthread_mutex_init(&m_Frame_Queuelock, NULL);
     pthread_cond_init(&m_Frame_condition, NULL);
 
-    pthread_mutex_init(&m_Frame_Queuelock_Display, NULL);
-    pthread_cond_init(&m_Frame_condition_disp, NULL);
+    //pthread_mutex_init(&m_Frame_Queuelock_Display, NULL);
+    //pthread_cond_init(&m_Frame_condition_disp, NULL);
     sRecordFileName = "";
+
+#ifdef  D_H264file
+    h64fileHandle = -1;
+#endif
+
 }
+//pCodecCtx(NULL),
+//pFormatCtx(NULL),
+//m_EncodeID(AV_CODEC_ID_MPEG4),
+//fmt(NULL),
+//
+
+//nativeWindow(NULL),
+
+//out_buffer(NULL),
 
 
 void C_FFMpegPlayer::F_ReSetRecordWH(int w, int h) {
@@ -187,11 +205,11 @@ int C_FFMpegPlayer::InitMediaSN(void) {
 
 
     pix_format = AV_PIX_FMT_YUV420P;
-    disp_pix_format = AV_PIX_FMT_RGBA;
+    //disp_pix_format = AV_PIX_FMT_RGBA;
 
 
     pFrameYUV = av_frame_alloc();
-    pFrameRGB = av_frame_alloc();
+    //pFrameRGB = av_frame_alloc();
 
 
     frame_SnapBuffer = av_frame_alloc();
@@ -222,6 +240,7 @@ int C_FFMpegPlayer::InitMediaSN(void) {
             nRecordHeight,
             pix_format, 4);
 
+    /*
     pFrameRGB->format = disp_pix_format;//AV_PIX_FMT_BGR24;
     pFrameRGB->width = m_codecCtx->width;
     pFrameRGB->height = m_codecCtx->height;
@@ -229,6 +248,7 @@ int C_FFMpegPlayer::InitMediaSN(void) {
             pFrameRGB->data, pFrameRGB->linesize, nDisplayWidth,
             nDisplayHeight,
             disp_pix_format, 4);
+            */
 
     img_convert_ctx = sws_getContext(m_codecCtx->width, m_codecCtx->height, m_codecCtx->pix_fmt,
                                      m_codecCtx->width, m_codecCtx->height, pix_format,
@@ -272,128 +292,7 @@ int C_FFMpegPlayer::InitMediaSN(void) {
     return 0;
 }
 
-int C_FFMpegPlayer::InitMediaGPRTP(void) {
-    AVCodec *pCodec = NULL;
-    AVDictionary *optionsDict = NULL;
-    int err_code = 0;
-    m_bOpenOK = false;
 
-
-    if (m_decodedFrame == NULL) {
-        avcodec_register_all();
-        av_register_all();
-        avformat_network_init();
-        av_log_set_level(AV_LOG_QUIET);
-        m_decodedFrame = av_frame_alloc();
-        codec = avcodec_find_decoder_by_name("h264_mediacodec");//寻找指定解码器
-        if (codec == NULL)
-            codec = avcodec_find_decoder(AV_CODEC_ID_H264);
-
-
-        m_codecCtx = avcodec_alloc_context3(codec);
-        m_codecCtx->codec_id = codec->id;//AV_CODEC_ID_H264;
-
-        m_codecCtx->width = nDisplayWidth;
-        m_codecCtx->height = nDisplayHeight;
-
-        m_parser = av_parser_init(codec->id); //AV_CODEC_ID_H264);
-
-        int ret = avcodec_open2(m_codecCtx, codec, NULL);
-        if (ret != 0) {
-            LOGE("open codec failed :%d", ret);
-        }
-
-        return 0;
-    }
-    if (pFrameYUV != NULL)
-        return 0;
-    if (m_codecCtx == NULL)
-        return 0;
-
-    if (m_codecCtx->width <= 0 || m_codecCtx->height <= 0) {
-        return 0;
-    }
-
-    pix_format = AV_PIX_FMT_YUV420P;
-    disp_pix_format = AV_PIX_FMT_RGBA;
-
-
-    pFrameYUV = av_frame_alloc();
-    pFrameRGB = av_frame_alloc();
-
-
-    pFrameYUV->format = pix_format;
-    pFrameYUV->width = m_codecCtx->width;
-    pFrameYUV->height = m_codecCtx->height;
-    int ret = av_image_alloc(
-            pFrameYUV->data, pFrameYUV->linesize, m_codecCtx->width,
-            m_codecCtx->height,
-            pix_format, 4);
-
-    pFrameRGB->format = disp_pix_format;//AV_PIX_FMT_BGR24;
-    pFrameRGB->width = m_codecCtx->width;
-    pFrameRGB->height = m_codecCtx->height;
-    ret = av_image_alloc(
-            pFrameRGB->data, pFrameRGB->linesize, nDisplayWidth,
-            nDisplayHeight,
-            disp_pix_format, 4);
-
-
-    pFrameRecord = av_frame_alloc();
-
-    pFrameRecord->format = pix_format;
-    pFrameRecord->width = nRecordWidth;
-    pFrameRecord->height = nRecordHeight;
-    ret = av_image_alloc(
-            pFrameRecord->data, pFrameRecord->linesize, nRecordWidth,
-            nRecordHeight,
-            pix_format, 4);
-
-    img_convert_ctx = sws_getContext(m_codecCtx->width, m_codecCtx->height, m_codecCtx->pix_fmt,
-                                     m_codecCtx->width, m_codecCtx->height, pix_format,
-                                     SWS_BILINEAR, NULL, NULL, NULL); //
-
-    //img_convert_ctxBmp = sws_getContext(m_codecCtx->width, m_codecCtx->height, pix_format,
-    //                                    nDisplayWidth, nDisplayHeight, disp_pix_format,
-    //                                    SWS_BILINEAR, NULL, NULL, NULL); //
-
-    //img_convert_ctxRecord = sws_getContext(m_codecCtx->width, m_codecCtx->height, pix_format,
-     //                                      nRecordWidth, nRecordHeight, pix_format,
-     //                                      SWS_AREA, NULL, NULL, NULL); //
-
-
-
-    //img_convert_ctx_half = sws_getContext(m_codecCtx->width, m_codecCtx->height, pix_format,
-    //                                      m_codecCtx->width / 2, m_codecCtx->height / 2, pix_format,
-    //                                      SWS_BILINEAR, NULL, NULL, NULL); //
-
-
-    if (frame_a == NULL) {
-        frame_a = av_frame_alloc();
-        frame_a->format = AV_PIX_FMT_YUV420P;
-        frame_a->width = m_codecCtx->width;
-        frame_a->height = m_codecCtx->height;
-        av_image_alloc(frame_a->data, frame_a->linesize, m_codecCtx->width,
-                       m_codecCtx->height,
-                       AV_PIX_FMT_YUV420P, 4);
-    }
-
-
-    if (frame_b == NULL) {
-        frame_b = av_frame_alloc();
-        frame_b->format = AV_PIX_FMT_YUV420P;
-        frame_b->width = m_codecCtx->width / 2;
-        frame_b->height = m_codecCtx->height / 2;
-        av_image_alloc(frame_b->data, frame_b->linesize, frame_b->width,
-                       frame_b->height,
-                       AV_PIX_FMT_YUV420P, 4);
-    }
-
-    m_bOpenOK = true;
-
-    return 0;
-
-}
 
 
 int C_FFMpegPlayer::InitMediaGK(void) {
@@ -439,11 +338,11 @@ int C_FFMpegPlayer::InitMediaGK(void) {
 
 
     pix_format = AV_PIX_FMT_YUV420P;
-    disp_pix_format = AV_PIX_FMT_RGBA;
+    //disp_pix_format = AV_PIX_FMT_RGBA;
 
 
     pFrameYUV = av_frame_alloc();
-    pFrameRGB = av_frame_alloc();
+    //pFrameRGB = av_frame_alloc();
 
 
     frame_SnapBuffer = av_frame_alloc();
@@ -464,6 +363,7 @@ int C_FFMpegPlayer::InitMediaGK(void) {
             m_codecCtx->height,
             pix_format, 4);
 
+    /*
     pFrameRGB->format = disp_pix_format;//AV_PIX_FMT_BGR24;
     pFrameRGB->width = m_codecCtx->width;
     pFrameRGB->height = m_codecCtx->height;
@@ -471,7 +371,7 @@ int C_FFMpegPlayer::InitMediaGK(void) {
             pFrameRGB->data, pFrameRGB->linesize, nDisplayWidth,
             nDisplayHeight,
             disp_pix_format, 4);
-
+    */
 
     pFrameRecord = av_frame_alloc();
     pFrameRecord->format = pix_format;
@@ -531,6 +431,7 @@ bool C_FFMpegPlayer::F_RecreateEnv(void) {
     if (nNeedRedraw)
     {
         nNeedRedraw = false;
+        /*
         if (pFrameRGB != NULL) {
             av_freep(pFrameRGB->data);
             pFrameRGB->format = AV_PIX_FMT_BGR24;
@@ -542,6 +443,7 @@ bool C_FFMpegPlayer::F_RecreateEnv(void) {
                     AV_PIX_FMT_BGR24, 4);
 
         }
+         */
         /*
         if (img_convert_ctxBmp != NULL) {
             sws_freeContext(img_convert_ctxBmp);
@@ -643,7 +545,7 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
         m_formatCtx->probesize = 600 * 1024;
 
     AVDictionary *opts = NULL;
-    bNeedCheck = false;
+
     AVDictionary *options = NULL;
 
     av_dict_set(&options, "rtsp_transport", "tcp", 0);
@@ -752,11 +654,11 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
     }
 
     pix_format = AV_PIX_FMT_YUV420P;
-    disp_pix_format = AV_PIX_FMT_RGBA;
+    //disp_pix_format = AV_PIX_FMT_RGBA;
 
 
     pFrameYUV = av_frame_alloc();
-    pFrameRGB = av_frame_alloc();
+    //pFrameRGB = av_frame_alloc();
 
 
     pFrameYUV->format = pix_format;
@@ -779,6 +681,7 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
             pix_format, 4);
 
 
+    /*
     pFrameRGB->format = disp_pix_format;//AV_PIX_FMT_BGR24;
     pFrameRGB->width = m_codecCtx->width;
     pFrameRGB->height = m_codecCtx->height;
@@ -786,7 +689,7 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
             pFrameRGB->data, pFrameRGB->linesize, nDisplayWidth,
             nDisplayHeight,
             disp_pix_format, 4);
-
+    */
 
     pFrameRecord = av_frame_alloc();
 
@@ -1009,6 +912,10 @@ int C_FFMpegPlayer::SaveVideo(const char *path, bool bisH264) {
     {
         F_SetRecordAudio(1);
     }
+    else
+    {
+        F_SetRecordAudio(0);
+    }
 
     music=MP4_INVALID_TRACK_ID;
     bStatWrite = false;
@@ -1135,10 +1042,7 @@ int C_FFMpegPlayer::decodeAndRender_GKA(MySocketData *data) {
     F_ResetRelinker();
     if (data->nLen < 4)
         return 0;
-
-    //pd = data;
     F_DispH264NoBuffer(data);
-
     return 0;
 
 }
@@ -1900,10 +1804,7 @@ int C_FFMpegPlayer::StopSaveVideo() {
         m_writeThread = 0;
     }
 
-    if (buffer_a != NULL) {
-        av_free(buffer_a);
-        buffer_a = NULL;
-    }
+
 
     if (pthread_mutex_trylock(&m_Frame_Queuelock) == 0) {
         pthread_cond_signal(&m_Frame_condition);
@@ -1921,11 +1822,12 @@ int C_FFMpegPlayer::StopSaveVideo() {
         rename(sRecordFileName_tmp.c_str(), sRecordFileName.c_str());
         F_OnSave2ToGallery_mid(1);
     }
+#ifdef  D_H264file
     if (h64fileHandle != -1) {
         close(h64fileHandle);
         h64fileHandle = -1;
     }
-
+#endif
     return FFMPEGPLAYER_NOERROR;
 }
 
@@ -2003,29 +1905,6 @@ int C_FFMpegPlayer::writeVideo() {
 
 int C_FFMpegPlayer::CloseVideo() {
     DEBUG_PRINT("CloseVideo\n");
-
-    if (fmt != NULL) {
-        av_write_trailer(pFormatCtx);
-        if (!(pFormatCtx->oformat->flags & AVFMT_NOFILE) && pFormatCtx->pb)
-            avio_close(pFormatCtx->pb);
-
-        /*
-        if (video_st)
-        {
-            avcodec_close(video_st->codec);
-        }
-         */
-        if (pCodecCtx) {
-            avcodec_free_context(&pCodecCtx);
-            pCodecCtx = NULL;
-        }
-        avformat_free_context(pFormatCtx);
-        video_st = NULL;
-        fmt = NULL;
-        pFormatCtx = NULL;
-        if (m_EncodeID == AV_CODEC_ID_MJPEG)
-            av_packet_unref(&m_prevPkt);
-    }
     ClearQueue();
     return FFMPEGPLAYER_NOERROR;
 }
@@ -2300,8 +2179,7 @@ int C_FFMpegPlayer::Releaseffmpeg() {
     //avpicture_free(&m_frameRGBA);
     // Free the YUV frame
     m_Status = E_PlayerStatus_Stoped;
-    //av_frame_free(&m_decodedFrame);
-    //av_free(m_decodedFrame);
+
 
     // Close the codec
     avcodec_close(m_codecCtx);
@@ -2309,12 +2187,6 @@ int C_FFMpegPlayer::Releaseffmpeg() {
     avformat_close_input(&m_formatCtx);
 
     sws_freeContext(img_convert_ctx);
-    /*
-    if (img_convert_ctxBmp != NULL) {
-        sws_freeContext(img_convert_ctxBmp);
-        img_convert_ctxBmp = NULL;
-    }
-     */
 
     if (pFrameYUV != NULL) {
         av_freep(&pFrameYUV->data[0]);
@@ -2322,37 +2194,22 @@ int C_FFMpegPlayer::Releaseffmpeg() {
         pFrameYUV = 0;
     }
 
+    /*
     if (pFrameYUV_Disp != NULL) {
         av_freep(&pFrameYUV_Disp->data[0]);
         av_frame_free(&pFrameYUV_Disp);
         pFrameYUV_Disp = NULL;
     }
+     */
 
 
     img_convert_ctx = NULL;
-    //img_convert_ctxBmp = NULL;
+
     m_formatCtx = NULL;
     m_codecCtx = NULL;
     m_decodedFrame = NULL;
-    if (My_EncodecodecCtx != NULL) {
-        avcodec_close(My_EncodecodecCtx);
-        av_free(My_EncodecodecCtx);
-        My_EncodecodecCtx = NULL;
-    }
 
-    if (buffer_a != NULL) {
-        av_free(buffer_a);
-        buffer_a = NULL;
 
-    }
-    if (out_buffer != NULL) {
-        av_free(out_buffer);
-        out_buffer = NULL;
-    }
-    if (out_bufferBmp != NULL) {
-        av_free(out_bufferBmp);
-        out_bufferBmp = NULL;
-    }
     if (frame_a != NULL) {
         av_freep(&frame_a->data[0]);
         av_frame_free(&frame_a);
@@ -2363,15 +2220,14 @@ int C_FFMpegPlayer::Releaseffmpeg() {
         av_frame_free(&frame_b);
         frame_b = NULL;
     }
+    /*
     if (pFrameRGB != NULL) {
         av_freep(&pFrameRGB->data[0]);
         av_frame_free(&pFrameRGB);
         pFrameRGB = NULL;
     }
-    if (nativeWindow != NULL) {
-        ANativeWindow_release(nativeWindow);
-        nativeWindow = NULL;
-    }
+     */
+
     if (frame_SnapBuffer != NULL) {
         av_freep(&frame_SnapBuffer->data[0]);
         av_frame_free(&frame_SnapBuffer);
@@ -2415,7 +2271,8 @@ void C_FFMpegPlayer::F_DispSurface() {
     {
         if(Rgbabuffer!=NULL)
         {
-            libyuv::I420ToBGRA(pFrameYUV->data[0], pFrameYUV->linesize[0],
+
+            libyuv::I420ToABGR(pFrameYUV->data[0], pFrameYUV->linesize[0],
                                pFrameYUV->data[1], pFrameYUV->linesize[1],
                                pFrameYUV->data[2], pFrameYUV->linesize[2],
                                Rgbabuffer, pFrameYUV->width * 4,

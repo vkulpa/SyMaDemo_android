@@ -118,13 +118,13 @@ target_link_libraries( # Specifies the target library.
 
                        /WORK/ffmpeg/mp4v2-2.0.0/obj/local/${ANDROID_ABI}/libmp4v2.a
                        /WORK/ffmpeg/libyuv/obj/local/${ANDROID_ABI}/libyuv.a
-                       /WORK/ffmpeg/ffmpeglib/libavformat.a
-                       /WORK/ffmpeg/ffmpeglib/libavdevice.a
-                       /WORK/ffmpeg/ffmpeglib/libavcodec.a
-                       /WORK/ffmpeg/ffmpeglib/libavutil.a
-                       /WORK/ffmpeg/ffmpeglib/libavfilter.a
-                       /WORK/ffmpeg/ffmpeglib/libswresample.a
-                       /WORK/ffmpeg/ffmpeglib/libswscale.a
+                       /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libavformat.a
+                       /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libavdevice.a
+                       /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libavcodec.a
+                       /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libavutil.a
+                       /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libavfilter.a
+                       /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libswresample.a
+                       /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libswscale.a
                        # ${OpenCV_LIBS}    #4
                         )
 

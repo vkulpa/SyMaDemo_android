@@ -2091,22 +2091,17 @@ int naStop(void)
         return ret;
     }
     if (nICType == IC_SN) {
-        //nSDStatus &= (0x04 ^ 0xFF);
-        //nSDStatus = 0;
         F_SendStatus2Jave();
         m_MySonix.sendStop();
         m_MySonix.closeCommandSocket();
         m_MySonix.closeVideoSocket();
-
         m_FFMpegPlayer.Stop();
-
         return 0;
     }
     if (nICType == IC_GPRTP || nICType == IC_GPRTPB) {
         F_SentRTPStop();
         F_SendStatus2Jave();
         m_FFMpegPlayer.Stop();
-
         return 0;
     }
     if (nICType == IC_GP) {
@@ -2128,36 +2123,20 @@ int naStop(void)
         send_cmd_tcp(cmd, i,GP_IP,8081);
          */
     }
-
     mysocket.DisConnect();
-    //m_FFMpegPlayer.Stop();
     F_ResetCheckT(1);
-    //nSDStatus &= (0x04 ^ 0xFF);
     nSDStatus = 0;
     F_SendStatus2Jave();
 
+    /*
     int needsDetach = 0;
     JNIEnv *evn = getJNIEnv(&needsDetach);
     if (evn == NULL) {
         return 0;
     }
-
-/*
-
-    if(surfaceA!=NULL)
-    {
-        evn->DeleteGlobalRef(surfaceA);
-        surfaceA = NULL;
-    }
-*/
     if (needsDetach)
         gJavaVM->DetachCurrentThread();
-
-    if (m_FFMpegPlayer.nativeWindow != NULL) {
-        ANativeWindow_release(m_FFMpegPlayer.nativeWindow);
-        m_FFMpegPlayer.nativeWindow = NULL;
-    }
-
+      */
     return 0;
 }
 
@@ -2165,7 +2144,6 @@ JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naStop(JNIEnv *env, jclass type) {
     bNeedStop = true;
     naStop();
-
 
     return 0;
 }
@@ -2250,30 +2228,6 @@ int F_SendKey2Jave(int nKey) {
 
 }
 
-/*
-void F_OnRemoveFromGallery_mid(int n)
-{
-    int needsDetach = 0;
-    JNIEnv *evn = getJNIEnv(&needsDetach);
-    if (evn == NULL) {
-        return;
-    }
-    if (RemoveFromGallery_mid != NULL) {
-        if (n == 0) {
-            jstring str = evn->NewStringUTF((char *) (m_FFMpegPlayer.m_snapShotPath));
-            evn->CallStaticVoidMethod(objclass, RemoveFromGallery_mid, str, n);
-            evn->DeleteLocalRef(str);
-        } else {
-            jstring str = evn->NewStringUTF(m_FFMpegPlayer.sRecordFileName.c_str());
-            evn->CallStaticVoidMethod(objclass, RemoveFromGallery_mid, str, n);
-            evn->DeleteLocalRef(str);
-        }
-    }
-    if (needsDetach)
-        gJavaVM->DetachCurrentThread();
-
-}
- */
 
 void F_OnSave2ToGallery_mid(int n) {
     int needsDetach = 0;
@@ -2281,7 +2235,8 @@ void F_OnSave2ToGallery_mid(int n) {
     if (evn == NULL) {
         return;
     }
-    if (Save2ToGallery_mid != NULL) {
+    if (Save2ToGallery_mid != NULL)
+    {
         if (n == 0) {
             jstring str = evn->NewStringUTF((char *) (m_FFMpegPlayer.m_snapShotPath));
             evn->CallStaticVoidMethod(objclass, Save2ToGallery_mid, str, n);
@@ -4079,11 +4034,13 @@ Java_com_joyhonest_wifination_wifination_naSetdispRect(JNIEnv *env, jclass type,
         m_FFMpegPlayer.nNeedRedraw = true;
         m_FFMpegPlayer.nDisplayWidth = w;
         m_FFMpegPlayer.nDisplayHeight = h;
+        /*
         if (m_FFMpegPlayer.My_EncodecodecCtx != NULL) {
             avcodec_close(m_FFMpegPlayer.My_EncodecodecCtx);
             avcodec_free_context(&m_FFMpegPlayer.My_EncodecodecCtx);
             m_FFMpegPlayer.My_EncodecodecCtx = NULL;
         }
+         */
     }
 }
 
@@ -6803,5 +6760,39 @@ Java_com_joyhonest_wifination_wifination_naSetRecordAudio(JNIEnv *env, jclass ty
     // TODO
     bG_Audio = b;
 
+}
+
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetDislplayData(JNIEnv *env, jclass type, jbyteArray data_, jint width, jint height)
+{
+    jbyte *data = env->GetByteArrayElements(data_, NULL);
+
+    jint w2 = width/2;
+    jint  nlen = width*height;
+    jint  nlen1 = (jint )(width*height/4);
+
+    jbyte *py = data;
+    jbyte *pu = data+nlen;
+    jbyte *pv = pu+nlen1;
+
+    gl_Frame->width = width;
+    gl_Frame->height = height;
+
+    gl_Frame->linesize[0] = width;
+    gl_Frame->linesize[1] = w2;
+    gl_Frame->linesize[2] = w2;
+
+    libyuv::I420Copy((const uint8*)py, width,
+                     (const uint8*)pu, w2,
+                     (const uint8*)pv, w2,
+                     gl_Frame->data[0], width,
+                     gl_Frame->data[1], w2,
+                     gl_Frame->data[2], w2,
+                     width, height);
+
+    env->ReleaseByteArrayElements(data_, data, 0);
 }
 

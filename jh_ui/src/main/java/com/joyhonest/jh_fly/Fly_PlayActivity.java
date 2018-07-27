@@ -69,6 +69,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
     public int nGetFileType = 0;
 
+    private ImageView imageView4;
+
 
     private boolean bCancelDownLoadVideo = false;
     private boolean bCancelDownLoad = false;
@@ -173,6 +175,9 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         JH_App.bFlying = false;
 
         glSurfaceView = (JH_GLSurfaceView) findViewById(R.id.glSurfaceView);
+        //glSurfaceView.setVisibility(View.INVISIBLE);
+        //imageView4 = (ImageView)findViewById(R.id.imageView4);
+        //wifination.naSetRevBmp(true);
 
         MyControl.bFlyType = true;
 
@@ -216,6 +221,13 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         } else {
             glSurfaceView.setVisibility(View.VISIBLE);
         }
+    }
+
+
+    @Subscriber(tag ="ReviceBMP")
+    private void ReviceBMP(Bitmap bmp)
+    {
+        //imageView4.setImageBitmap(bmp);
     }
 
     @Subscriber(tag = "NeedEnable_123")
@@ -386,7 +398,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         if (openHandler != null) {
 
             wifination.naStop();
-            wifination.release();
+            //wifination.release();
             EventBus.getDefault().unregister(this);
 
             openHandler.removeCallbacksAndMessages(null);

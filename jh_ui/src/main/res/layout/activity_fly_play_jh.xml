@@ -11,6 +11,7 @@
         android:id="@+id/glSurfaceView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"/>
+
     <RelativeLayout
         android:id="@+id/Fragment_Layout"
         android:background="#01000000"

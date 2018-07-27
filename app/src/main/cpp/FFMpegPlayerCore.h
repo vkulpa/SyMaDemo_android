@@ -118,12 +118,12 @@ public:
     E_PlayerStatus m_Status;
     uint64_t    nErrorFrame;
     C_FFMpegPlayer();
-
     ~C_FFMpegPlayer();
 
     MP4TrackId video;
     MP4TrackId  music;
     MP4FileHandle fileHandle;
+
     bool  bIsH264;
     int  nSpsSet;
     bool  bStatWrite;
@@ -131,10 +131,11 @@ public:
     std::string  sRecordFileName;
     std::string  sRecordFileName_tmp;
 
-
+#ifdef  D_H264file
     int     h64fileHandle;
     std::string  sH264FileName;
-    std::string  sH264FileName_tmp;
+#endif
+
 
     int   nRecordWidth;
     int   nRecordHeight;
@@ -146,11 +147,6 @@ public:
     bool bContinue;
     unsigned char *Rgbabuffer;
     unsigned char *YUVbuffer;
-    //uint8_t sps[1024];
-    //int      sps_len;
-    //uint8_t pps[1024];
-    //int      pps_len;
-    //int64_t  nStartTime;
     int      nSecT;
 
 
@@ -159,92 +155,38 @@ public:
     bool nNeedRedraw;
 
     bool F_RecreateEnv(void);
-
-
     void F_DispSurface();
 
-    int InitMediaGPRTP(void);
 
     int InitMediaGK(void);
-
     int InitMediaSN(void);
 
-    //void F_SendFrame(uint8_t *buffer, int nLen);
-
-
     AVPacket *F_GetPacket();
-
-
-    //AVFrame *F_GetFrame();
-
     int decodeAndRender_GKA(MySocketData *dat);
-
     int decodeAndRender_GKA_B(MySocketData *dat);
 
-    //static  void* F_DispThread(void *dat);
     void F_StartDispThread();
-    pthread_t dispThreadid;
+
 
     int decodeAndRender_SN(char *data, int nLen);
-
     int decodeAndRender_RTP(char *data,int nLen);
 
 
-  //  int SN_Width;
-  //  int SN_Height;
     uint8_t nIC_Type;
 
-
-    unsigned char *out_bufferBmp;
-    int nDataCount;
-
     int InitMedia(const char *path);
-
     int PlayMedia();
-
     int Stop();
-
-
     int SaveSnapshot(const char *path);
-
     int GetStatus(void);
-
     int SaveVideo(const char *path,bool bisH264=false);
-
     int StopSaveVideo();
-/*(
-    int GetWidth() {
-        if (m_codecCtx == NULL)
-            return 0;
-
-        return m_codecCtx->width;
-    }
-
-    int GetHeight() {
-        if (m_codecCtx == NULL)
-            return 0;
-
-        return m_codecCtx->height;
-    }
-*/
-/*
-    AVPicture* GetDecodePicture()
-    {
-        return &m_frameRGBA;
-    }
-*/
-
     int AddMp4Video(uint8_t *sps,int len1,uint8_t * pps,int len2);
     int WriteMp4Frame(uint8_t * data,int nLen,bool b);
-
-
-
     static void *decodeThreadFunction(void *param);
-
     static void *WriteThreadFunction(void *param);
     void ClearQueue();
-    AVCodecContext *My_EncodecodecCtx;
-    AVFrame *pFrameRGB;
+
     AVFrame *pFrameRecord;
     AVCodecContext *m_codecCtx;
     AVFrame *m_decodedFrame;
@@ -252,9 +194,6 @@ public:
 private:
 
 
-    bool bNeedCheck;
-
-    //int CreateEncodeStream();
 
     int CloseVideo();
 
@@ -264,102 +203,56 @@ private:
 
     int writeVideo();
 
-   // int writeFrame(AVFrame *pOutFrame);
 
-
-
-
-
-
-
-
-    //AVCodecContext *codecCtx;
     AVCodecParserContext *m_parser;
     AVCodec *codec;
 
-
-   // AVFrame *frame_rec;
-    uint8_t *buffer_a;
-
-
-
-
     bool bPause;
 
-    //Decode Media
-  //  AVPacket Mypkt;
 
     AVFormatContext *m_formatCtx;
     int m_videoStream;
-
-
-
 
 
     AVFrame *frame_a;
     AVFrame *frame_b;
     AVFrame *frame_c;
 
-
     AVFrame *frame_SnapBuffer;
 
 
     struct SwsContext *img_convert_ctx;
-    //struct SwsContext *img_convert_ctx_half;
-    //struct SwsContext *img_convert_ctxBmp;
-    //struct SwsContext *img_convert_ctxRecord;
-    unsigned char *out_buffer;
+    //struct SwsContext *m_sws_ctx;
 
-    //AVPicture         	m_frameRGBA;
-    struct SwsContext *m_sws_ctx;
     int m_width;
     int m_height;
+
     pthread_t m_decodeThread;
     pthread_t m_writeThread;
 
 
-    //Encode AVI
-    AVCodecID m_EncodeID;
-    AVOutputFormat *fmt;
-    AVFormatContext *pFormatCtx;
-    AVCodecContext *pCodecCtx;
-    AVStream *video_st;
-    uint64_t  nSaveInx;
-    struct SwsContext *m_outsws_ctx;
 
-    int64_t m_outFrameCnt;
-
-    int64_t m_prevTime;
-    int m_prevLeft;
-    AVPacket m_prevPkt;
 
     AVPixelFormat pix_format;
-    AVPixelFormat disp_pix_format;
 
     pthread_mutex_t m_Frame_Queuelock;
-    pthread_mutex_t m_Frame_Queuelock_Display;
+
     pthread_cond_t m_Frame_condition;
-
-    pthread_cond_t m_Frame_condition_disp;
-
-
-
 
     bool   bCanDisplay;
     bool m_bSaveSnapshot;
 
-
     bool m_bSaveVideo;
-
+    void F_DispH264NoBuffer(MySocketData *data);
 
 public:
 
+    AVFrame *pFrameYUV;
+
     bool  F_WriteAudio(jbyte * data,int nLen);
+    int Releaseffmpeg(void);
 
-    AVFrame *pFrameYUV;//=av_frame_alloc();//av_frame_alloc();
-    int Releaseffmpeg();
 
-    AVFrame *pFrameYUV_Disp;
 
     char m_snapShotPath[256];
     char m_MediaPath[256];
@@ -371,13 +264,9 @@ public:
     bool b3D;
     bool b3DA;
 
-
     MySocketData keyFrame;
     AVPacket packet;
 
-
-    ANativeWindow *nativeWindow;
-    void F_DispH264NoBuffer(MySocketData *data);
 
 
 };
