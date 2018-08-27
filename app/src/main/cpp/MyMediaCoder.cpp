@@ -57,7 +57,8 @@ bool MyMediaCoder::F_InitEncoder(int width,int height,int32_t framerate,int fps)
         AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_HEIGHT, m_nRecHeight);
 
         AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_BIT_RATE, m_nBitrate);
-        AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_FRAME_RATE, m_nFps);
+        AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_FRAME_RATE,  m_nFps);
+
         AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_COLOR_FORMAT, encord_colorformat);      // #21 COLOR_FormatYUV420SemiPlanar (NV12)
         AMediaFormat_setInt32(mediaFormat, AMEDIAFORMAT_KEY_I_FRAME_INTERVAL, 1);
         media_status_t rc = AMediaCodec_configure(encoder, mediaFormat, NULL, NULL, flags);
@@ -210,15 +211,15 @@ bool MyMediaCoder::offerEncoder(uint8_t *data,int32_t nLen)
     bool re = false;
     if(inputIndex>=0)
     {
-        uint8_t* inputbuffer =  AMediaCodec_getInputBuffer(encoder,inputIndex,&inoutLen);
+        uint8_t* inputbuffer =  AMediaCodec_getInputBuffer(encoder,(size_t)inputIndex,&inoutLen);
         if(nLen>inoutLen)
         {
             nLen = inoutLen;
         }
-        memcpy(inputbuffer,data,nLen);
-        int ppp =  pts * 1000000 / m_nFps;
+        memcpy(inputbuffer,data,(size_t)nLen);
+        uint64_t ppp = (uint64_t)(pts * 1000000 / m_nFps);
         pts++;
-        media_status_t sta = AMediaCodec_queueInputBuffer(encoder,inputIndex,0,inoutLen,ppp,0);
+        media_status_t sta = AMediaCodec_queueInputBuffer(encoder,(size_t)inputIndex,0,inoutLen,ppp,0);
         AMediaCodecBufferInfo info;
         ssize_t outbufidx;
         while(true)
@@ -235,7 +236,7 @@ bool MyMediaCoder::offerEncoder(uint8_t *data,int32_t nLen)
             else if(outbufidx>=0)
             {
                 size_t outsize;
-                uint8_t *outputBuf = AMediaCodec_getOutputBuffer(encoder, outbufidx, &outsize);
+                uint8_t *outputBuf = AMediaCodec_getOutputBuffer(encoder,(size_t)outbufidx, &outsize);
                 bool bKeyframe = false;
                 if (info.flags == 2)
                 {
@@ -249,7 +250,7 @@ bool MyMediaCoder::offerEncoder(uint8_t *data,int32_t nLen)
                     naSave2FrameMp4(outputBuf, info.size, 1, bKeyframe);
                     re = true;
                 }
-                AMediaCodec_releaseOutputBuffer(encoder, outbufidx, 0);// info.size != 0);
+                AMediaCodec_releaseOutputBuffer(encoder, (size_t)outbufidx, 0);// info.size != 0);
                 break;
             }
             else

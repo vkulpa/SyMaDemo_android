@@ -15,6 +15,17 @@ extern float  *maMVPMatrix;
 
 extern bool bGoble_Flip;
 
+int nDispStyle = 0;           //显示风格
+/*
+ *   0 正常
+ *   1 黑白
+ *   2 淡红
+ *   3 淡黄
+ *   4 淡绿
+ *   5 褐色
+ *   6 淡蓝
+ */
+
 void
 bindTexture(GLenum texture_n, GLuint texture_id, GLsizei width, GLsizei height, const void * buffer);
 
@@ -93,6 +104,9 @@ drawFrame(void* ins)
 	glUniform1i(instance->muTextureHandle, 1);
 	glUniform1i(instance->mvTextureHandle, 2);
 
+
+	glUniform1i(instance->nDispType, nDispStyle);
+
 	//允许顶点数据数组
 	glEnableVertexAttribArray(instance->maPositionHandle);
 	glEnableVertexAttribArray(instance->maTexCoorHandle);
@@ -111,10 +125,14 @@ bindTexture(GLenum texture_n, GLuint texture_id, GLsizei width, GLsizei height, 
 	//		1.1绑定纹理id
 	glBindTexture(GL_TEXTURE_2D, texture_id);
 	//		2.3设置采样模式
-	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	//glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
 	//		1.2输入纹理数据
 	glTexImage2D(GL_TEXTURE_2D,
 				0,//GLint level

@@ -58,16 +58,66 @@ const char * codeFragShader = D_STR(
         uniform sampler2D uTexture;
         uniform sampler2D vTexture;
         varying vec2 vTexCoor;
+
+        uniform int nType;
+
+
+        void modifyColor(vec4 color){
+            color.r=max(min(color.r,1.0),0.0);
+            color.g=max(min(color.g,1.0),0.0);
+            color.b=max(min(color.b,1.0),0.0);
+            color.a=max(min(color.a,1.0),0.0);
+        }
+
         void main()
         {
+
         	float y = texture2D(yTexture, vTexCoor).r;
     	    float u = texture2D(uTexture, vTexCoor).r;
          	float v = texture2D(vTexture, vTexCoor).r;
+
+            if(nType==1) {
+                u = 0.5;
+                v = 0.5;
+            }
+
+
 	        vec3 yuv = vec3(y, u, v);
 	        vec3 offset = vec3(0.0 / 255.0, 128.0 / 255.0, 128.0 / 255.0);
 	        mat3 mtr = mat3(1.0, 1.0, 1.0, -0.001, -0.39, 2.03, 1.1402, -0.58, 0.001);
-	        vec4 curColor = vec4(mtr * (yuv - offset), 1);
-	        gl_FragColor = curColor;
+	        vec4 curColor = vec4(mtr * (yuv - offset), 1.0);
+
+
+
+            //α*A+(1-α)*B
+
+            vec4 mask = vec4(0.0,0.0,0.0,0.0);
+            if(nType==2)
+            {
+                mask = vec4(1.0,0.0,0.0,0.21); //淡红
+            }
+            else if(nType==3)
+            {
+                mask = vec4(1.0,1.0,0.0,0.2); //淡黄
+            }
+            else if(nType==4)
+            {
+                mask = vec4(0.0,1.0,0.0,0.2); //淡绿
+            }
+            else if(nType==5)
+            {
+                mask = vec4(128.0/256.0, 69.0/256.0, 9.0/256.0, 0.5); //褐色
+            }
+            else if(nType==6)
+            {
+                mask = vec4(0.0, 0.0, 1.0, 0.20); //淡蓝
+            }
+            float r = mask.a*mask.r+(1.0-mask.a)*curColor.r;
+            float g = mask.a*mask.g+(1.0-mask.a)*curColor.g;
+            float b = mask.a*mask.b+(1.0-mask.a)*curColor.b;
+            vec4 color1 = vec4(r,g,b,1.0);
+            modifyColor(color1);
+            gl_FragColor=color1;
         }
 );
 
@@ -157,13 +207,16 @@ void F_InitGPL(int WW,int HH)
     shaders[1] =(GLuint) initShader(codeFragShader, GL_FRAGMENT_SHADER);
     instance->pProgram =(unsigned int) initProgram(shaders, 2);
 
-    instance->maMVPMatrixHandle =(unsigned int) glGetUniformLocation( instance->pProgram, "uMVPMatrix");
+    instance->maMVPMatrixHandle =(unsigned int) glGetUniformLocation(instance->pProgram, "uMVPMatrix");
     instance->maPositionHandle = (unsigned int)glGetAttribLocation(instance->pProgram, "aPosition");
     instance->maTexCoorHandle = (unsigned int)glGetAttribLocation(instance->pProgram, "aTexCoor");
 
     instance->myTextureHandle = (unsigned int)glGetUniformLocation(instance->pProgram, "yTexture");
     instance->muTextureHandle = (unsigned int)glGetUniformLocation(instance->pProgram, "uTexture");
     instance->mvTextureHandle = (unsigned int)glGetUniformLocation(instance->pProgram, "vTexture");
+
+    instance->nDispType = (unsigned int)glGetUniformLocation(instance->pProgram, "nType");
+
     //	2.初始化纹理
     //   2.1生成纹理id
     glGenTextures(1, &instance->yTexture);

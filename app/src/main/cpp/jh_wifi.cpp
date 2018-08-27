@@ -2276,7 +2276,6 @@ int F_GetIP(void)
     }
     if (ioctl(s, SIOCGIFCONF, &ifc) < 0)
     {
-
         return -1;
     }
     byte *ffp = new byte[ifc.ifc_len];
@@ -2306,6 +2305,7 @@ int F_GetIP(void)
         {
             break;
         }
+
 
         /*
         sname = r->ifr_name;
@@ -2736,7 +2736,8 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
         }
     } else if (nICType == IC_GKA) {
 
-        if (bGKACmd_UDP) {
+        if (bGKACmd_UDP)
+        {
             T_NET_UTP_PTZ_CONTROL udp;
             nUdpInx++;
             udp.seq = nUdpInx;
@@ -2746,9 +2747,8 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
             memcpy(udp.ptz_cmd, cmd_b, n);
             send_cmd_udp((uint8_t *) (&udp), sizeof(T_NET_UTP_PTZ_CONTROL), sServerIP.c_str(), 0x7105);
         } else {
-            if (bGKA_ConnOK) {
-#if 1
-
+            if (bGKA_ConnOK)
+            {
                 T_NET_CMD_MSG Cmd;
                 Cmd.type = CMD_PTZ_CONTROL;
                 Cmd.session_id = session_id;
@@ -2761,20 +2761,9 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
                 data.AppendData((uint8_t *) &ptz, sizeof(T_NET_PTZ_CONTROL));
                 pthread_mutex_lock(&m_Tcp_Cmd_lock);
                 GK_tcp_SendSocket.Write(&data);
-                //int a=F_ReadAck(500);
-                //LOGE("retCmd = %d",a);
                 pthread_mutex_unlock(&m_Tcp_Cmd_lock);
-
-
-                //F_ReadAck(10);
-#endif
             }
         }
-        //   F_ReadAck(10);
-
-        /*
-
-         */
 
 
     }
@@ -4130,8 +4119,10 @@ int F_InitFiles_Items(void *dat) {
                             nret = serchSocket.Read(&data, 300);
                             if (nret == nLen) {
                                 T_NET_SD_SNAP_FILE_INFO *pfileInfo = (T_NET_SD_SNAP_FILE_INFO *) data.data;
-                                if (bGKACmd_UDP) {
-                                    if (pfileInfo->size > 2048) {
+                                if (bGKACmd_UDP)
+                                {
+                                    if (pfileInfo->size > 2048)
+                                    {
                                         std::stringstream streean;
                                         streean << pfileInfo->size;
                                         string str = streean.str();
@@ -4140,7 +4131,9 @@ int F_InitFiles_Items(void *dat) {
                                         sName_ = sName_ + str;
                                         SendDir2java(sName_.c_str());
                                     }
-                                } else {
+                                }
+                                else
+                                {
                                     std::stringstream streean;
                                     streean << pfileInfo->size;
                                     string str = streean.str();
@@ -4237,7 +4230,8 @@ Java_com_joyhonest_wifination_wifination_naGetSettings(JNIEnv *env, jclass type)
 
 //SD卡怕照
 
-int F_SD_Snap() {
+int F_SD_Snap()
+{
     MySocketData data;
     data.nLen = 0;
     T_NET_CMD_MSG Cmd;
@@ -4417,10 +4411,10 @@ Java_com_joyhonest_wifination_wifination_naStartRecord(JNIEnv *env, jclass type,
     }
 
     int nFps = m_FFMpegPlayer.nRecFps;
-    int bitrate = 4 * 1000 * 1000;
+    int bitrate = 2 * 1000 * 1000;
     if (m_FFMpegPlayer.nRecordWidth <= 640)
     {
-        bitrate = 4 * 1000 * 1000;
+        bitrate = 1 * 1000 * 1000;
     }
     else
     {
@@ -6796,3 +6790,10 @@ Java_com_joyhonest_wifination_wifination_naSetDislplayData(JNIEnv *env, jclass t
     env->ReleaseByteArrayElements(data_, data, 0);
 }
 
+extern int nDispStyle;
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetDispStyle(JNIEnv *env, jclass type, jint nType) {
+    nDispStyle = nType;
+}

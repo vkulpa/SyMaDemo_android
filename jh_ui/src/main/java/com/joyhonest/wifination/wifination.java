@@ -148,6 +148,8 @@ public class wifination {
     public static native int naCancelGetThumb();
 
 
+    public static native  void naSetDispStyle(int nType); //0-6
+
     ///旧接口,不建议用....
 
     public static  native void naSetDislplayData(byte[]data,int width,int height);
@@ -352,7 +354,7 @@ public class wifination {
                 cmd[i] = buf.get(i + BMP_Len);
             }
             EventBus.getDefault().post(cmd, "GetWifiSendData");
-        } else if ((nStatus & 0xFFFFFF00) == 0xAA55AA00)    //GP RTPB  回传 模块信息数据
+        } else if ((nStatus & 0xFFFFFF00) == 0xAA55AA00)    //GP RTPB  回传 模块本身信息数据
         {
             int nLen = (nStatus & 0xFF);
             if (nLen > 50)
@@ -418,7 +420,6 @@ public class wifination {
     /////// 以下 SYMA 不使用 --------
     private static void OnKeyPress(int nStatus) {
         Integer n = nStatus;
-        Log.e(TAG, "Get Key = " + nStatus);
         EventBus.getDefault().post(n, "key_Press");
         EventBus.getDefault().post(n, "Key_Pressed");
     }

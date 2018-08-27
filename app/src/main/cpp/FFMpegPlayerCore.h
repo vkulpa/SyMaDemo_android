@@ -102,6 +102,15 @@ typedef enum {
 
 } E_PlayerStatus;
 
+
+typedef struct
+{
+    uint8  r;
+    uint8  g;
+    uint8  b;
+    uint8  a;
+}RGBA_STRUCT;
+
 //----------------------------------------------------------------------
 class C_FFMpegPlayer {
 
@@ -154,6 +163,8 @@ public:
     int nDisplayHeight;
     bool nNeedRedraw;
 
+    AVFrame *pFrameYUV_D;
+
     bool F_RecreateEnv(void);
     void F_DispSurface();
 
@@ -204,6 +215,8 @@ private:
     int writeVideo();
 
 
+    int  SetYUVFrame(AVFrame *yunframe);
+
     AVCodecParserContext *m_parser;
     AVCodec *codec;
 
@@ -244,6 +257,8 @@ private:
 
     bool m_bSaveVideo;
     void F_DispH264NoBuffer(MySocketData *data);
+
+    void F_AdjUV(int8_t u,int8_t v);
 
 public:
 

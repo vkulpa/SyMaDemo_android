@@ -64,6 +64,7 @@ import java.util.List;
 
 public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickListener {
 
+    private  int nDispStyle = 0;
 
     public static boolean bTestMode = false;
 
@@ -107,6 +108,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         public void run() {
             //  if(surfaceHolder!=null)
             //  JH_App.F_OpenStream(surfaceHolder.getSurface());
+            nDispStyle = 0;
+            wifination.naSetDispStyle(nDispStyle);
             JH_App.F_OpenStream();
         }
     };
@@ -124,6 +127,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         wifination.appContext = getApplicationContext();
         wifination.naSetRecordAudio(JH_App.bRecordVoice);
+        //wifination.naSetGPFps(17);
         wifination.naSetVrBackground(true);
         JH_App.bFlyDisableAll = true;
         JH_App.nType = JH_App.nStyle_fly;
@@ -1732,5 +1736,28 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             }
         }
     }
+
+    @Subscriber(tag = "key_Press")
+    private  void KeyPress(Integer nkeya)
+    {
+        Log.e("Key Press","key="+nkeya.toString());
+        int nKey=nkeya.intValue();
+        if(nKey ==1)  //photo
+        {
+            if (mActiveFragment == flyPlayFragment) {
+                flyPlayFragment.F_Photo();
+            }
+        }
+        if(nKey == 6)
+        {
+            nDispStyle++;
+            if(nDispStyle>6)
+                nDispStyle = 0;
+            wifination.naSetDispStyle(nDispStyle);
+        }
+    }
+
+
+
 
 }

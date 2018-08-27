@@ -682,10 +682,12 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
         }
         if (v == Photo_Record_Start_Btn) {
+
             if ((JH_App.nSdStatus & JH_App.Status_Connected) == 0)
                 return;
             if (bPhoto) {
-
+                F_Photo();
+                /*
                 if ((JH_App.nSdStatus & JH_App.SD_SNAP) != 0)     //SD 拍照还没有完成。就不进行此次拍照
                     return;
 
@@ -714,6 +716,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                     }
                 };
                 handler.postDelayed(runnable, 800);
+                */
 
             } else {
                 if ((JH_App.nSdStatus & JH_App.Status_Connected) == 0) {
@@ -741,6 +744,38 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             }
         }
 
+    }
+
+    public  void F_Photo()
+    {
+        if ((JH_App.nSdStatus & JH_App.SD_SNAP) != 0)     //SD 拍照还没有完成。就不进行此次拍照
+            return;
+
+        if (JH_App.bPhone_SNAP)
+            return;
+        JH_App.bPhone_SNAP = true;
+
+        final String str = JH_App.F_GetSaveName(true);
+        wifination.naSnapPhoto(str, wifination.TYPE_BOTH_PHONE_SD);
+
+        JH_App.F_PlayPhoto();
+        photo_mask.setVisibility(View.VISIBLE);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                photo_mask.setVisibility(View.GONE);
+            }
+        }, 120);
+
+
+        Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                JH_App.bPhone_SNAP = false;
+            }
+        };
+        handler.postDelayed(runnable, 800);
     }
 
     public void F_StartAdjRecord(boolean b) {

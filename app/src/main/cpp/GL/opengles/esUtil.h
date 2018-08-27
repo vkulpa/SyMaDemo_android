@@ -45,6 +45,9 @@ typedef struct Instance
 	unsigned long vBufferSize;
 
 
+	unsigned int nDispType;
+
+
 
 } Instance;
 
