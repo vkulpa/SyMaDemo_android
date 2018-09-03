@@ -32,6 +32,7 @@ import android.view.View;
 
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
+import android.widget.TextView;
 
 
 import com.joyhonest.jh_ui.DispPhoto_Fragment;
@@ -53,6 +54,7 @@ import com.joyhonest.wifination.wifination;
 
 import org.simple.eventbus.EventBus;
 import org.simple.eventbus.Subscriber;
+import org.w3c.dom.Text;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -117,6 +119,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
     public JH_GLSurfaceView glSurfaceView;
 
+    private TextView  text_number_View;
+
 
     //private Handler   myHandler;
     //private Runnable   myRunnable;
@@ -127,6 +131,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         wifination.appContext = getApplicationContext();
         wifination.naSetRecordAudio(JH_App.bRecordVoice);
+        wifination.naSetGesture(true);
         //wifination.naSetGPFps(17);
         wifination.naSetVrBackground(true);
         JH_App.bFlyDisableAll = true;
@@ -177,6 +182,9 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
     private void F_Init() {
         JH_App.bFlying = false;
+
+        text_number_View = (TextView)findViewById(R.id.text_number_View);
+        text_number_View.setVisibility(View.INVISIBLE);
 
         glSurfaceView = (JH_GLSurfaceView) findViewById(R.id.glSurfaceView);
         //glSurfaceView.setVisibility(View.INVISIBLE);
@@ -1757,7 +1765,63 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
+    int nKeyN=0;
+    @Subscriber(tag="GetGueset")
+    private void GetGueset(String strID)
+    {
+        if(strID.equalsIgnoreCase("D2"))
+        {
+            nKeyN++;
+            if(nKeyN>5)
+            {
+                nKeyN=5;
+            }
+            if(nKeyN==2)
+            {
+                F_Photo();
+            }
+        }
+        else
+        {
+            nKeyN=0;
+        }
+    }
 
+
+    private  int nInxStep = 1;
+    private  Handler phtot_handler = new Handler();
+    private Runnable phtot_Run = new Runnable() {
+        @Override
+        public void run() {
+
+            text_number_View.setText(""+nInxStep);
+            nInxStep++;
+            if(nInxStep<5)
+            {
+                phtot_handler.postDelayed(this,1000);
+            }
+            else
+            {
+                text_number_View.setVisibility(View.INVISIBLE);
+                if (mActiveFragment == flyPlayFragment)
+                {
+                    flyPlayFragment.F_Photo();
+                }
+
+            }
+        }
+    };
+
+    private  void F_Photo()
+    {
+        if (mActiveFragment == flyPlayFragment) {
+            nInxStep = 1;
+            text_number_View.setVisibility(View.VISIBLE);
+            phtot_handler.removeCallbacksAndMessages(null);
+            phtot_handler.post(phtot_Run);
+        }
+
+    }
 
 
 }

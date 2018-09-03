@@ -13,7 +13,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package org.tensorflow.demo.env;
+package com.joyhonest.wifination;
 
 import android.graphics.Bitmap;
 import android.graphics.Matrix;
@@ -30,7 +30,7 @@ public class ImageUtils {
 
   static {
     try {
-      System.loadLibrary("tensorflow_demo");
+      System.loadLibrary("jh_wifi");
     } catch (UnsatisfiedLinkError e) {
       LOGGER.w("Native library not found, native RGB -> YUV conversion may be unavailable.");
     }

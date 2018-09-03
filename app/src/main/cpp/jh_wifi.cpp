@@ -127,6 +127,8 @@ int nSdStatus_GP = 0;
 int g_sdkVersion = 0;
 
 
+bool bGesture=true;
+
 static JavaVM *gJavaVM;
 static jobject gInterfaceObject;
 
@@ -6665,7 +6667,7 @@ Java_com_joyhonest_wifination_wifination_naSetGKA_1SentCmdByUDP(JNIEnv *env, jcl
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_joyhonest_wifination_wifination_naSetRevBmp(JNIEnv *env, jclass type, jboolean b) {
+Java_com_joyhonest_wifination_wifination_naSetRevBmpA(JNIEnv *env, jclass type, jboolean b) {
 
     bSentRevBMP = b;
     // TODO
@@ -6797,3 +6799,14 @@ JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naSetDispStyle(JNIEnv *env, jclass type, jint nType) {
     nDispStyle = nType;
 }
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetGestureA(JNIEnv *env, jclass type, jboolean b) {
+
+    bGesture = b;
+
+}
+
+
+

@@ -746,6 +746,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     }
 
+
+
+
     public  void F_Photo()
     {
         if ((JH_App.nSdStatus & JH_App.SD_SNAP) != 0)     //SD 拍照还没有完成。就不进行此次拍照

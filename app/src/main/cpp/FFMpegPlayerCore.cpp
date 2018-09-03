@@ -2523,12 +2523,18 @@ int bufflen;
 int pos;
 
 extern  bool bSentRevBMP;
+extern bool bGesture;
 extern AVFrame *gl_Frame;
 extern int64_t  nRecStartTime;
 
 void C_FFMpegPlayer::F_DispSurface() {
 
-    if(bSentRevBMP)
+    bool bSentRevBMP_bak = bSentRevBMP;
+    if(bGesture)
+    {
+        bSentRevBMP_bak = true;
+    }
+    if(bSentRevBMP_bak)
     {
         if(Rgbabuffer!=NULL)
         {
@@ -2540,8 +2546,11 @@ void C_FFMpegPlayer::F_DispSurface() {
                                pFrameYUV->width, pFrameYUV->height);
             F_SentRevBmp(pFrameYUV->width + pFrameYUV->height * 0x10000);
         }
+        if(bSentRevBMP)
+            return;
+    }
 
-    } else {
+    {
 
         if (gl_Frame != NULL) {
             if ((nSDStatus & bit1_LocalRecording) && !bRealRecording) {

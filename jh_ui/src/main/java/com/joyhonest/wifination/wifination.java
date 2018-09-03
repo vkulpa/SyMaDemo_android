@@ -124,8 +124,26 @@ public class wifination {
     public static native int naSetRecordWH(int ww, int hh);
 
     //设定是否需要SDK内部来显示，b = true， SDK 把解码到的图像发送到JAVA，由APP自己来显示而不是通过SDK内部来渲染显示
+
     // SDK解码后图像 由 ReceiveBmp 返回
-    public static native void naSetRevBmp(boolean b);
+
+    public static void naSetRevBmp(boolean b)
+    {
+        bRevBmp = b;
+        naSetRevBmpA(b);
+    }
+    public static void naSetGesture(boolean b)
+    {
+        bGesture = b;
+        naSetGestureA(b);
+    }
+
+
+    private static native void naSetRevBmpA(boolean b);
+
+    //设定是否手势识别， True，每一帧也会由 ReceiveBmp 返回，不同的是 SDK内部还是会显示视频。 如果APP 自己来实现手势识别和显示，
+    // 可以用 naSetRevBmp 来替代
+    private static native void naSetGestureA(boolean b);
 
 
     //设定 客户 只针对 GKA， “sima” 表示 客户是司马 ，目前只有这一个设定
@@ -224,6 +242,10 @@ public class wifination {
     public static native void changeLayout(int width, int height);
 
     public static native void drawFrame();
+
+
+    public  static boolean  bGesture = false;
+    public  static boolean  bRevBmp = false;
 
 
     private static void G_StartAudio(int b) {
@@ -425,18 +447,27 @@ public class wifination {
     }
 
 
+
     // 获取一帧图像
     private static void ReceiveBmp(int i) {
         //其中，i:bit00-bit15   为图像宽度
         //      i:bit16-bit31  为图像高度
         // 此函数需要把数据尽快处理和保存。
         // 图像数据保存在mDirectBuffer中，格式为ARGB_8888
+
         Bitmap bmp = Bitmap.createBitmap(i & 0xFFFF, (i & 0xFFFF0000) >> 16, Bitmap.Config.ARGB_8888);
         ByteBuffer buf = wifination.mDirectBuffer;
         buf.rewind();
         bmp.copyPixelsFromBuffer(buf);    //
-        //Integer iw=i;
-        EventBus.getDefault().post(bmp, "ReviceBMP");
+        if(bRevBmp)
+            EventBus.getDefault().post(bmp, "ReviceBMP");
+        if(bGesture)
+        {
+                ObjectDetector sig = ObjectDetector.getInstance();
+                sig.F_Start(true);
+                sig.GetNumber(bmp);
+        }
+
     }
 
 

@@ -13,13 +13,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 ==============================================================================*/
 
-package org.tensorflow.demo;
+package com.joyhonest.wifination;
 
 import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.RectF;
 import android.os.Trace;
 import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -31,7 +33,7 @@ import java.util.Vector;
 import org.tensorflow.Graph;
 import org.tensorflow.Operation;
 import org.tensorflow.contrib.android.TensorFlowInferenceInterface;
-import org.tensorflow.demo.env.Logger;
+
 
 /**
  * Wrapper for frozen detection models trained using the Tensorflow Object Detection API:
@@ -77,7 +79,15 @@ public class TensorFlowObjectDetectionAPIModel implements Classifier {
 
     InputStream labelsInput = null;
     String actualFilename = labelFilename.split("file:///android_asset/")[1];
-    labelsInput = assetManager.open(actualFilename);
+    if(actualFilename!=null) {
+      if(assetManager!=null)
+         labelsInput = assetManager.open(actualFilename);
+    }
+
+    if(labelsInput==null)
+    {
+       labelsInput = new FileInputStream(labelFilename);
+    }
     BufferedReader br = null;
     br = new BufferedReader(new InputStreamReader(labelsInput));
     String line;
