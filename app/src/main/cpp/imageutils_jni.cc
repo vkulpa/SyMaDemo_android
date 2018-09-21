@@ -30,8 +30,7 @@ limitations under the License.
 extern "C" {
 #endif
 
-JNIEXPORT void JNICALL
-IMAGEUTILS_METHOD(convertYUV420SPToARGB8888)(
+JNIEXPORT void JNICALL IMAGEUTILS_METHOD(convertYUV420SPToARGB8888)(
     JNIEnv* env, jclass clazz, jbyteArray input, jintArray output,
     jint width, jint height, jboolean halfSize);
 
@@ -44,13 +43,11 @@ JNIEXPORT void JNICALL IMAGEUTILS_METHOD(convertYUV420SPToRGB565)(
     JNIEnv* env, jclass clazz, jbyteArray input, jbyteArray output, jint width,
     jint height);
 
-JNIEXPORT void JNICALL
-IMAGEUTILS_METHOD(convertARGB8888ToYUV420SP)(
+JNIEXPORT void JNICALL IMAGEUTILS_METHOD(convertARGB8888ToYUV420SP)(
     JNIEnv* env, jclass clazz, jintArray input, jbyteArray output,
     jint width, jint height);
 
-JNIEXPORT void JNICALL
-IMAGEUTILS_METHOD(convertRGB565ToYUV420SP)(
+JNIEXPORT void JNICALL IMAGEUTILS_METHOD(convertRGB565ToYUV420SP)(
     JNIEnv* env, jclass clazz, jbyteArray input, jbyteArray output,
     jint width, jint height);
 
@@ -58,8 +55,7 @@ IMAGEUTILS_METHOD(convertRGB565ToYUV420SP)(
 }
 #endif
 
-JNIEXPORT void JNICALL
-IMAGEUTILS_METHOD(convertYUV420SPToARGB8888)(
+JNIEXPORT void JNICALL IMAGEUTILS_METHOD(convertYUV420SPToARGB8888)(
     JNIEnv* env, jclass clazz, jbyteArray input, jintArray output,
     jint width, jint height, jboolean halfSize) {
   jboolean inputCopy = JNI_FALSE;

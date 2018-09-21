@@ -620,7 +620,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
             JH_App.bVR = !JH_App.bVR;
             F_Disp3DUI();
-            ((Fly_PlayActivity) getActivity()).F_RefSurface();
+
         }
 
         if (v == Speed_Btn) {
@@ -658,6 +658,8 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         }
 
         if (v == Fly_Camera_Btn) {
+            //wifination.naSetLedOnOff(true);
+
             bControlUI = !bControlUI;
             F_DispUI();
 
@@ -669,6 +671,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
                 bDispMenu1 = false;
                 F_DispAllMenu();
             }
+
         }
 
 

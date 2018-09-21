@@ -5975,13 +5975,14 @@ void *doReceive_cmd(void *dat) {
                             int32_t dat = 0xAA55AA00;// 0x55AA5500;
                             dat |=((nbytes - 7)&0xFF);
                             F_SentGp_Status2Jave(dat);
-                            /*
-                            stringstream stream;
-                            stream<<(int)readBuff[47];
-                            string string_temp=stream.str();
-                            sver = string_temp;
-                             */
                         }
+                    }
+                    else if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 0x00 && readBuff[6] == 0x06)    //Style type
+                    {
+                            uint8_t  nStyle= readBuff[7];
+                            int32_t dat = 0x11223300;// 0x55AA5500;
+                            dat |=nStyle;
+                            F_SentGp_Status2Jave(dat);
                     }
                 }
 
@@ -5990,44 +5991,56 @@ void *doReceive_cmd(void *dat) {
                     if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D') {
                         if (readBuff[5] == 0x10) //状态
                         {
-                            nSdStatus_GP &= 0xFFFF00FF;
-                            readBuff[6] ^= 0x04;
-                            if (readBuff[6] & 0x01)  //正在录像
-                            {
-                                nSdStatus_GP |= 0x0100;
-                                nSDStatus |= SD_Recording;              //录像按键
-                            } else {
-                                nSDStatus &= (SD_Recording ^ 0xFFFF);
-                            }
 
-                            if (readBuff[6] & 0x02)  //  拍照
+                            if((readBuff[6]&0x10) !=0)
                             {
-                                nSdStatus_GP |= 0x0200;                 //拍照按键
-                                nSDStatus |= SD_SNAP;
-                            } else {
-                                nSDStatus &= ((SD_SNAP ^ 0xFFFF) & 0xFFFF);
-                            }
-                            if (readBuff[6] & 0x04)  //SD
-                            {
-                                nSdStatus_GP |= 0x0400;
-                                nSDStatus |= SD_Ready;
-                                LOGE("SD_Ready");
-                            } else {
-                                nSDStatus &= (SD_Ready ^ 0xFFFF);
-                            }
 
-                            if (readBuff[6] & 0x08)  //卡满
-                            {
-                                nSdStatus_GP |= 0x0800;
-                                nSDStatus &= (SD_Ready ^ 0xFFFF);
-                            }
-                            if (readBuff[6] & 0x10)  //低电
-                            {
-                                nSdStatus_GP |= 0x1000;
-                            }
+                                int32_t dat = 0xAA555500;// 0x55AA5500;
+                                dat |= (readBuff[6] & 0x0F);
+                                F_SentGp_Status2Jave(dat);
 
-                            F_SendStatus2Jave();
-                            F_SentGp_Status2Jave(nSdStatus_GP);
+                            }
+                            else {
+
+                                nSdStatus_GP &= 0xFFFF00FF;
+                                readBuff[6] ^= 0x04;
+                                if (readBuff[6] & 0x01)  //正在录像
+                                {
+                                    nSdStatus_GP |= 0x0100;
+                                    nSDStatus |= SD_Recording;              //录像按键
+                                } else {
+                                    nSDStatus &= (SD_Recording ^ 0xFFFF);
+                                }
+
+                                if (readBuff[6] & 0x02)  //  拍照
+                                {
+                                    nSdStatus_GP |= 0x0200;                 //拍照按键
+                                    nSDStatus |= SD_SNAP;
+                                } else {
+                                    nSDStatus &= ((SD_SNAP ^ 0xFFFF) & 0xFFFF);
+                                }
+                                if (readBuff[6] & 0x04)  //SD
+                                {
+                                    nSdStatus_GP |= 0x0400;
+                                    nSDStatus |= SD_Ready;
+                                    LOGE("SD_Ready");
+                                } else {
+                                    nSDStatus &= (SD_Ready ^ 0xFFFF);
+                                }
+
+                                if (readBuff[6] & 0x08)  //卡满
+                                {
+                                    nSdStatus_GP |= 0x0800;
+                                    nSDStatus &= (SD_Ready ^ 0xFFFF);
+                                }
+                                if (readBuff[6] & 0x10)  //低电
+                                {
+                                    nSdStatus_GP |= 0x1000;
+                                }
+
+                                F_SendStatus2Jave();
+                                F_SentGp_Status2Jave(nSdStatus_GP);
+                            }
                         }
 
                         if (readBuff[5] == 0x00) {         //按键命令
@@ -6810,3 +6823,20 @@ Java_com_joyhonest_wifination_wifination_naSetGestureA(JNIEnv *env, jclass type,
 
 
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetLedOnOff(JNIEnv *env, jclass type, jboolean bOpenLed) {
+
+    // TODO
+
+    uint8  msg[8];
+    msg[0] = 'J';
+    msg[1] = 'H';
+    msg[2] = 'C';
+    msg[3] = 'M';
+    msg[4] = 'D';
+    msg[5] = 0x50;
+    msg[6] = 0x00;
+    send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+
+}

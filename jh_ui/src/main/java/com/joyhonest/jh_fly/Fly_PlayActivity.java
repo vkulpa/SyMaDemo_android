@@ -131,7 +131,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         super.onCreate(savedInstanceState);
         wifination.appContext = getApplicationContext();
         wifination.naSetRecordAudio(JH_App.bRecordVoice);
-        wifination.naSetGesture(true);
+        wifination.naSetGesture(true,this.getApplicationContext());
         //wifination.naSetGPFps(17);
         wifination.naSetVrBackground(true);
         JH_App.bFlyDisableAll = true;
@@ -378,41 +378,14 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
 
     }
 
-    public void F_RefSurface() {
-        {
-            /*
-            int width=surfaceView.getWidth();
-            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) surfaceView.getLayoutParams();
-            params.width = width-2;
-            surfaceView.setLayoutParams(params);
-            Handler handlerb = new Handler();
-            Runnable runnableb = new Runnable() {
-                @Override
-                public void run() {
-                    RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) surfaceView.getLayoutParams();
-                    params.width = RelativeLayout.LayoutParams.MATCH_PARENT;
-                    surfaceView.setLayoutParams(params);
-                }
-            };
-            handlerb.postDelayed(runnableb, 30);
-            */
-        }
-    }
-
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        //if(myHandler!=null)
-        //{
-        //    myHandler.removeCallbacksAndMessages(null);
-        //}
 
-        if (openHandler != null) {
-
+        if (openHandler != null)
+        {
             wifination.naStop();
-            //wifination.release();
             EventBus.getDefault().unregister(this);
-
             openHandler.removeCallbacksAndMessages(null);
             RssiHander.removeCallbacksAndMessages(null);
             flyPlayFragment.F_StopSentCmd();
@@ -1505,7 +1478,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
                 flyPlayFragment.F_DispUI();
                 flyPlayFragment.F_DispSpeedIcon();
                 flyPlayFragment.F_DispGSensorIcon();
-                F_RefSurface();
+
                 return;
             }
             Exit2Spalsh(str);
@@ -1745,6 +1718,18 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         }
     }
 
+    @Subscriber(tag="OnGetSetStyle")
+    private void OnGetSetStyle(Integer nStyle)
+    {
+           int nT = nStyle.intValue();
+           if(nT>0)
+           {
+               nT--;
+               nDispStyle = nT;
+               wifination.naSetDispStyle(nDispStyle);
+           }
+    }
+
     @Subscriber(tag = "key_Press")
     private  void KeyPress(Integer nkeya)
     {
@@ -1756,6 +1741,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
                 flyPlayFragment.F_Photo();
             }
         }
+        /*
         if(nKey == 6)
         {
             nDispStyle++;
@@ -1763,6 +1749,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
                 nDispStyle = 0;
             wifination.naSetDispStyle(nDispStyle);
         }
+        */
     }
 
     int nKeyN=0;

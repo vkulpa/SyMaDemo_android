@@ -1,5 +1,6 @@
 package com.joyhonest.wifination;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
@@ -7,28 +8,27 @@ import android.graphics.RectF;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.util.Log;
-import android.widget.Toast;
 
-import com.joyhonest.jh_ui.JH_App;
+//import com.joyhonest.jh_ui.JH_App;
 
 import org.simple.eventbus.EventBus;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.List;
 
 public class ObjectDetector
 {
+
+
+    private static Context  AppContext=null;
     private   static  int   cropSize = 300;
     private  boolean  bBusy = false;
     private  boolean   bStar=false;
-
     private Classifier detector;
 
-    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.66f;
+    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.80f;
     private static final int TF_OD_API_INPUT_SIZE = 300;
-    //private static final String TF_OD_API_MODEL_FILE = "file:///android_asset/ssd_mobilenet_v1_android_export.pb";
-    //private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/coco_labels_list.txt";
+
     private static final String TF_OD_API_MODEL_FILE ="file:///android_asset/frozen_inference_graph.pb";
     private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/mydata.txt";
 
@@ -46,14 +46,28 @@ public class ObjectDetector
         croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(croppedBitmap);
 
-        try {
-            detector = TensorFlowObjectDetectionAPIModel.create(
-                    JH_App.mContext.getAssets(), TF_OD_API_MODEL_FILE, TF_OD_API_LABELS_FILE, TF_OD_API_INPUT_SIZE);
-            cropSize = TF_OD_API_INPUT_SIZE;
-        } catch (final IOException e) {
 
+    }
+
+    public  void SetAppCentext(Context context)
+    {
+
+        if(AppContext==null) {
+            AppContext = context;
         }
+        if(AppContext!=null)
+        {
+            if(detector==null)
+            {
+                try {
+                    detector = JH_ObjectDetectionAPIModel.create(
+                            AppContext.getAssets(), TF_OD_API_MODEL_FILE, TF_OD_API_LABELS_FILE, TF_OD_API_INPUT_SIZE);
+                    cropSize = TF_OD_API_INPUT_SIZE;
+                } catch (final IOException e) {
 
+                }
+            }
+        }
 
     }
 
@@ -91,9 +105,9 @@ public class ObjectDetector
         }
     }
 
-    public  int GetNumber(Bitmap bmpA)
+    public  int GetNumber(Bitmap bmp)
     {
-        if(bmpA==null) {
+        if(bmp==null) {
             return -1;
         }
         if(!bStar)
@@ -105,24 +119,11 @@ public class ObjectDetector
         }
 
         bBusy = true;
-        final  Bitmap bmp = bmpA;
-        runInBackground(new Runnable() {
-            @Override
-            public void run() {
-                progressImage(bmp);
-            }
-        });
-        return 0;
-
-    }
-
-
-    private  void progressImage(Bitmap bmp)
-    {
-        int width = bmp.getWidth();
-        int height =bmp.getHeight();
-
-        if(frameToCropTransform ==null) {
+        //final  Bitmap bmp = bmpA;
+        if(frameToCropTransform ==null)
+        {
+            int width = bmp.getWidth();
+            int height =bmp.getHeight();
             frameToCropTransform =
                     ImageUtils.getTransformationMatrix(
                             width, height,
@@ -133,6 +134,21 @@ public class ObjectDetector
             frameToCropTransform.invert(cropToFrameTransform);
         }
         canvas.drawBitmap(bmp, frameToCropTransform, null);
+
+        runInBackground(new Runnable() {
+            @Override
+            public void run() {
+                progressImage();
+            }
+        });
+        return 0;
+
+    }
+
+
+    private  void progressImage()
+    {
+
         //ImageUtils.saveBitmap(croppedBitmap);
         final List<Classifier.Recognition> results = detector.recognizeImage(croppedBitmap);
         float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
@@ -143,22 +159,18 @@ public class ObjectDetector
             final RectF location = result.getLocation();
             if (location != null && result.getConfidence() >= minimumConfidence)
             {
-                Log.e("MyTAG",result.getTitle());
+                Log.i("MyTAG",result.getTitle());
                 String id = result.getTitle();
                 bFind = true;
                 EventBus.getDefault().post(id,"GetGueset");
                 break;
             }
         }
-
         if(!bFind)
         {
-            Log.e("MyTAG","Not Found!!");
+            Log.i("MyTAG","Not Found!!");
             EventBus.getDefault().post("","GetGueset");
         }
-
-
-
         bBusy = false;
     }
 

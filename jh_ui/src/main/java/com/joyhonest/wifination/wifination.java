@@ -4,6 +4,7 @@ package com.joyhonest.wifination;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.util.Log;
 
@@ -120,7 +121,7 @@ public class wifination {
 
     //手机是否在录像
     public static native boolean isPhoneRecording();
-   //设定录像的分辨率，一般无需设定，默认位模块传回视频分辨率
+    //设定录像的分辨率，一般无需设定，默认位模块传回视频分辨率
     public static native int naSetRecordWH(int ww, int hh);
 
     //设定是否需要SDK内部来显示，b = true， SDK 把解码到的图像发送到JAVA，由APP自己来显示而不是通过SDK内部来渲染显示
@@ -132,9 +133,21 @@ public class wifination {
         bRevBmp = b;
         naSetRevBmpA(b);
     }
-    public static void naSetGesture(boolean b)
+    public static void naSetGesture(boolean b,Context appContext)
     {
         bGesture = b;
+        if(bGesture)
+        {
+            if(sig==null)
+            {
+                sig = ObjectDetector.getInstance();
+                sig.SetAppCentext(appContext);
+            }
+        }
+        if(sig!=null)
+        {
+            sig.F_Start(bGesture);
+        }
         naSetGestureA(b);
     }
 
@@ -228,6 +241,8 @@ public class wifination {
 
     public static native boolean naSetWifiPassword(String sPassword);
 
+    public static native void naSetLedOnOff(boolean bOpenLed);
+
 
     public static native void naSetScal(float fScal); //设定放大显示倍数
 
@@ -247,6 +262,8 @@ public class wifination {
     public  static boolean  bGesture = false;
     public  static boolean  bRevBmp = false;
 
+
+    private static ObjectDetector sig=null;
 
     private static void G_StartAudio(int b) {
         if (b != 0) {
@@ -308,15 +325,41 @@ public class wifination {
         if (bmp == null)
             return;
 
-        int ww = bmp.getWidth();
-        int hh = bmp.getHeight();
-        if (ww > 1280 || hh > 720) {
+        //int ww = bmp.getWidth();
+        //int hh = bmp.getHeight();
+        //if (ww > 1280 || hh > 720)
+        {
+
+            int width = bmp.getWidth();
+            int height =bmp.getHeight();
+            int newWidth = ((width+7)/8)*8;
+            int newHeight = ((height+7)/8)*8;
+
+            Bitmap croppedBitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(croppedBitmap);
+            Matrix frameToCropTransform;
+
+
+
+                frameToCropTransform =
+                        ImageUtils.getTransformationMatrix(
+                                width, height,
+                                newWidth, newHeight,
+                                0, false);
+
+                Matrix cropToFrameTransform = new Matrix();
+                frameToCropTransform.invert(cropToFrameTransform);
+                canvas.drawBitmap(bmp, frameToCropTransform, null);
+
+                /*
             //获得图片的宽高
             int width = bmp.getWidth();
             int height = bmp.getHeight();
             // 设置想要的大小
-            int newWidth = 1280;
-            int newHeight = 720;
+            int newWidth = ((width+7)/8)*8;
+            int newHeight = ((height+7)/8)*8;
+
+
             // 计算缩放比例
             float scaleWidth = ((float) newWidth) / width;
             float scaleHeight = ((float) newHeight) / height;
@@ -328,9 +371,14 @@ public class wifination {
                     true);
             bmp.recycle();
             bmp = newbm;
+            */
+                bmp.recycle();
+                bmp = croppedBitmap;
         }
-        ww = bmp.getWidth();
-        hh = bmp.getHeight();
+
+        int ww = bmp.getWidth();
+        int hh = bmp.getHeight();
+
         int bytes = bmp.getByteCount();
         ByteBuffer buf = ByteBuffer.allocate(bytes);
         bmp.copyPixelsToBuffer(buf);
@@ -363,7 +411,6 @@ public class wifination {
     private static void OnGetGP_Status(int nStatus) {
         if ((nStatus & 0xFFFFFF00) == 0x55AA5500)  // wifi模块透传回来的数据
         {
-            //String s = "";
             int nLen = (nStatus & 0xFF);
             if (nLen > 50)
                 nLen = 50;
@@ -376,7 +423,8 @@ public class wifination {
                 cmd[i] = buf.get(i + BMP_Len);
             }
             EventBus.getDefault().post(cmd, "GetWifiSendData");
-        } else if ((nStatus & 0xFFFFFF00) == 0xAA55AA00)    //GP RTPB  回传 模块本身信息数据
+        }
+        else if ((nStatus & 0xFFFFFF00) == 0xAA55AA00)    //GP RTPB  回传 模块本身信息数据
         {
             int nLen = (nStatus & 0xFF);
             if (nLen > 50)
@@ -388,7 +436,21 @@ public class wifination {
                 cmd[i] = buf.get(i + BMP_Len);
             }
             EventBus.getDefault().post(cmd, "GetWifiInfoData");
-        } else {
+        }
+        else if ((nStatus & 0xFFFFFF00) == 0xAA555500)    //GP 回传电量
+        {
+            int nBattery = nStatus &0x0F;
+            Integer nB = nBattery;
+            EventBus.getDefault().post(nB, "OnGetBatteryLevel");
+        }
+        else if ((nStatus & 0xFFFFFF00) == 0x11223300)    //回传电量显示nStyle
+        {
+            int nStyle = nStatus &0x0F;
+            Integer nB = nStyle;
+            EventBus.getDefault().post(nB, "OnGetSetStyle");
+        }
+
+        else {
             Integer ix = nStatus;                //返回 模块按键
             Log.e(TAG, "Get data = " + nStatus);
             EventBus.getDefault().post(ix, "OnGetGP_Status");
@@ -463,8 +525,7 @@ public class wifination {
             EventBus.getDefault().post(bmp, "ReviceBMP");
         if(bGesture)
         {
-                ObjectDetector sig = ObjectDetector.getInstance();
-                sig.F_Start(true);
+            if(sig!=null)
                 sig.GetNumber(bmp);
         }
 
