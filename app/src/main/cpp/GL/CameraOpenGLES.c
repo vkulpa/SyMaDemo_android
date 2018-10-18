@@ -169,8 +169,12 @@ AVFrame *gl_Frame = NULL;
 //全局变量
 Instance *instance =NULL;
 
-int nRotation=0;
+int gwwwww_=1;
+int ghhhhh_=1;
+int gdddddd_=0;
 
+int nRotation=0;
+bool  bRotaHV=false;
 float * maMVPMatrix = NULL;
 void F_InitGPL(int WW,int HH)
 {
@@ -268,6 +272,11 @@ Java_com_joyhonest_wifination_wifination_changeLayout(JNIEnv *env, jobject obj, 
     {
         instance->vWidth =(unsigned int) width;
         instance->vHeight = (unsigned int)height;
+        float df = ((float)(instance->vHeight))/instance->vWidth;
+        ghhhhh_ =  instance->vHeight;
+        gwwwww_ =  (int)(ghhhhh_*df);
+
+        gdddddd_ =  (instance->vWidth-gwwwww_)/2;
 
     }
 
@@ -358,7 +367,12 @@ Java_com_joyhonest_wifination_wifination_drawFrame(JNIEnv *env, jobject obj) //,
     {
 
         //清除深度缓冲,颜色缓冲
-        glViewport(0, 0, instance->vWidth, instance->vHeight);
+        if(bRotaHV && nRotation != 0 &&  nRotation != 180) {
+            glViewport(gdddddd_, 0, gwwwww_, ghhhhh_);
+        } else {
+            glViewport(0, 0, instance->vWidth, instance->vHeight);
+        }
+
         drawFrame(instance);
     }
 #endif

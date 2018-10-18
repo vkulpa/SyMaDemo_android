@@ -246,6 +246,13 @@ public class wifination {
 
     public static native void naSetScal(float fScal); //设定放大显示倍数
 
+    public static void naSetCmdResType(int nType)
+    {
+        JH_Tools.F_SetResType(nType);
+    }
+
+
+    public static  native void naSetbRotaHV(boolean b);
 
 
 

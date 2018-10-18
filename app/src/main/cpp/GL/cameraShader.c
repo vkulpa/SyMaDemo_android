@@ -2,6 +2,7 @@
 #include "cameraShader.h"
 
 extern int nRotation;
+extern bool bRotaHV;
 extern const float dataVertex[];
 extern const float dataVertex_Flip[];
 
@@ -58,33 +59,70 @@ drawFrame(void* ins)
 
 	}
 	else {
-		if(nRotation == 90) {
-			glVertexAttribPointer(instance->maPositionHandle,
-								  3,//GLint size X Y Z
-								  GL_FLOAT,//GLenum type
-								  GL_FALSE,//GLboolean normalized
-								  3 * 4,//GLsizei stride
-								  dataVertex_90//const GLvoid * ptr
-			);
+    	if(!bRotaHV) {
+
+			if (nRotation == 90) {
+				glVertexAttribPointer(instance->maPositionHandle,
+									  3,//GLint size X Y Z
+									  GL_FLOAT,//GLenum type
+									  GL_FALSE,//GLboolean normalized
+									  3 * 4,//GLsizei stride
+									  dataVertex_90//const GLvoid * ptr
+				);
+			} else if (nRotation == -90) {
+				glVertexAttribPointer(instance->maPositionHandle,
+									  3,//GLint size X Y Z
+									  GL_FLOAT,//GLenum type
+									  GL_FALSE,//GLboolean normalized
+									  3 * 4,//GLsizei stride
+									  dataVertex__90//const GLvoid * ptr
+				);
+			} else {
+				glVertexAttribPointer(instance->maPositionHandle,
+									  3,//GLint size X Y Z
+									  GL_FLOAT,//GLenum type
+									  GL_FALSE,//GLboolean normalized
+									  3 * 4,//GLsizei stride
+									  dataVertex//const GLvoid * ptr
+				);
+			}
 		}
-		else if(nRotation == -90)
+		else
 		{
-			glVertexAttribPointer(instance->maPositionHandle,
-								  3,//GLint size X Y Z
-								  GL_FLOAT,//GLenum type
-								  GL_FALSE,//GLboolean normalized
-								  3 * 4,//GLsizei stride
-								  dataVertex__90//const GLvoid * ptr
-			);
-		}
-		else {
-			glVertexAttribPointer(instance->maPositionHandle,
-								  3,//GLint size X Y Z
-								  GL_FLOAT,//GLenum type
-								  GL_FALSE,//GLboolean normalized
-								  3 * 4,//GLsizei stride
-								  dataVertex//const GLvoid * ptr
-			);
+			if (nRotation == 90) {
+				glVertexAttribPointer(instance->maPositionHandle,
+									  3,//GLint size X Y Z
+									  GL_FLOAT,//GLenum type
+									  GL_FALSE,//GLboolean normalized
+									  3 * 4,//GLsizei stride
+									  dataVertex_90//const GLvoid * ptr
+				);
+			} else if (nRotation == -90 || nRotation == 270) {
+				glVertexAttribPointer(instance->maPositionHandle,
+									  3,//GLint size X Y Z
+									  GL_FLOAT,//GLenum type
+									  GL_FALSE,//GLboolean normalized
+									  3 * 4,//GLsizei stride
+									  dataVertex__90//const GLvoid * ptr
+				);
+			}else if (nRotation == 180) {
+				glVertexAttribPointer(instance->maPositionHandle,
+									  3,//GLint size X Y Z
+									  GL_FLOAT,//GLenum type
+									  GL_FALSE,//GLboolean normalized
+									  3 * 4,//GLsizei stride
+									  dataVertex_Flip//const GLvoid * ptr
+				);
+			}
+			else {
+				glVertexAttribPointer(instance->maPositionHandle,
+									  3,//GLint size X Y Z
+									  GL_FLOAT,//GLenum type
+									  GL_FALSE,//GLboolean normalized
+									  3 * 4,//GLsizei stride
+									  dataVertex//const GLvoid * ptr
+				);
+			}
 		}
 
 	}

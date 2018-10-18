@@ -25,7 +25,6 @@
     <!-- landscape-->
     <!--android:label="@string/app_JHDemo_test" -->
     <application
-
         android:name=".MyApp"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"

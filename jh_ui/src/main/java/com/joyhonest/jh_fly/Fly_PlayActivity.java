@@ -129,6 +129,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        wifination.naSetCmdResType(1);
         wifination.appContext = getApplicationContext();
         wifination.naSetRecordAudio(JH_App.bRecordVoice);
         wifination.naSetGesture(true,this.getApplicationContext());
@@ -137,6 +138,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         JH_App.bFlyDisableAll = true;
         JH_App.nType = JH_App.nStyle_fly;
         JH_App.F_InitMusic();
+
+
         //String str = wifination.naGetControlType();
         mAsker = new PermissionAsker(10, new Runnable() {
             @Override
@@ -179,6 +182,11 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         byte nType = cmd[40];
         Log.e("GET Wifi Type", "" + nType);
     }
+    @Subscriber(tag = "GetWifiSendData")
+    private void GetWifiSendData(byte[] cmd) {
+        Log.e("GET Wifi Data", "" + cmd.length);
+    }
+
 
     private void F_Init() {
         JH_App.bFlying = false;

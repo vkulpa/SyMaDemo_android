@@ -499,6 +499,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
     }
 
     boolean bTest = true;
+    int nRota = 0;
 
     @Override
     public void onClick(View v) {
@@ -554,6 +555,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             //wifination.naSetFlip(bTestFlip);
             wifination.naSet3D(bTestFlip);
             */
+
+
+
 
 
             JH_App.bStop = true;
@@ -1009,10 +1013,37 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
     byte[] cmd = new byte[20];
 
+    private  void F_TestGpsCmd()
+    {
+
+    }
+
     private void F_SentCmd() {
         if (!bControlUI) {
             return;
         }
+
+        //68 01 09 80 80 80 80 20 08 00 00 00 20
+
+        cmd[0] = (byte) 0x68;   //油门
+        cmd[1] = (byte) 0x01;
+        cmd[2] = (byte) 0x09;
+        cmd[3] = (byte) 0x80;
+
+        cmd[4] = (byte) 0x80;
+        cmd[5] = (byte) 0x80;
+        cmd[6] = (byte) 0x80;
+        cmd[7] = (byte) 0x20;
+
+        cmd[8] = (byte) 0x08;
+        cmd[9] = (byte) 0x00;
+        cmd[10] = (byte) 0x00;
+        cmd[11] = (byte) 0x00;
+        cmd[12] = (byte) 0x20;
+        wifination.naSentCmd(cmd, 13);
+        return;
+
+
 
 
 /*
@@ -1056,6 +1087,8 @@ Data9：Data0- Data8异或后，再加0X55
 
         //if(myControl.getVisibility()!=View.VISIBLE)
         //    return;
+
+/*
         if (JH_App.bisPathMode)
             return;
 
@@ -1202,7 +1235,7 @@ Data9：Data0- Data8异或后，再加0X55
         cmd[9] = (byte) (((cmd[0] ^ cmd[1] ^ cmd[2] ^ cmd[3] ^ cmd[4] ^ cmd[5] ^ cmd[6] ^ cmd[7] ^ cmd[8]) & 0xFF) + 0x55);
         wifination.naSentCmd(cmd, 10);
         //  Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2+"  temp="+nTestTemp);
-
+*/
 
         /*
 
