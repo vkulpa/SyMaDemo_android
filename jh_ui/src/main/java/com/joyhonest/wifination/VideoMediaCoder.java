@@ -131,9 +131,7 @@ public class VideoMediaCoder {
             inputBuffer.put(data);//往输入缓冲区写入数据,
             ////五个参数，第一个是输入缓冲区的索引，第二个数据是输入缓冲区起始索引，第三个是放入的数据大小，第四个是时间戳，保证递增就是
             mMediaCodec.queueInputBuffer(inputBufferIndex, 0, data.length, ppp, 0);
-
             MediaCodec.BufferInfo bufferInfo = new MediaCodec.BufferInfo();
-
             int outputBufferIndex = mMediaCodec.dequeueOutputBuffer(bufferInfo, 2000);//拿到输出缓冲区的索引
             while (outputBufferIndex >= 0) {
                 ByteBuffer outputBuffer = outputBuffers[outputBufferIndex];
