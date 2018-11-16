@@ -549,16 +549,9 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
             /*
             bTestFlip =!bTestFlip;
             wifination.StartAudio(bTestFlip);
-
-
-
             //wifination.naSetFlip(bTestFlip);
             wifination.naSet3D(bTestFlip);
             */
-
-
-
-
 
             JH_App.bStop = true;
             JH_App.bUp = false;
@@ -577,8 +570,6 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
                 }
             }, 500);
-
-
         }
 
         if (v == UpDn_Btn) {

@@ -1018,25 +1018,22 @@ public class JH_App {
     //public static void F_OpenStream(Surface surface) {
     public static void F_OpenStream() {
 
+
         int ictype = JH_App.F_GetWifiType();
 
         wifination.naSetAdjFps(false); //针对GKA模块 有效
 
 
-        JH_App.nICType = ictype;
-        //JH_App.nICType = wifination.IC_GPH264A;
-        //JH_App.nICType = wifination.IC_GKA;
-        //JH_App.nICType = wifination.IC_GPH264;
-        //JH_App.nICType = wifination.IC_GPRTSP;
-        //JH_App.nICType = wifination.IC_SN;
-        //JH_App.nICType = wifination.IC_GPRTP;
 
-        //wifination.naSetIcType(JH_App.nICType);
+
+        JH_App.nICType = ictype;
+
         if (JH_App.bIsSyMa)
             wifination.naSetCustomer("sima");
         else
             wifination.naSetCustomer(" ");
-        // wifination.naSetVideoSurface(surface); //surfaceHolder.getSurface());
+        wifination.naInit("2");
+/*
         String str = "";
         int re = -1;
         if (JH_App.nICType == wifination.IC_GK) {
@@ -1058,7 +1055,6 @@ public class JH_App {
 
         if (JH_App.nICType == wifination.IC_GP) {
             str = "http://192.168.25.1:8080/?action=stream";
-            //str = "rtsp://192.168.25.1:8080/?action=stream";
             re = wifination.naInit(str);
             if (re == 0)
                 wifination.naPlay();
@@ -1094,8 +1090,7 @@ public class JH_App {
             wifination.naSetGPFps(25);
             wifination.naInit(str);
         }
-        //sendCmdHandle.removeCallbacksAndMessages(null);
-        //sendCmdHandle.post(sendCmdRunnable);
+*/
     }
 
 

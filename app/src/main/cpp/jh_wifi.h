@@ -9,7 +9,8 @@
 #define _Nonnull
 #endif
 
-
+#define OMX_COLOR_FormatYUV420SemiPlanar  21
+#define OMX_COLOR_FormatYUV420Planar    19
 
 #ifdef __cplusplus
 extern "C" {

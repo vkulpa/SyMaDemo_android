@@ -5,7 +5,7 @@
 #ifndef SYMADEMO_ANDROID_MYMEDIACODE_H
 #define SYMADEMO_ANDROID_MYMEDIACODE_H
 
-#include "NativeCodec.h"
+//#include "NativeCodec.h"
 
 
 #ifdef __cplusplus
@@ -27,7 +27,7 @@ extern "C" {
 #endif
 
 
-int naSave2FrameMp4(uint8_t  *data, int nLen,int b, bool keyframe);
+int _naSave2FrameMp4(uint8_t  *data, int nLen,int b, bool keyframe);
 
 class MyMediaCoder {
 
@@ -40,8 +40,8 @@ private:
     int m_nRecHeight;
     int m_nBitrate;
     int m_nFps;
-    AMediaCodec*  encoder;
-    AMediaCodec*  decoder;
+    //AMediaCodec*  encoder;
+    //AMediaCodec*  decoder;
     int64_t  pts;
     uint64_t  decpts;
 public:

@@ -6,6 +6,9 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
+import android.support.v4.app.NavUtils;
 import android.util.Log;
 
 import org.simple.eventbus.EventBus;
@@ -45,6 +48,10 @@ public class wifination {
     public static boolean bDisping = false;
 
 
+    private  static VideoMediaCoder  videoMediaCoder;
+
+    //private static  Context  mContext=null;
+
     private final static String TAG = "wifination";
     private static final wifination m_Instance = new wifination();
     private static final int BMP_Len = (((1280 + 3) / 4) * 4) * 4 * 720 + 1024;
@@ -55,13 +62,14 @@ public class wifination {
         try {
             System.loadLibrary("jh_wifi");
             AudioEncoder = new AudioEncoder();
+            videoMediaCoder = new VideoMediaCoder();
         } catch (UnsatisfiedLinkError Ule) {
             Log.e(TAG, "Cannot load jh_wifi.so ...");
             Ule.printStackTrace();
         } finally {
 
-            mDirectBuffer = ByteBuffer.allocateDirect(BMP_Len + 50);     //获取每帧数据，主要根据实际情况，分配足够的空间。
-            naSetDirectBuffer(mDirectBuffer, BMP_Len + 50);
+            mDirectBuffer = ByteBuffer.allocateDirect(BMP_Len + 200);     //获取每帧数据，主要根据实际情况，分配足够的空间。
+            naSetDirectBuffer(mDirectBuffer, BMP_Len + 200);
         }
     }
 
@@ -236,9 +244,9 @@ public class wifination {
 
     public static native void naSetVrBackground(boolean b);
 
-    public static native void naRotation(int n);  //N = 0  90    -90   //画面转90 度 显示
-
-
+    public static native void naRotation(int n);  // n == 0 || n ==90 || n ==-90 || n ==180 || n==270
+    public static  native void naSetbRotaHV(boolean b); //b = flase  表示手机是竖屏显示，但因为我们的camera是横屏数据，所以还需调用 naRotation 来转 90度满屏显示
+                                                        //b = true,  手机横屏显示，此时如果调用 naRotation， 就只是把 显示画面旋转 ，如果转 90 ，-90 270 ，就会显示有 黑边
     public static native boolean naSetWifiPassword(String sPassword);
 
     public static native void naSetLedOnOff(boolean bOpenLed);
@@ -252,9 +260,13 @@ public class wifination {
     }
 
 
-    public static  native void naSetbRotaHV(boolean b);
+    public static native void naSetNoTimeOut(boolean b);    //
 
 
+
+    public static native void naSetDebug(boolean b);//串口数据 ，用于与固件调试
+
+    public static native void naWriteport20000(byte[] cmd,int nleng);
 
 
     public static native void init();
@@ -271,6 +283,11 @@ public class wifination {
 
 
     private static ObjectDetector sig=null;
+
+
+
+
+
 
     private static void G_StartAudio(int b) {
         if (b != 0) {
@@ -311,6 +328,10 @@ public class wifination {
     */
 
     public static void F_AdjBackGround(Context context, int bakid) {
+
+
+
+
         Bitmap bmp = null;
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -395,6 +416,27 @@ public class wifination {
     }
 
 
+    private static int getIP()
+    {
+        if(appContext!=null)
+        {
+
+            WifiManager wm=(WifiManager) appContext.getSystemService(Context.WIFI_SERVICE);
+            if(wm!=null)
+            {
+                WifiInfo wi=wm.getConnectionInfo();
+                if(wi!=null)
+                {
+                    int ipAdd=wi.getIpAddress();
+                    return ipAdd;
+                }
+            }
+            return 0;
+        }
+        return 0;
+    }
+
+
     public static void naInitgl(Context context, int backid) {
         init();
     }
@@ -416,11 +458,26 @@ public class wifination {
 
 
     private static void OnGetGP_Status(int nStatus) {
-        if ((nStatus & 0xFFFFFF00) == 0x55AA5500)  // wifi模块透传回来的数据
+        if(((nStatus & 0xFFFFFF00) == 0xAABBCC00))   //所有通过串口传过来的数据 ，用于与固件调试时使用
         {
             int nLen = (nStatus & 0xFF);
-            if (nLen > 50)
-                nLen = 50;
+            if (nLen > 200)
+                nLen = 200;
+
+            byte[] cmd = new byte[nLen];
+
+            ByteBuffer buf = wifination.mDirectBuffer;
+            buf.rewind();
+            for (int i = 0; i < nLen; i++) {
+                cmd[i] = buf.get(i + BMP_Len);
+            }
+            EventBus.getDefault().post(cmd, "GetDataFromRs232");
+        }
+        else if ((nStatus & 0xFFFFFF00) == 0x55AA5500)  // wifi模块透传回来的数据
+        {
+            int nLen = (nStatus & 0xFF);
+            if (nLen > 200)
+                nLen = 200;
 
             byte[] cmd = new byte[nLen];
 
@@ -434,8 +491,8 @@ public class wifination {
         else if ((nStatus & 0xFFFFFF00) == 0xAA55AA00)    //GP RTPB  回传 模块本身信息数据
         {
             int nLen = (nStatus & 0xFF);
-            if (nLen > 50)
-                nLen = 50;
+            if (nLen > 200)
+                nLen = 200;
             byte[] cmd = new byte[nLen];
             ByteBuffer buf = wifination.mDirectBuffer;
             buf.rewind();
@@ -536,6 +593,29 @@ public class wifination {
                 sig.GetNumber(bmp);
         }
 
+    }
+
+
+    ///////////video Media
+    private  static int F_InitEncoder(int width,int height,int bitrate,int fps)
+    {
+        return videoMediaCoder.initMediaCodec(width,height,bitrate,fps);
+    }
+
+    private  static  void offerEncoder(byte[] data,int nLen)
+    {
+         if(videoMediaCoder!=null)
+         {
+             videoMediaCoder.offerEncoder(data,nLen);
+         }
+    }
+
+    private  static void F_CloseEncoder()
+    {
+        if(videoMediaCoder!=null)
+        {
+            videoMediaCoder.F_CloseEncoder();
+        }
     }
 
 

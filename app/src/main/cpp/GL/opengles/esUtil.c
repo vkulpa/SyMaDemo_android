@@ -61,9 +61,7 @@ checkInitShader(GLint pShader)
 			 NULL,
 			 pVLog
       );
-      LOGW_EU("checkInitShader() shader = %d, CompileShader fail! info : %s",
-	   pShader, pVLog
-      );
+      LOGW_EU("checkInitShader() shader = %d, CompileShader fail! info : %s",pShader, pVLog);
       glDeleteShader(pShader);//释放着色器申请的指针
     }
   return shaderStatu;

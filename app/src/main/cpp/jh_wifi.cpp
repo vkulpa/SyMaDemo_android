@@ -55,7 +55,7 @@ extern "C" {
 #include "jh_wifi.h"
 #include "phone_rl_protocol.h"
 //#include "JH_GK_UDP.h"
-#include "NativeCodec.h"
+//#include "NativeCodec.h"
 #include "MyMediaCoder.h"
 #include "JH_TestInfo.h"
 
@@ -101,6 +101,8 @@ uint32_t nUdpInx = 0;
 
 std::string sServerIP = "192.168.254.1";
 
+
+bool    bNoTimeout=false;
 
 __volatile int64_t nCheckT_pre;
 bool bInit = false;
@@ -157,6 +159,7 @@ jmethodID  G_StartAudio_mid;
 
 
 jmethodID GetWifiData_mid;
+jmethodID GetIP_mid;
 
 jmethodID GetThunb_mid;
 
@@ -173,6 +176,12 @@ jmethodID Save2ToGallery_mid;
 
 //jmethodID  GetH264Frame_mid;
 
+
+//F_InitEncoder(int width,int height,int bitrate,int fps)
+
+jmethodID F_InitEncoder_mid;
+jmethodID  offerEncoder_mid;
+jmethodID  F_CloseEncoder_mid;
 
 
 jfieldID buffermid;
@@ -208,7 +217,7 @@ const char *mediaCodePath = "android/media/MediaCodec";
 
 int PlatformDisplay();
 
-void F_RecRP_RTSP_Status_Service();
+void F_Read_Status_Service();
 
 int naPlay(void);
 void F_ResetRelinker(void);
@@ -277,6 +286,8 @@ bool bNeedSentHear = false;
 int Read_sock = -1;
 int Read_25000sock = -1;
 char buff25000[101];
+
+bool   bDebug=false;
 
 int SendDir2java(const char *sName);
 
@@ -561,7 +572,7 @@ void *F_ReadUdp8001_Thread(void *dat) {
         LOGE("open udp:8001 error");
         return NULL;
     }
-    if (bind(Read_sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+    if (::bind(Read_sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
         LOGE("bind udp:8001 error");
         return NULL;
     }
@@ -667,7 +678,7 @@ int F_GetSDCardStatus(const char *sUrl) {
     loc_addr.sin_family = AF_INET;//协议
     loc_addr.sin_addr.s_addr = htons(INADDR_ANY);
     loc_addr.sin_port = htons(INADDR_ANY);
-    if (bind(socket_handle, (const struct sockaddr *) &loc_addr, sizeof(struct sockaddr_in)) < 0) {
+    if (::bind(socket_handle, (const struct sockaddr *) &loc_addr, sizeof(struct sockaddr_in)) < 0) {
         close(socket_handle);
         LOGE("error 2:");
         return -1;
@@ -805,7 +816,7 @@ int F_GetSDCardStatus(const char *sUrl) {
 
 }
 
-
+/*
 void initClassHelper(JNIEnv *env, const char *path, jobject *objptr) {
     jclass cls = env->FindClass(path);
     if (!cls) {
@@ -824,6 +835,7 @@ void initClassHelper(JNIEnv *env, const char *path, jobject *objptr) {
     }
     (*objptr) = env->NewGlobalRef(obj);
 }
+ */
 
 pthread_t checkRelinker = -1;
 
@@ -861,6 +873,7 @@ void *checkRelinkerThrad(void *param) {
 #if 1
 //#ifndef DEBUG
 
+        if(!bNoTimeout)
         {
             if (bInit && !bNeedStop) {
                 int64_t current = av_gettime() / 1000;
@@ -901,6 +914,7 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         DEBUG_PRINT("Failed to get the environment using GetEnv()");
         return -1;
     }
+    bNoTimeout = false;
 
     memset(TestInfo, 0, 1024);
     char m_szSdkVer[PROP_VALUE_MAX];
@@ -926,12 +940,18 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 
         //G_getIP = env->GetStaticMethodID(data_Clazz, "G_getIP", "()I");
 
+        F_InitEncoder_mid = env->GetStaticMethodID(data_Clazz, "F_InitEncoder", "(IIII)I");
+        offerEncoder_mid  = env->GetStaticMethodID(data_Clazz, "offerEncoder", "([BI)V");
+        F_CloseEncoder_mid = env->GetStaticMethodID(data_Clazz, "F_CloseEncoder", "()V");
 
 
         RevTestInfo_mid = env->GetStaticMethodID(data_Clazz, "RevTestInfo", "([B)V");
         if (RevTestInfo_mid == NULL) {
             DEBUG_PRINT("No RevTestInfo_mid");
         }
+
+        GetIP_mid = env->GetStaticMethodID(data_Clazz, "getIP", "()I");
+
 
         GetWifiData_mid = env->GetStaticMethodID(data_Clazz, "OnGetWifiData", "([B)V");
         if (GetWifiData_mid == NULL) {
@@ -1136,6 +1156,7 @@ void F_AdjIcType(int type)
 
 }
 
+int F_GetIPByJava(void);
 
 int _naInit_(const char *pFileName)
 {
@@ -1184,10 +1205,14 @@ int _naInit_(const char *pFileName)
 //IC_GPH264A,   //192.168.30.X
 //IC_GPRTPB,   //192.168.29.X
 
-    //int type =
-     F_GetIP();
-    //type &=0x00FFFFFF;
-    //F_AdjIcType(type);
+    int ip = F_GetIPByJava();
+    if(ip==0) {
+        F_GetIP();
+    } else
+    {
+        F_AdjIcType(ip&0x00FFFFFF);
+
+    }
 
     if(nICType == IC_NO) {
         LOGE("No Model!");
@@ -1330,7 +1355,7 @@ int naInit_Re_B(void) {
     }
 */
 
-    F_RecRP_RTSP_Status_Service();
+    F_Read_Status_Service();
     if (nICType == IC_GPH264A) {
 
         bStoped = true;
@@ -1637,7 +1662,7 @@ int naInit_Re(void) {
     bInit = true;
 
 
-    F_RecRP_RTSP_Status_Service();
+    F_Read_Status_Service();
 
     int i32Ret = -1;
     if (nICType == IC_GPH264A) {
@@ -1930,7 +1955,7 @@ int naInit_Re(void) {
     return i32Ret;
 }
 
-void F_RecRP_RTSP_Status_Service();
+void F_Read_Status_Service();
 
 
 
@@ -1942,9 +1967,6 @@ Java_com_joyhonest_wifination_wifination_naInit(JNIEnv *env, jclass type, jstrin
     bNeedStop = false;
 
     int i32Ret = _naInit_(pFileName);
-
-
-
 
 
     env->ReleaseStringUTFChars(pFileName_, pFileName);
@@ -2304,8 +2326,7 @@ int F_GetIP(void)
     struct ifconf ifc;
 
     struct ifreq *ifr;
-    int32_t ip = -1;
-
+    int32_t ip = -5;
     memset(&ifc, 0, sizeof(ifc));
     ifc.ifc_ifcu.ifcu_req = NULL;
     ifc.ifc_len = 0;
@@ -2315,19 +2336,19 @@ int F_GetIP(void)
     }
     if (ioctl(s, SIOCGIFCONF, &ifc) < 0)
     {
-        return -1;
+        return -2;
     }
     byte *ffp = new byte[ifc.ifc_len];
     ifr = (struct ifreq *)ffp;
     if(ifr == NULL)
     {
-        return -1;
+        return -3;
     }
     ifc.ifc_ifcu.ifcu_req = ifr;
     if (ioctl(s, SIOCGIFCONF, &ifc) < 0)
     {
         delete []ffp;
-        return -1;
+        return -4;
     }
     numif = ifc.ifc_len / sizeof(struct ifreq);
 
@@ -2533,6 +2554,79 @@ void F_ResetRelinker() {
     nCheckT_pre = av_gettime() / 1000;
 }
 
+
+void F_CloseEncoder()
+{
+    if(F_CloseEncoder_mid!=NULL)
+    {
+        int needsDetach = 0;
+        JNIEnv *evn = getJNIEnv(&needsDetach);
+        if (evn == NULL) {
+            return ;
+        }
+        evn->CallStaticVoidMethod(objclass,F_CloseEncoder_mid);
+        if (needsDetach)
+            gJavaVM->DetachCurrentThread();
+    }
+}
+
+void offerEncoder(uint8_t *data,int nLen)
+{
+    if(offerEncoder_mid!=NULL)
+    {
+        int needsDetach = 0;
+        JNIEnv *evn = getJNIEnv(&needsDetach);
+        if (evn == NULL) {
+            return ;
+        }
+
+        jbyteArray jbarray = evn->NewByteArray(nLen);
+        evn->SetByteArrayRegion(jbarray, 0, nLen, (jbyte *)data);
+        evn->CallStaticVoidMethod(objclass,offerEncoder_mid,jbarray,nLen);
+        evn->DeleteLocalRef(jbarray);
+        if (needsDetach)
+            gJavaVM->DetachCurrentThread();
+        return;
+    }
+}
+
+void F_InitEncoder(int w,int h,int bitfrate,int fps )
+{
+    if(F_InitEncoder_mid!=NULL)
+    {
+        int needsDetach = 0;
+        JNIEnv *evn = getJNIEnv(&needsDetach);
+        if (evn == NULL) {
+            return ;
+        }
+        encord_colorformat =evn->CallStaticIntMethod(objclass,F_InitEncoder_mid,w,h,bitfrate,fps);
+        if(encord_colorformat == 0)
+        {
+            encord_colorformat = OMX_COLOR_FormatYUV420Planar;
+        }
+        if (needsDetach)
+            gJavaVM->DetachCurrentThread();
+        return;
+    }
+}
+
+int F_GetIPByJava(void)
+{
+    if(GetIP_mid!=NULL)
+    {
+        int nIp=0;
+        int needsDetach = 0;
+        JNIEnv *evn = getJNIEnv(&needsDetach);
+        if (evn == NULL) {
+            return 0;
+        }
+        nIp=evn->CallStaticIntMethod(objclass,GetIP_mid);
+        if (needsDetach)
+            gJavaVM->DetachCurrentThread();
+        return nIp;
+    }
+    return 0;
+}
 
 void F_SentRevBmp(int32_t wh) {
     int needsDetach = 0;
@@ -3096,7 +3190,7 @@ int F_ReadUdpPort25000() {
         LOGE("open udp:8001 error");
         return -1;
     }
-    if (bind(Read_25000sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+    if (::bind(Read_25000sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
         LOGE("bind udp:8001 error");
         return -1;
     }
@@ -4722,9 +4816,9 @@ Java_com_joyhonest_wifination_wifination_naSetDirectBuffer(JNIEnv *env, jclass t
                                                            jint nLen) {
     buffer = (unsigned char *) env->GetDirectBufferAddress(bufferA);
     m_FFMpegPlayer.Rgbabuffer = buffer;
-    nBufferLen = nLen - 50;
+    nBufferLen = nLen - 200;
     cmd_buffer = buffer + nBufferLen;
-    memset(cmd_buffer, 0, 50);
+    memset(cmd_buffer, 0, 200);
 
 }
 
@@ -5375,7 +5469,7 @@ void F_Rec_RTP_Data_Service() {
     myaddr.sin_family = AF_INET;
     myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     myaddr.sin_port = htons(10900);
-    if (bind(GPRTP_UDP_SOCKET, (struct sockaddr *) &myaddr, sizeof(myaddr)) < 0) {
+    if (::bind(GPRTP_UDP_SOCKET, (struct sockaddr *) &myaddr, sizeof(myaddr)) < 0) {
         DEBUG_PRINT("10900 bind failed!");
         shutdown(GPRTP_UDP_SOCKET, 0);
         close(GPRTP_UDP_SOCKET);
@@ -5392,7 +5486,9 @@ void F_Rec_RTP_Data_Service() {
 
 }
 
-void F_RecRP_RTSP_Status_Service() {
+//void F_RecRP_RTSP_Status_Service()
+void F_Read_Status_Service()
+{
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 1000 * 10;
@@ -5425,7 +5521,8 @@ void F_RecRP_RTSP_Status_Service() {
     int ac = sizeof(struct sockaddr);
 
 
-    if (bind(rev_socket, (struct sockaddr *) &myaddr, sizeof(myaddr)) < 0) {
+    if (::bind(rev_socket, (struct sockaddr *) &myaddr, sizeof(myaddr)) < 0)
+    {
         DEBUG_PRINT("rev_socket bind failed!");
         shutdown(rev_socket, 0);
         close(rev_socket);
@@ -6009,13 +6106,32 @@ void *doReceive_cmd(void *dat) {
             }
             else
             {
+                if(nbytes>200)
+                {
+                    nbytes=200;
+                }
+                if(bDebug)
+                {
+                    int nb = nbytes;
+                    if(nb>50)
+                    {
+                        nb=50;
+                    }
+                    memset(cmd_buffer, 0, 200);
+                    memcpy(cmd_buffer, readBuff, (size_t)(nb)); //wifi透传数据
+                    int32_t datA = 0xAABBCC00;
+                    datA |=((nbytes)&0xFF);
+                    F_SentGp_Status2Jave(datA);
+                }
+
+
                 if (nbytes >= 8)
                 {
                     if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 'T' && readBuff[6] == 'C')
                     {
                         if (cmd_buffer != NULL)
                         {
-                            memset(cmd_buffer, 0, 50);
+                            memset(cmd_buffer, 0, 200);
                             memcpy(cmd_buffer, readBuff + 7, (size_t)(nbytes - 7)); //wifi透传数据
                             int32_t datA = 0x55AA5500;
                             datA |=((nbytes - 7)&0xFF);
@@ -6026,7 +6142,7 @@ void *doReceive_cmd(void *dat) {
                     {
                         if(nbytes>=47)
                         {
-                            memset(cmd_buffer, 0, 50);
+                            memset(cmd_buffer, 0, 200);
                             memcpy(cmd_buffer, readBuff + 7, nbytes - 7);
                             int32_t dat = 0xAA55AA00;// GP RTPB  回传 模块本身信息数据
                             dat |=((nbytes - 7)&0xFF);
@@ -6379,7 +6495,8 @@ Java_com_joyhonest_wifination_wifination_naFillFlyCmdByC(JNIEnv *env, jclass typ
 }
 
 //int naSave2FrameMp4(jbyte  *data, jint nLen,jint b,jboolean keyframe)
-int naSave2FrameMp4(uint8_t *data, int nLen, int b, bool keyframe) {
+
+int _naSave2FrameMp4(uint8_t *data, int nLen, int b, bool keyframe) {
     if (b == 0)  //sps  pps
     {
         uint8_t *sData = (uint8_t *) data;
@@ -6413,7 +6530,7 @@ int naSave2FrameMp4(uint8_t *data, int nLen, int b, bool keyframe) {
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naSave2FrameMp4(JNIEnv *env, jclass type, jbyteArray data_, jint nLen, jint b, jboolean keyframe) {
     jbyte *data = env->GetByteArrayElements(data_, NULL);
-    naSave2FrameMp4((uint8_t *) data, nLen, b, keyframe);
+    _naSave2FrameMp4((uint8_t *) data, nLen, b, keyframe);
     env->ReleaseByteArrayElements(data_, data, 0);
     return 0;
 }
@@ -6461,7 +6578,7 @@ Java_com_joyhonest_wifination_wifination_naGetControlType(JNIEnv *env, jclass ty
     else
     {
         sver="";
-        F_RecRP_RTSP_Status_Service();
+        F_Read_Status_Service();
         typeA &=0x00FFFFFF;
         typeA |=0x01000000;
         uint8 msg[20];
@@ -6909,7 +7026,49 @@ Java_com_joyhonest_wifination_wifination_naSetbRotaHV(JNIEnv *env, jclass type, 
 }
 
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetDebug(JNIEnv *env, jclass type, jboolean b) {
+
+    bDebug = b;
+
+}
 
 
 
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naWriteport20000(JNIEnv *env, jclass type, jbyteArray cmd_, jint nleng) {
+    jbyte *cmd = env->GetByteArrayElements(cmd_, NULL);
 
+    // TODO
+    uint8 msg[200];
+    //msg[0] = 'J';
+    //msg[1] = 'H';
+    //msg[2] = 'C';
+    //msg[3] = 'M';
+    //msg[4] = 'D';
+    if(nleng>200)
+    {
+        nleng=200;
+    }
+    if(cmd!=NULL && nleng!=0)
+    {
+        for(int i=0;i<nleng;i++)
+        {
+            msg[i]=(uint8)cmd[i];
+        }
+    }
+
+    send_cmd_udp(msg, nleng, sServerIP.c_str(), 20000);
+
+    env->ReleaseByteArrayElements(cmd_, cmd, 0);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetNoTimeOut(JNIEnv *env, jclass type, jboolean b) {
+
+    // TODO
+    bNoTimeout = b;
+}

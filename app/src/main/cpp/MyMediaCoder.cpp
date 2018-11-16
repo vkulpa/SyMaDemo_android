@@ -14,7 +14,7 @@
 
 
 
-MyMediaCoder::MyMediaCoder():encoder(NULL),decoder(NULL)
+MyMediaCoder::MyMediaCoder()//:encoder(NULL),decoder(NULL)
 {
 
 
@@ -26,17 +26,23 @@ MyMediaCoder::~MyMediaCoder()
     F_CloseEncoder();
 }
 
-int encord_colorformat = OMX_COLOR_FormatYUV420SemiPlanar;
+//int encord_colorformat = OMX_COLOR_FormatYUV420SemiPlanar;
 
-bool MyMediaCoder::F_InitEncoder(int width,int height,int32_t framerate,int fps)
+void F_InitEncoder(int w,int h,int bitfrate,int fps );
+
+bool MyMediaCoder::F_InitEncoder(int width,int height,int32_t bitrate,int fps)
 {
+
+    ::F_InitEncoder(width,height,bitrate,fps);
+    return true;
+
+/*
     m_nRecWidth  = width;
     m_nRecHeight = height;
     m_nBitrate = framerate;
     m_nFps = fps;
     F_CloseEncoder();
     pts=0;
-
 
     encoder = AMediaCodec_createEncoderByType("video/avc");
     if(encoder == NULL)
@@ -88,18 +94,22 @@ bool MyMediaCoder::F_InitEncoder(int width,int height,int32_t framerate,int fps)
     }
     AMediaFormat_delete(mediaFormat);
     return false;
+    */
+    return true;
 }
 
 
 bool MyMediaCoder::F_InitDecoder(int width,int height,int8_t *sps,int spsLen,int8_t *pps,int ppsLen,int nfps)
 {
-
+#if 0
     m_nDecWidth  = width;
     m_nDecHeight = height;
     decpts = 0;
     m_nFps = nfps;
+
     if(decoder!=NULL)
         return true;
+
     F_CloseDecoder();
     if(sps==NULL || pps == NULL || spsLen<=0 || ppsLen <=0)
     {
@@ -127,6 +137,9 @@ bool MyMediaCoder::F_InitDecoder(int width,int height,int8_t *sps,int spsLen,int
     }
     AMediaFormat_delete(videoFormat);
     return false;
+#else
+    return true;
+#endif
 
 }
 //extern C_FFMpegPlayer m_FFMpegPlayer;
@@ -136,7 +149,7 @@ bool MyMediaCoder::F_InitDecoder(int width,int height,int8_t *sps,int spsLen,int
 void F_ProcessDecordData(uint8_t *data,int32_t nLen,int w,int h,int nColor);
 
 
-int nDecColor = OMX_COLOR_FormatYUV420SemiPlanar;
+//int nDecColor = OMX_COLOR_FormatYUV420SemiPlanar;
 
 uint8_t  head[]={0x00,0x00,0x00,0x01};
 
@@ -144,6 +157,7 @@ int64_t  nT = av_gettime()/1000;
 int64_t  nCurrent;
 bool MyMediaCoder::offerDecoder(uint8_t *data,int32_t nLen,int flag)
 {
+#if 0
     if(decoder== NULL)
         return  false;
 
@@ -199,12 +213,16 @@ bool MyMediaCoder::offerDecoder(uint8_t *data,int32_t nLen,int flag)
         LOGE("Decord NoInputbuffer!");
     }
 #endif
+#endif
     return false;
 }
 
-
+void offerEncoder(uint8_t *data,int nLen);
 bool MyMediaCoder::offerEncoder(uint8_t *data,int32_t nLen)
 {
+    ::offerEncoder(data,nLen);
+    return true;
+#if 0
     int pos = 0;
     size_t inoutLen;
     ssize_t inputIndex = AMediaCodec_dequeueInputBuffer( encoder, 5000);
@@ -240,14 +258,14 @@ bool MyMediaCoder::offerEncoder(uint8_t *data,int32_t nLen)
                 bool bKeyframe = false;
                 if (info.flags == 2)
                 {
-                    naSave2FrameMp4(outputBuf, info.size, 0, bKeyframe);
+                    _naSave2FrameMp4(outputBuf, info.size, 0, bKeyframe);
                 } else if (info.flags == 1) //BUFFER_FLAG_KEY_FRAME) I Frame
                 {
                     bKeyframe = true;
-                    naSave2FrameMp4(outputBuf, info.size, 1, bKeyframe);
+                    _naSave2FrameMp4(outputBuf, info.size, 1, bKeyframe);
                     re = true;
                 } else {
-                    naSave2FrameMp4(outputBuf, info.size, 1, bKeyframe);
+                    _naSave2FrameMp4(outputBuf, info.size, 1, bKeyframe);
                     re = true;
                 }
                 AMediaCodec_releaseOutputBuffer(encoder, (size_t)outbufidx, 0);// info.size != 0);
@@ -260,22 +278,30 @@ bool MyMediaCoder::offerEncoder(uint8_t *data,int32_t nLen)
         }
     }
     return re;
+#endif
+
 }
 
+
+void F_CloseEncoder();
 
 void MyMediaCoder::F_CloseDecoder(void)
 {
 
+/*
     if(decoder !=NULL)
     {
         AMediaCodec_stop(decoder);
         AMediaCodec_delete(decoder);
         decoder=NULL;
     }
+*/
 }
 
 void MyMediaCoder::F_CloseEncoder(void)
 {
+    ::F_CloseEncoder();
+/*
     if(encoder!=NULL)
     {
         AMediaCodec_stop(encoder);
@@ -283,4 +309,5 @@ void MyMediaCoder::F_CloseEncoder(void)
 
         encoder=NULL;
     }
+*/
 }

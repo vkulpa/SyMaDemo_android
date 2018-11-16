@@ -106,15 +106,16 @@ ENDIF()
 
 target_link_libraries( # Specifies the target library.
                        jh_wifi
-                       m
+
                        log
-                       android
-                       c
-                       dl
+
                        z
-                       jnigraphics
+                       #jnigraphics
+                       #android
+                       #c
+                       #dl
                        GLESv2
-                       GLESv3
+                       #GLESv3
 
                        /WORK/ffmpeg/mp4v2-2.0.0/obj/local/${ANDROID_ABI}/libmp4v2.a
                        /WORK/ffmpeg/libyuv/obj/local/${ANDROID_ABI}/libyuv.a

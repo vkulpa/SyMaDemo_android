@@ -1554,7 +1554,7 @@ int MySonix::createVideoSocket(void) {
 
 #endif
 
-    if (bind(videofd, (struct sockaddr *) &myaddr,
+    if (::bind(videofd, (struct sockaddr *) &myaddr,
              sizeof(myaddr)) < 0) {
         LOGE("bind failed! (%s)", strerror(errno));
         shutdown(videofd, 0);
@@ -2048,7 +2048,7 @@ void  MySonix::F_CreateRevSocket_and_Listen(void)
         myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
         myaddr.sin_port = htons(0x7310);
 
-        if (bind(rev_socket, (struct sockaddr *)&myaddr, sizeof(myaddr)) <0)
+        if (::bind(rev_socket, (struct sockaddr *)&myaddr, sizeof(myaddr)) <0)
         {
                 printf("rev_socket bind failed!\n");
                 shutdown(rev_socket, 0);

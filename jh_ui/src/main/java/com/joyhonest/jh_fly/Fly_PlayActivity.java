@@ -132,7 +132,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         wifination.naSetCmdResType(1);
         wifination.appContext = getApplicationContext();
         wifination.naSetRecordAudio(JH_App.bRecordVoice);
-        wifination.naSetGesture(true,this.getApplicationContext());
+        //wifination.naSetGesture(true,this.getApplicationContext());
         //wifination.naSetGPFps(17);
         wifination.naSetVrBackground(true);
         JH_App.bFlyDisableAll = true;

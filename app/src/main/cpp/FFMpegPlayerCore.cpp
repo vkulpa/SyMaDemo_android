@@ -22,10 +22,10 @@
 #include "MyMediaCoder.h"
 #include "phone_rl_protocol.h"
 
-
 extern MyMediaCoder myMediaCoder;
 
-using namespace std;
+//
+
 extern float  nScal;
 extern uint8_t nSDStatus;
 extern bool     bRealRecording;
@@ -46,9 +46,13 @@ WriteFrameQueue_h264 m_FrameQueue_H264;
 int64_t time_out = 0;
 int64_t time_out_dat = 5000;
 
+#define OMX_COLOR_FormatYUV420SemiPlanar  21
+#define OMX_COLOR_FormatYUV420Planar    19
 
 bool firsttimeplay = true;
 
+
+using namespace std;
 
 void Adj23D(AVFrame *src, AVFrame *des);
 
@@ -2100,7 +2104,7 @@ int C_FFMpegPlayer::CloseVideo() {
 int nSteppp = 0;
 void F_SentRevBmp(int32_t wh);
 extern int nBufferLen;
-extern int encord_colorformat;
+int encord_colorformat;
 
 
 AVPacket *C_FFMpegPlayer::F_GetPacket() {
