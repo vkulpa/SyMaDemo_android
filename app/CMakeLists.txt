@@ -20,11 +20,10 @@ src/main/cpp/mp4v2-2.0.0/include;
 src/main/cpp/mp4v2-2.0.0/include/mp4v2;
 src/main/cpp/GL;
 src/main/cpp/GL/opengles;
-src/main/cpp/udt_src;
 src/main/cpp/h264prase;
 src/main/cpp/ffmpeginclude;
 /work/ffmpeg/libyuv/jni/include;
-/WORK/ffmpeg/OpenCV/include;
+#/WORK/ffmpeg/OpenCV/include;
 
 )
 
