@@ -22,14 +22,13 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                //-mfloat-abi=softfp -mfpu=neon
-                cppFlags "-std=c++11 -frtti -fexceptions  "
+                cppFlags "-std=c++11 -frtti -fexceptions" //-std=c++11
                 arguments "-DANDROID_ARM_NEON=TRUE  -DGL_GLEXT_PROTOTYPES"
             }
         }
 
         ndk {
-            //stl "stlport_static"
+            stl "c++_static"
             abiFilters 'armeabi-v7a' //,'armeabi'
         }
     }
