@@ -1,0 +1,3 @@
+/WORK2/SyMaDemo_android/app/.externalNativeBuild/cmake/debug/armeabi/CMakeFiles/edit_cache.dir
+/WORK2/SyMaDemo_android/app/.externalNativeBuild/cmake/debug/armeabi/CMakeFiles/rebuild_cache.dir
+/WORK2/SyMaDemo_android/app/.externalNativeBuild/cmake/debug/armeabi/CMakeFiles/jh_wifi.dir

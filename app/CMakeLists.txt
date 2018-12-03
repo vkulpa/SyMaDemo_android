@@ -105,9 +105,7 @@ ENDIF()
 
 target_link_libraries( # Specifies the target library.
                        jh_wifi
-
                        log
-
                        z
                        #jnigraphics
                        #android

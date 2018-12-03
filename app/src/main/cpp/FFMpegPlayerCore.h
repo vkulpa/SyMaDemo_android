@@ -150,6 +150,7 @@ public:
     int   nRecordHeight;
 
     void F_ReSetRecordWH(int w,int h);
+    void F_InitFFfmpeg(void);
 
     bool b480;
     bool bFollow;

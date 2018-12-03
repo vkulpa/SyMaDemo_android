@@ -572,7 +572,8 @@ void *F_ReadUdp8001_Thread(void *dat) {
         LOGE("open udp:8001 error");
         return NULL;
     }
-    if (::bind(Read_sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+    int res =(int)::bind(Read_sock, (struct sockaddr *) &addr, sizeof(addr));
+    if (res < 0) {
         LOGE("bind udp:8001 error");
         return NULL;
     }
@@ -678,7 +679,9 @@ int F_GetSDCardStatus(const char *sUrl) {
     loc_addr.sin_family = AF_INET;//协议
     loc_addr.sin_addr.s_addr = htons(INADDR_ANY);
     loc_addr.sin_port = htons(INADDR_ANY);
-    if (::bind(socket_handle, (const struct sockaddr *) &loc_addr, sizeof(struct sockaddr_in)) < 0) {
+
+    int res=(int)::bind(socket_handle, (const struct sockaddr *) &loc_addr, sizeof(struct sockaddr_in));
+    if (res < 0) {
         close(socket_handle);
         LOGE("error 2:");
         return -1;
@@ -3190,7 +3193,8 @@ int F_ReadUdpPort25000() {
         LOGE("open udp:8001 error");
         return -1;
     }
-    if (::bind(Read_25000sock, (struct sockaddr *) &addr, sizeof(addr)) < 0) {
+    int res = (int)::bind(Read_25000sock, (struct sockaddr *) &addr, sizeof(addr));
+    if (res < 0) {
         LOGE("bind udp:8001 error");
         return -1;
     }
@@ -5469,7 +5473,11 @@ void F_Rec_RTP_Data_Service() {
     myaddr.sin_family = AF_INET;
     myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     myaddr.sin_port = htons(10900);
-    if (::bind(GPRTP_UDP_SOCKET, (struct sockaddr *) &myaddr, sizeof(myaddr)) < 0) {
+
+    int res = (int)::bind(GPRTP_UDP_SOCKET, (struct sockaddr *) &myaddr, sizeof(myaddr));
+
+    //int res = (int)::bind(GPRTP_UDP_SOCKET, (struct sockaddr *) &myaddr, sizeof(myaddr));
+    if (res < 0) {
         DEBUG_PRINT("10900 bind failed!");
         shutdown(GPRTP_UDP_SOCKET, 0);
         close(GPRTP_UDP_SOCKET);
@@ -5520,8 +5528,9 @@ void F_Read_Status_Service()
     int ad = sizeof(myaddr);
     int ac = sizeof(struct sockaddr);
 
+    int res =(int)::bind(rev_socket, (struct sockaddr *) &myaddr, sizeof(myaddr));
 
-    if (::bind(rev_socket, (struct sockaddr *) &myaddr, sizeof(myaddr)) < 0)
+    if (res < 0)
     {
         DEBUG_PRINT("rev_socket bind failed!");
         shutdown(rev_socket, 0);
@@ -7043,11 +7052,6 @@ Java_com_joyhonest_wifination_wifination_naWriteport20000(JNIEnv *env, jclass ty
 
     // TODO
     uint8 msg[200];
-    //msg[0] = 'J';
-    //msg[1] = 'H';
-    //msg[2] = 'C';
-    //msg[3] = 'M';
-    //msg[4] = 'D';
     if(nleng>200)
     {
         nleng=200;
@@ -7059,9 +7063,7 @@ Java_com_joyhonest_wifination_wifination_naWriteport20000(JNIEnv *env, jclass ty
             msg[i]=(uint8)cmd[i];
         }
     }
-
     send_cmd_udp(msg, nleng, sServerIP.c_str(), 20000);
-
     env->ReleaseByteArrayElements(cmd_, cmd, 0);
 }
 
@@ -7070,5 +7072,6 @@ JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naSetNoTimeOut(JNIEnv *env, jclass type, jboolean b) {
 
     // TODO
+    nCheckT_pre = av_gettime() / 1000;
     bNoTimeout = b;
 }

@@ -1,0 +1,16 @@
+# ninja log v5
+2	3458	0	CMakeFiles/jh_wifi.dir/src/main/cpp/GL/cameraShader.c.o	39c6e7fb6c47accc
+1	3531	0	CMakeFiles/jh_wifi.dir/src/main/cpp/GL/CameraOpenGLES.c.o	1d57286b3c2003f8
+2	3531	0	CMakeFiles/jh_wifi.dir/src/main/cpp/GL/opengles/esUtil.c.o	64645bf018231410
+3	3662	0	CMakeFiles/jh_wifi.dir/src/main/cpp/GL/opengles/matrix.c.o	952440f8a5748816
+3662	4227	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MyFrame.cpp.o	9a2452e0b7d8a723
+3531	4228	0	CMakeFiles/jh_wifi.dir/src/main/cpp/JPEG_BUFFER.cpp.o	843b27c1cd171ada
+4228	4910	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MySocketData.cpp.o	ecbc06346408f600
+4227	4919	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MyMediaCoder.cpp.o	8c41e01f954524e1
+3458	5108	0	CMakeFiles/jh_wifi.dir/src/main/cpp/JH_TestInfo.cpp.o	bd13ade4c4c80ad0
+3532	5109	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MyDownLoad_GKA.cpp.o	5a59511bce89e966
+5109	5479	0	CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/bitvector.cpp.o	cf8909b07def0a70
+5108	5606	0	CMakeFiles/jh_wifi.dir/src/main/cpp/NativeCodec.cpp.o	8051a2ad2952951
+4	5782	0	CMakeFiles/jh_wifi.dir/src/main/cpp/JH_GK_UDP.cpp.o	1622a7f1da5c75d4
+4911	5816	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MySocket_GKA.cpp.o	c5f994966846b6bf
+4919	5831	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MySonix.cpp.o	651e63e394b98a1d

@@ -1,0 +1,16 @@
+{
+  "buildFiles": [
+    "/WORK2/SyMaDemo_android/app/CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "/Users/aiven/Library/Android/sdk/cmake/3.6.4111459/bin/cmake --build /WORK2/SyMaDemo_android/app/.externalNativeBuild/cmake/release/arm64-v8a --target clean"
+  ],
+  "libraries": {
+    "jh_wifi-Release-arm64-v8a": {
+      "artifactName": "jh_wifi",
+      "buildCommand": "/Users/aiven/Library/Android/sdk/cmake/3.6.4111459/bin/cmake --build /WORK2/SyMaDemo_android/app/.externalNativeBuild/cmake/release/arm64-v8a --target jh_wifi",
+      "abi": "arm64-v8a",
+      "output": "/WORK2/SyMaDemo_android/app/build/intermediates/cmake/release/obj/arm64-v8a/libjh_wifi.so"
+    }
+  }
+}

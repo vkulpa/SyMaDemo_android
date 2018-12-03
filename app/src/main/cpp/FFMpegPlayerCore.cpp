@@ -176,15 +176,20 @@ C_FFMpegPlayer::~C_FFMpegPlayer() {
 }
 //----------------------------------------------------------------------
 
+
+void C_FFMpegPlayer::F_InitFFfmpeg(void) {
+    avcodec_register_all();
+    av_register_all();
+    avformat_network_init();
+}
+
 int C_FFMpegPlayer::InitMediaSN(void) {
     AVCodec *pCodec = NULL;
     AVDictionary *optionsDict = NULL;
     int err_code = 0;
 
     if (m_decodedFrame == NULL) {
-        avcodec_register_all();
-        av_register_all();
-        avformat_network_init();
+        F_InitFFfmpeg();
         av_log_set_level(AV_LOG_QUIET);
 
         m_decodedFrame = av_frame_alloc();
@@ -308,9 +313,8 @@ int C_FFMpegPlayer::InitMediaGK(void) {
     AVDictionary *avCodecOptions = NULL;
 
     if (m_decodedFrame == NULL) {
-        avcodec_register_all();
-        av_register_all();
-        avformat_network_init();
+
+        F_InitFFfmpeg();
         av_log_set_level(AV_LOG_QUIET);
         m_decodedFrame = av_frame_alloc();
         //codec = avcodec_find_decoder_by_name("h264_mediacodec");//寻找指定解码器
@@ -527,9 +531,8 @@ int C_FFMpegPlayer::InitMedia(const char *a_path) {
     //pthread_mutex_init(&m_Frame_Queuelock, NULL);
 
 
-    avcodec_register_all();
-    av_register_all();
-    avformat_network_init();
+
+    F_InitFFfmpeg();
     av_log_set_level(AV_LOG_QUIET);
 
     time_out = getCurrentTime();
@@ -1619,7 +1622,7 @@ int  C_FFMpegPlayer::SetYUVFrame(AVFrame *yunframe)
      }
      if(pFrameYUV->width<=0 || pFrameYUV->height<=0)
      {
-         LOGE("JH_WIFI:","SetYUVFrame error!");
+         LOGE("JH_WIFI SetYUVFrame error!");
          return -1;
      }
 
