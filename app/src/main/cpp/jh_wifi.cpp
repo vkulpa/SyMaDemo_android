@@ -1580,16 +1580,12 @@ int naInit_Re_B(void) {
 
     }
 
-
-
-    //GPRTSP  GPH264  朗通的方案
-
     bInit = false;
     nCheckT_pre = av_gettime() / 1000;
     F_SetRelinkerT(1000 * 5);
     bInit = true;
     m_FFMpegPlayer.InitMedia(sPlayPath);
-    naPlay();
+    naPlay();  //RTSP
     return 0;
 }
 
@@ -1953,7 +1949,7 @@ int naInit_Re(void) {
     bInit = true;
     i32Ret = m_FFMpegPlayer.InitMedia(sPlayPath);
     if (i32Ret == 0) {
-        naPlay();
+        naPlay();  //RTSP
     }
     return i32Ret;
 }
@@ -6616,7 +6612,7 @@ Java_com_joyhonest_wifination_wifination_naGetControlType(JNIEnv *env, jclass ty
 // TODO
 
 
-
+#if 0
 void F_ProcessDecordData(uint8_t *data, int32_t nLen, int width, int height, int nColor) {
 
 
@@ -6679,6 +6675,7 @@ void F_ProcessDecordData(uint8_t *data, int32_t nLen, int width, int height, int
 
 
 }
+#endif
 
 extern AVFrame *gl_Frame;
 
@@ -7074,4 +7071,11 @@ Java_com_joyhonest_wifination_wifination_naSetNoTimeOut(JNIEnv *env, jclass type
     // TODO
     nCheckT_pre = av_gettime() / 1000;
     bNoTimeout = b;
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetMirror(JNIEnv *env, jclass type, jboolean b) {
+
+    m_FFMpegPlayer.bMirror = b;
 }

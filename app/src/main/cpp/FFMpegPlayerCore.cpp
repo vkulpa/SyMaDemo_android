@@ -113,7 +113,7 @@ C_FFMpegPlayer::C_FFMpegPlayer() :
           m_parser(NULL), codec(NULL), bFlip(false),
         nDisplayWidth(640), nDisplayHeight(360), nNeedRedraw(false),  b3D(false),
         frame_b(NULL), frame_a(NULL), b480(false), bFollow(false), Rgbabuffer(NULL), video(MP4_INVALID_TRACK_ID), fileHandle(MP4_INVALID_FILE_HANDLE), bIsH264(false), nSpsSet(0), nSecT(0),
-        bContinue(true), b3DA(false), nfps(20), nErrorFrame(0),  bStatWrite(false), YUVbuffer(NULL),  pFrameRecord(NULL), nRecordWidth(640),pFrameYUV_D(NULL),
+        bContinue(true), b3DA(false), nfps(20), nErrorFrame(0),  bStatWrite(false), YUVbuffer(NULL),  pFrameRecord(NULL), nRecordWidth(640),pFrameYUV_D(NULL),bMirror(false),
         nRecordHeight(360) {
     m_snapShotPath[0] = 0;  //= m_VideoPath[0]
     pthread_mutex_init(&m_Frame_Queuelock, NULL);
@@ -206,20 +206,53 @@ int C_FFMpegPlayer::InitMediaSN(void) {
         return 0;
     }
 
-    if (pFrameYUV != NULL)
-        return 0;
     if (m_codecCtx->width <= 0 || m_codecCtx->height <= 0) {
         return 0;
     }
 
+    if (pFrameYUV != NULL) {
+        if(pFrameYUV->width != m_codecCtx->width || pFrameYUV->height != m_codecCtx->height) {
+            av_freep(&pFrameYUV->data[0]);
+            av_frame_free(&pFrameYUV);
+            pFrameYUV = NULL;
+        }
+        else {
+            return 0;
+        }
+
+    }
+
+
 
     pix_format = AV_PIX_FMT_YUV420P;
-    //disp_pix_format = AV_PIX_FMT_RGBA;
+
+    if(frame_SnapBuffer!=NULL) {
+        av_freep(&frame_SnapBuffer->data[0]);
+        av_frame_free(&frame_SnapBuffer);
+        frame_SnapBuffer = NULL;
+    }
+    if(pFrameRecord!=NULL) {
+        av_freep(&pFrameRecord->data[0]);
+        av_frame_free(&pFrameRecord);
+        pFrameRecord = NULL;
+    }
+
+    if (frame_a != NULL) {
+        av_freep(&frame_a->data[0]);
+        av_frame_free(&frame_a);
+        frame_b = NULL;
+    }
+    if (frame_b != NULL) {
+        av_freep(&frame_b->data[0]);
+        av_frame_free(&frame_b);
+        frame_b = NULL;
+    }
+
+    if(img_convert_ctx !=NULL)
+        sws_freeContext(img_convert_ctx);
 
 
     pFrameYUV = av_frame_alloc();
-    //pFrameRGB = av_frame_alloc();
-
 
     frame_SnapBuffer = av_frame_alloc();
 
@@ -275,6 +308,7 @@ int C_FFMpegPlayer::InitMediaSN(void) {
     //img_convert_ctx_half = sws_getContext(m_codecCtx->width, m_codecCtx->height, pix_format,
     //                                      m_codecCtx->width / 2, m_codecCtx->height / 2, pix_format,
     //                                      SWS_POINT, NULL, NULL, NULL); //
+
 
 
     if (frame_a == NULL) {
@@ -335,14 +369,57 @@ int C_FFMpegPlayer::InitMediaGK(void) {
         m_parser = av_parser_init(codec->id);//AV_CODEC_ID_H264);
         return 0;
     }
-    if (pFrameYUV != NULL)
-        return 0;
-    if (m_codecCtx == NULL)
-        return 0;
+
 
     if (m_codecCtx->width <= 0 || m_codecCtx->height <= 0) {
         return 0;
     }
+
+
+    if (pFrameYUV != NULL) {
+        if(pFrameYUV->width != m_codecCtx->width || pFrameYUV->height != m_codecCtx->height) {
+            av_freep(&pFrameYUV->data[0]);
+            av_frame_free(&pFrameYUV);
+        }
+        else {
+            return 0;
+        }
+
+    }
+
+
+
+    pix_format = AV_PIX_FMT_YUV420P;
+
+    if(frame_SnapBuffer!=NULL) {
+        av_freep(&frame_SnapBuffer->data[0]);
+        av_frame_free(&frame_SnapBuffer);
+        frame_SnapBuffer = NULL;
+    }
+    if(pFrameRecord!=NULL) {
+        av_freep(&pFrameRecord->data[0]);
+        av_frame_free(&pFrameRecord);
+        pFrameRecord = NULL;
+    }
+
+    if (frame_a != NULL) {
+        av_freep(&frame_a->data[0]);
+        av_frame_free(&frame_a);
+        frame_b = NULL;
+    }
+    if (frame_b != NULL) {
+        av_freep(&frame_b->data[0]);
+        av_frame_free(&frame_b);
+        frame_b = NULL;
+    }
+
+    if(img_convert_ctx !=NULL)
+        sws_freeContext(img_convert_ctx);
+
+    //if (pFrameYUV != NULL)
+    //    return 0;
+    //if (m_codecCtx == NULL)
+    //    return 0;
 
 
     pix_format = AV_PIX_FMT_YUV420P;
@@ -1750,7 +1827,46 @@ int  C_FFMpegPlayer::SetYUVFrame(AVFrame *yunframe)
                 AV_PIX_FMT_YUV420P, 4);
     }
 
+    if(bMirror)
+    {
+        if(frame_a!=NULL)
+        {
+            av_freep(&frame_a->data[0]);
+            av_frame_free(&frame_a);
+            frame_a = NULL;
+        }
+
+        if (frame_a == NULL)
+        {
+            frame_a = av_frame_alloc();
+            frame_a->format = AV_PIX_FMT_YUV420P;
+            frame_a->width = m_codecCtx->width;
+            frame_a->height = m_codecCtx->height;
+            av_image_alloc(frame_a->data, frame_a->linesize, m_codecCtx->width,
+                           m_codecCtx->height,
+                           AV_PIX_FMT_YUV420P, 4);
+        }
+        libyuv::I420Mirror(pFrameYUV->data[0], pFrameYUV->linesize[0],
+                           pFrameYUV->data[1], pFrameYUV->linesize[1],
+                           pFrameYUV->data[2], pFrameYUV->linesize[2],
+                           frame_a->data[0], frame_a->linesize[0],
+                           frame_a->data[1], frame_a->linesize[1],
+                           frame_a->data[2], frame_a->linesize[2],
+                           frame_a->width, frame_a->height);
+
+        libyuv::I420Copy(frame_a->data[0], frame_a->linesize[0],
+                         frame_a->data[1], frame_a->linesize[1],
+                         frame_a->data[2], frame_a->linesize[2],
+                         pFrameYUV->data[0], frame_a->linesize[0],
+                         pFrameYUV->data[1], frame_a->linesize[1],
+                         pFrameYUV->data[2], frame_a->linesize[2],
+                         frame_a->width, frame_a->height);
+
+
+    }
+
     if (bFlip) {
+
         if(frame_a!=NULL)
         {
             av_freep(&frame_a->data[0]);
@@ -1871,103 +1987,8 @@ int C_FFMpegPlayer::decodeAndRender() {
                           pFrameYUV->data, pFrameYUV->linesize);
 
                 SetYUVFrame(pFrameYUV);
-                /*
-                if (bFlip) {
-                    if (frame_a == NULL)
-                    {
-                        frame_a = av_frame_alloc();
-                        frame_a->format = AV_PIX_FMT_YUV420P;
-                        frame_a->width = m_codecCtx->width;
-                        frame_a->height = m_codecCtx->height;
-                        av_image_alloc(frame_a->data, frame_a->linesize, m_codecCtx->width,
-                                       m_codecCtx->height,
-                                       AV_PIX_FMT_YUV420P, 4);
-                    }
-
-
-                    libyuv::I420Rotate(pFrameYUV->data[0], pFrameYUV->linesize[0],
-                                       pFrameYUV->data[1], pFrameYUV->linesize[1],
-                                       pFrameYUV->data[2], pFrameYUV->linesize[2],
-                                       frame_a->data[0], frame_a->linesize[0],
-                                       frame_a->data[1], frame_a->linesize[1],
-                                       frame_a->data[2], frame_a->linesize[2],
-                                       frame_a->width, frame_a->height,libyuv::kRotate180);
-
-
-                    libyuv::I420Copy(frame_a->data[0], frame_a->linesize[0],
-                                           frame_a->data[1], frame_a->linesize[1],
-                                           frame_a->data[2], frame_a->linesize[2],
-                                           pFrameYUV->data[0], frame_a->linesize[0],
-                                           pFrameYUV->data[1], frame_a->linesize[1],
-                                           pFrameYUV->data[2], frame_a->linesize[2],
-                                           frame_a->width, frame_a->height);
-
-                }
-
-                if (b3D) {
-                    if (b3DA) {
-                        libyuv::I420Scale(pFrameYUV->data[0],pFrameYUV->linesize[0],
-                                          pFrameYUV->data[1],pFrameYUV->linesize[1],
-                                          pFrameYUV->data[2],pFrameYUV->linesize[2],
-                                          pFrameYUV->width,pFrameYUV->height,
-                                          frame_b->data[0],frame_b->linesize[0],
-                                          frame_b->data[1],frame_b->linesize[1],
-                                          frame_b->data[2],frame_b->linesize[2],
-                                          frame_b->width,frame_b->height,
-                                          libyuv::kFilterLinear);
-
-                        Adj23D(frame_b, pFrameYUV);
-                        if (m_decodedFrame != NULL) {
-                            if (m_decodedFrame->key_frame != 0) {
-                                av_frame_copy(frame_SnapBuffer, pFrameYUV);
-                            }
-                        }
-
-                        if (m_bSaveSnapshot) {
-
-                            EncodeSnapshot();
-                        }
-
-                    } else {
-                        if (m_decodedFrame != NULL) {
-                            if (m_decodedFrame->key_frame != 0) {
-                                av_frame_copy(frame_SnapBuffer, pFrameYUV);
-                            }
-                        }
-                        if (m_bSaveSnapshot) {
-
-                            EncodeSnapshot();
-                        }
-
-                        libyuv::I420Scale(pFrameYUV->data[0],pFrameYUV->linesize[0],
-                                          pFrameYUV->data[1],pFrameYUV->linesize[1],
-                                          pFrameYUV->data[2],pFrameYUV->linesize[2],
-                                          pFrameYUV->width,pFrameYUV->height,
-                                          frame_b->data[0],frame_b->linesize[0],
-                                          frame_b->data[1],frame_b->linesize[1],
-                                          frame_b->data[2],frame_b->linesize[2],
-                                          frame_b->width,frame_b->height,
-                                          libyuv::kFilterLinear);
-
-                        Adj23D(frame_b, pFrameYUV);
-                    }
-                } else {
-                    if (m_decodedFrame != NULL) {
-                        if (m_decodedFrame->key_frame != 0) {
-                            av_frame_copy(frame_SnapBuffer, pFrameYUV);
-                        }
-                    }
-                    if (m_bSaveSnapshot) {
-
-                        EncodeSnapshot();
-                    }
-                }
-                PlatformDisplay();
-                */
 
             }
-
-
         }
         av_packet_unref(&packet);
     }

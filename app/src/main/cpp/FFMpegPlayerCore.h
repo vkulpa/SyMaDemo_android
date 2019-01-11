@@ -280,6 +280,8 @@ public:
     bool b3D;
     bool b3DA;
 
+    bool bMirror;
+
     MySocketData keyFrame;
     AVPacket packet;
 

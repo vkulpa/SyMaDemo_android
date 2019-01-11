@@ -268,6 +268,9 @@ public class wifination {
 
     public static native void naWriteport20000(byte[] cmd,int nleng);
 
+    public static native  void naSetMirror(boolean b);
+
+
 
     public static native void init();
 

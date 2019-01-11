@@ -146,7 +146,7 @@ bool MyMediaCoder::F_InitDecoder(int width,int height,int8_t *sps,int spsLen,int
 
 
 
-void F_ProcessDecordData(uint8_t *data,int32_t nLen,int w,int h,int nColor);
+//void F_ProcessDecordData(uint8_t *data,int32_t nLen,int w,int h,int nColor);
 
 
 //int nDecColor = OMX_COLOR_FormatYUV420SemiPlanar;
