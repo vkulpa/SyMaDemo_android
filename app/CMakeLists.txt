@@ -23,6 +23,8 @@ src/main/cpp/GL/opengles;
 src/main/cpp/h264prase;
 src/main/cpp/ffmpeginclude;
 /work/ffmpeg/libyuv/jni/include;
+/WORK/ffmpeg/speexdsp-1.2rc3/jni/include;
+
 #/WORK/ffmpeg/OpenCV/include;
 
 )
@@ -114,6 +116,7 @@ target_link_libraries( # Specifies the target library.
                        GLESv2
                        #GLESv3
 
+
                        /WORK/ffmpeg/mp4v2-2.0.0/obj/local/${ANDROID_ABI}/libmp4v2.a
                        /WORK/ffmpeg/libyuv/obj/local/${ANDROID_ABI}/libyuv.a
                        /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libavformat.a
@@ -128,7 +131,7 @@ target_link_libraries( # Specifies the target library.
 
 
 
-#一下这些，需要根据具体情况来调整路径
+#以下下这些，需要根据具体情况来调整路径
 #/WORK/ffmpeg/mp4v2-2.0.0/obj/local/${ANDROID_ABI}/libmp4v2.a
 #/WORK/ffmpeg/libyuv/obj/local/${ANDROID_ABI}/libyuv.a
 #/WORK/ffmpeg/ffmpeglib/libavformat.a
