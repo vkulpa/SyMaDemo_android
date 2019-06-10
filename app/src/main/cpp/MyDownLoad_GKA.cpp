@@ -120,7 +120,7 @@ int MyDownLoad_GKA::DownLoadFile(const char *sPath,const char *dPath, int sessio
                     memcpy(&head, data.data, nLen);
                     if (nFileSize == -1) {
                         nFileSize = head.file_all_size;
-                        LOGE("File Size:%lld", nFileSize);
+                        LOGE("File Size:%ld",(long) nFileSize);
                         if(nFile==-1)
                         {
                             nFile = open(dPath,O_RDWR|O_CREAT|O_TRUNC,0666);

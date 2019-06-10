@@ -13,12 +13,15 @@ using namespace std;
 
 typedef void (*Fuc_GetDAta)(MySocketData *dat);
 
+typedef void (*Fuc_GetData_mjpeg)(char *dat,int nLen);
+
 class MySocket_GKA {
 
 
     int ConnectA(string host, int port);
 public:
     int buffLen;
+    int nICType;
 
     MySocket_GKA();
 
@@ -49,6 +52,7 @@ public:
     int FindHead(MySocketData *dat, int pos);
 
     Fuc_GetDAta fuc_getData;
+    Fuc_GetData_mjpeg  fuc_getData_mjpeg;
     int socketfd;
     bool bConnected;
     string host;
@@ -56,6 +60,7 @@ public:
     bool bFindHead;
     bool  bNotice;
     pthread_t readid;
+
 };
 
 

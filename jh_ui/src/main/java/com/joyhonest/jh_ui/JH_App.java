@@ -1032,7 +1032,12 @@ public class JH_App {
             wifination.naSetCustomer("sima");
         else
             wifination.naSetCustomer(" ");
-        wifination.naInit("2");
+        String str = "2";
+        if(JH_App.nICType == wifination.IC_GP)
+            str = "http://192.168.25.1:8080/?action=stream";
+        //str ="/storage/emulated/0/DCIM/Camera/MOVI0001.avi";
+        wifination.naInit(str);
+        wifination.naGetRtl_Mode();
 /*
         String str = "";
         int re = -1;

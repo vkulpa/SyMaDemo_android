@@ -132,7 +132,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         wifination.naSetCmdResType(1);
         wifination.appContext = getApplicationContext();
         wifination.naSetRecordAudio(JH_App.bRecordVoice);
-        //wifination.naSetGesture(true,this.getApplicationContext());
+        wifination.naSetGesture(true,this.getApplicationContext());
         //wifination.naSetGPFps(17);
         wifination.naSetVrBackground(true);
         JH_App.bFlyDisableAll = true;
@@ -180,7 +180,8 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     @Subscriber(tag = "GetWifiInfoData")
     private void GetWifiInfoData(byte[] cmd) {
         byte nType = cmd[40];
-        Log.e("GET Wifi Type", "" + nType);
+        byte nPassEdit =cmd[40];
+        Log.e("INFO", "Info=" + nPassEdit);
     }
     @Subscriber(tag = "GetWifiSendData")
     private void GetWifiSendData(byte[] cmd) {
@@ -1764,6 +1765,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
     @Subscriber(tag="GetGueset")
     private void GetGueset(String strID)
     {
+        //Log.e("GetGueset","GetGueset = "+strID);
         if(strID.equalsIgnoreCase("D2"))
         {
             nKeyN++;
@@ -1773,7 +1775,9 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
             }
             if(nKeyN==2)
             {
-                F_Photo();
+                Log.e("GetGueset","GetGueset = "+strID);
+                Log.e("GetGueset","GetGueset = "+strID);
+                //F_Photo();
             }
         }
         else

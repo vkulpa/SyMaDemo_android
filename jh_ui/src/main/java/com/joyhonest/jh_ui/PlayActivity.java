@@ -128,13 +128,13 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         @Override
         public void run() {
             {
+
                 JH_App.F_OpenStream();
                 if (main_fragment != null) {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
                             main_fragment.F_GetSYMA_X5UW();
-
                         }
                     });
                 }
@@ -168,6 +168,12 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         JH_App.F_InitMusic();
+
+        wifination.naCancelRTL();
+
+
+
+
 
 /*
         if(JH_App.F_GetWifiType()==wifination.IC_GPH264A)
@@ -286,7 +292,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     @Subscriber(tag = "OnGetGP_Status")
     private void OnGetGP_Status(int n) {
 
-        Log.e("GetData", "Key = " + n);
+        //Log.e("GetData", "Key = " + n);
     }
 
 
@@ -312,7 +318,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         mFragmentMan.executePendingTransactions();
 
 
-        F_OpenCamera(true);
+        //F_OpenCamera(true);
 
         bFirst = true;
 
@@ -340,11 +346,39 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     @Override
+    protected void onPause() {
+        super.onPause();
+//        if (bGoFly)
+//            return;
+//        if (main_fragment != null) {
+//            main_fragment.myControl.F_ReasetAll();
+//        }
+
+
+        /*
+        // sendCmdHandle.removeCallbacksAndMessages(null);
+        TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
+        int status = tm.getCallState();
+        if(status== TelephonyManager.CALL_STATE_IDLE) {
+            Exit2Spalsh("");
+        }
+        */
+
+        F_OpenCamera(false);
+
+
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+
+        F_OpenCamera(true);
+
         if (bGoFly)
             return;
         JH_App.checkDeviceHasNavigationBar(this);
+        wifination.naGetGP_RTSP_Status();
         if (bFirst) {
             bFirst = false;
             FragmentTransaction transactionA = mFragmentMan.beginTransaction();
@@ -353,6 +387,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             dispVideo_fragment.F_SetBackImg(R.mipmap.return_nor_1_jh);
             F_SetView(main_fragment);
         }
+
     }
 
     private void F_SetView(final Fragment fragment) {
@@ -580,25 +615,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-        if (bGoFly)
-            return;
-        if (main_fragment != null) {
-            main_fragment.myControl.F_ReasetAll();
-        }
-        /*
-        // sendCmdHandle.removeCallbacksAndMessages(null);
-        TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        int status = tm.getCallState();
-        if(status== TelephonyManager.CALL_STATE_IDLE) {
-            Exit2Spalsh("");
-        }
-        */
 
-
-    }
 
     @Override
     protected void onDestroy() {
@@ -615,102 +632,9 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             RssiHander.removeCallbacksAndMessages(null);
             thread1.quit();
         }
-        /*
-        FragmentTransaction transaction = mFragmentMan.beginTransaction();
-        transaction.remove(Select_Video_Photo_Fragment);
-        transaction.remove(main_fragment);
-        transaction.remove(Grid_fragment);
-        transaction.remove(dispPhoto_Fragment);
-        transaction.remove(dispVideo_fragment);
-        transaction.remove(path_fragment);
-        transaction.commit();
-        */
 
     }
 
-    /*
-        private  void F_OpenStream()
-        {
-
-            int ictype = JH_App.F_GetWifiType();
-
-            JH_App.nICType = ictype;
-            //JH_App.nICType = wifination.IC_GPH264A;
-            //JH_App.nICType = wifination.IC_GKA;
-            //JH_App.nICType = wifination.IC_GPH264;
-            //JH_App.nICType = wifination.IC_GPRTSP;
-            //JH_App.nICType = wifination.IC_SN;
-            //JH_App.nICType = wifination.IC_GPRTP;
-            wifination.naSetIcType(JH_App.nICType);
-            if(JH_App.bIsSyMa)
-                wifination.naSetCustomer("sima");
-            else
-                wifination.naSetCustomer(" ");
-            wifination.naSetVideoSurface(surfaceHolder.getSurface());
-            String str = "";
-            int re=-1;
-            if(JH_App.nICType == wifination.IC_GK)
-            {
-                str = "rtsp://192.168.234.1/12";
-                re = wifination.naInit(str);
-            }
-            if(JH_App.nICType == wifination.IC_GKA)
-            {
-                if(JH_App.b720P)
-                {
-                    str="1";
-                }
-                else
-                {
-                    str="2";
-                }
-                re = wifination.naInit(str);
-            }
-            if(JH_App.nICType == wifination.IC_SN)
-            {
-                wifination.naInit(str);
-            }
-
-            if(JH_App.nICType == wifination.IC_GP)
-            {
-                str = "http://192.168.25.1:8080/?action=stream";
-                wifination.naInit(str);
-            }
-
-            if(JH_App.nICType == wifination.IC_GPRTSP)
-            {
-                str = "rtsp://192.168.26.1:8080/?action=stream";
-                re = wifination.naInit(str);
-                if(re==0)
-                    wifination.naPlay();
-            }
-
-            if(JH_App.nICType == wifination.IC_GPH264)
-            {
-                str = "rtsp://192.168.27.1:8080/?action=stream";
-                wifination.naInit(str);
-            }
-
-            if(JH_App.nICType == wifination.IC_GPRTP)
-            {
-                str = "192.168.28.1:19200";
-                wifination.naInit(str);
-            }
-            if( JH_App.nICType == wifination.IC_GPRTPB)
-            {
-                str = "192.168.29.1:19200";
-                wifination.naInit(str);
-            }
-            if(JH_App.nICType == wifination.IC_GPH264A)
-            {
-                str = "192.168.30.1:8080";
-                wifination.naSetGPFps(20);
-                wifination.naInit(str);
-            }
-            //sendCmdHandle.removeCallbacksAndMessages(null);
-            //sendCmdHandle.post(sendCmdRunnable);
-        }
-    */
     @Override
     public void onClick(View view) {
 
@@ -749,7 +673,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             str = String.format("%02X", da);
             ss = ss + str + " ";
         }
-        Log.e("data", ss);
     }
 
     private Bitmap bmp = null;// Bitmap.createBitmap(640,360,Bitmap.Config.ARGB_8888);
@@ -1940,6 +1863,33 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         //      finish();
         //  }
     }
+
+
+    @Subscriber(tag="ReadDataFromFlash")
+    private void ReadDataFromFlash(byte[] data)
+    {
+        Log.e("Read","Redata len = "+data.length);
+        String str = String.format("%02X %02X %02X %02X %02X  ...   %02X %02X",data[0],data[1],data[2],data[3],data[4],data[510],data[511]);
+        Log.e("Read",str);
+
+    }
+    @Subscriber(tag="WriteData2FlashResult")
+    private void WriteData2FlashResult(int re)
+    {
+        Log.e("Read","Write result:"+re);
+    }
+
+
+    @Subscriber(tag="Key_Pressed")
+    private void Key_Pressed(int nKey)
+    {
+        Log.e("Key","key = "+nKey);
+    }
+
+
+
+
+
 
 
 }

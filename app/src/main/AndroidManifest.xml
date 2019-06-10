@@ -24,6 +24,7 @@
         
     <!-- landscape-->
     <!--android:label="@string/app_JHDemo_test" -->
+    <!-- android:largeHeap="true" -->
     <application
         android:name=".MyApp"
         android:allowBackup="true"

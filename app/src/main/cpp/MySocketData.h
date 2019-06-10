@@ -8,7 +8,7 @@
 
 #include <stdint.h>
 
-#define DATA_LEN  (1024*10)
+#define DATA_LEN  (1024*100)
 
 class MySocketData {
 

@@ -46,7 +46,9 @@ public class JH_ObjectDetectionAPIModel implements Classifier {
 
   // Config values.
   private String inputName;
-  private int inputSize;
+  //private int inputSize;
+  private int inputW;
+  private int inputH;
 
   // Pre-allocated buffers.
   private Vector<String> labels = new Vector<String>();
@@ -69,12 +71,14 @@ public class JH_ObjectDetectionAPIModel implements Classifier {
    * @param modelFilename The filepath of the model GraphDef protocol buffer.
    * @param labelFilename The filepath of label file for classes.
    */
+
+  //final int inputSize
   public static Classifier create(
           final AssetManager assetManager,
           final String modelFilename,
           final String labelFilename,
-          final int inputSize) throws IOException {
-    final JH_ObjectDetectionAPIModel d = new JH_ObjectDetectionAPIModel();
+          final int inputW,final  int inputH) throws IOException {
+    final JH_ObjectDetectionAPIModel dObject = new JH_ObjectDetectionAPIModel();
 
     InputStream labelsInput = null;
     String actualFilename = labelFilename.split("file:///android_asset/")[1];
@@ -92,50 +96,56 @@ public class JH_ObjectDetectionAPIModel implements Classifier {
     String line;
     while ((line = br.readLine()) != null) {
       LOGGER.w(line);
-      d.labels.add(line);
+      dObject.labels.add(line);
     }
     br.close();
 
 
-    d.inferenceInterface = new TensorFlowInferenceInterface(assetManager, modelFilename);
+    dObject.inferenceInterface = new TensorFlowInferenceInterface(assetManager, modelFilename);
 
-    final Graph g = d.inferenceInterface.graph();
+    final Graph graph = dObject.inferenceInterface.graph();
 
-    d.inputName = "image_tensor";
+    dObject.inputName = "image_tensor";
     // The inputName node has a shape of [N, H, W, C], where
     // N is the batch size
     // H = W are the height and width
     // C is the number of channels (3 for our purposes - RGB)
-    final Operation inputOp = g.operation(d.inputName);
+    final Operation inputOp = graph.operation(dObject.inputName);
     if (inputOp == null) {
-      throw new RuntimeException("Failed to find input Node '" + d.inputName + "'");
+      throw new RuntimeException("Failed to find input Node '" + dObject.inputName + "'");
     }
-    d.inputSize = inputSize;
+    //dObject.inputSize = inputSize;
+    dObject.inputW = inputW;
+    dObject.inputH = inputH;
     // The outputScoresName node has a shape of [N, NumLocations], where N
     // is the batch size.
-    final Operation outputOp1 = g.operation("detection_scores");
+    final Operation outputOp1 = graph.operation("detection_scores");
     if (outputOp1 == null) {
       throw new RuntimeException("Failed to find output Node 'detection_scores'");
     }
-    final Operation outputOp2 = g.operation("detection_boxes");
+    final Operation outputOp2 = graph.operation("detection_boxes");
     if (outputOp2 == null) {
       throw new RuntimeException("Failed to find output Node 'detection_boxes'");
     }
-    final Operation outputOp3 = g.operation("detection_classes");
+    final Operation outputOp3 = graph.operation("detection_classes");
     if (outputOp3 == null) {
       throw new RuntimeException("Failed to find output Node 'detection_classes'");
     }
 
     // Pre-allocate buffers.
-    d.outputNames = new String[] {"detection_boxes", "detection_scores",
+    dObject.outputNames = new String[] {"detection_boxes", "detection_scores",
             "detection_classes", "num_detections"};
-    d.intValues = new int[d.inputSize * d.inputSize];
-    d.byteValues = new byte[d.inputSize * d.inputSize * 3];
-    d.outputScores = new float[MAX_RESULTS];
-    d.outputLocations = new float[MAX_RESULTS * 4];
-    d.outputClasses = new float[MAX_RESULTS];
-    d.outputNumDetections = new float[1];
-    return d;
+//    dObject.intValues = new int[dObject.inputSize * dObject.inputSize];
+//    dObject.byteValues = new byte[dObject.inputSize * dObject.inputSize * 3];
+
+    dObject.intValues = new int[dObject.inputW * dObject.inputH];
+    dObject.byteValues = new byte[dObject.inputW * dObject.inputH * 3];
+
+    dObject.outputScores = new float[MAX_RESULTS];
+    dObject.outputLocations = new float[MAX_RESULTS * 4];
+    dObject.outputClasses = new float[MAX_RESULTS];
+    dObject.outputNumDetections = new float[1];
+    return dObject;
   }
 
   private JH_ObjectDetectionAPIModel() {}
@@ -146,6 +156,7 @@ public class JH_ObjectDetectionAPIModel implements Classifier {
 
     // Preprocess the image data to extract R, G and B bytes from int of form 0x00RRGGBB
     // on the provided parameters.
+
     bitmap.getPixels(intValues, 0, bitmap.getWidth(), 0, 0, bitmap.getWidth(), bitmap.getHeight());
 
     for (int i = 0; i < intValues.length; ++i) {
@@ -157,8 +168,9 @@ public class JH_ObjectDetectionAPIModel implements Classifier {
 
     // Copy the input data into TensorFlow.
 
-    inferenceInterface.feed(inputName, byteValues, 1, inputSize, inputSize, 3);
+//    inferenceInterface.feed(inputName, byteValues, 1, inputSize, inputSize, 3);
 
+    inferenceInterface.feed(inputName, byteValues, 1, inputW, inputH, 3);
 
     // Run the inference call.
 
@@ -178,6 +190,8 @@ public class JH_ObjectDetectionAPIModel implements Classifier {
 
 
     // Find the best detections.
+
+
     final PriorityQueue<Recognition> pq =
             new PriorityQueue<Recognition>(
                     1,
@@ -191,12 +205,19 @@ public class JH_ObjectDetectionAPIModel implements Classifier {
 
     // Scale them back to the input size.
     for (int i = 0; i < outputScores.length; ++i) {
+//      final RectF detection =
+//              new RectF(
+//                      outputLocations[4 * i + 1] * inputSize,
+//                      outputLocations[4 * i] * inputSize,
+//                      outputLocations[4 * i + 3] * inputSize,
+//                      outputLocations[4 * i + 2] * inputSize);
+
       final RectF detection =
               new RectF(
-                      outputLocations[4 * i + 1] * inputSize,
-                      outputLocations[4 * i] * inputSize,
-                      outputLocations[4 * i + 3] * inputSize,
-                      outputLocations[4 * i + 2] * inputSize);
+                      outputLocations[4 * i + 1] * inputW,
+                      outputLocations[4 * i] * inputH,
+                      outputLocations[4 * i + 3] * inputW,
+                      outputLocations[4 * i + 2] * inputH);
       pq.add(
               new Recognition("" + i, labels.get((int) outputClasses[i]), outputScores[i], detection));
     }

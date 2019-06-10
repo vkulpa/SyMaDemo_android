@@ -23,8 +23,10 @@ import android.widget.TextView;
 import com.joyhonest.jh_fly.Fly_PlayActivity;
 import com.joyhonest.jh_ui.JH_App;
 import com.joyhonest.jh_ui.PlayActivity;
+import com.joyhonest.wifination.wifination;
 
-
+import org.simple.eventbus.EventBus;
+import org.simple.eventbus.Subscriber;
 
 
 public class SplashActivity extends AppCompatActivity
@@ -133,8 +135,22 @@ public class SplashActivity extends AppCompatActivity
         });
 
 
+        EventBus.getDefault().register(this);
+
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                wifination.naGetGP_RTSP_Status();
+            }
+        },200);
+
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        EventBus.getDefault().unregister(this);
+    }
 
     public  String getAppVersionName(Context context) {
         String versionName = "";
@@ -153,6 +169,22 @@ public class SplashActivity extends AppCompatActivity
             Log.e("VersionInfo", "Exception", e);
         }
         return versionName+" build "+versioncode;
+    }
+
+
+
+
+    @Subscriber(tag = "GetWifiInfoData")
+    private void GetWifiInfoData(byte[] cmd) {
+        byte nType = cmd[40];
+        byte nPassEdit =cmd[45];
+        byte[] bb= new byte[8];
+        for(int i=0;i<8;i++)
+        {
+            bb[i]=cmd[46+i];
+        }
+        String s = new String(bb);
+        Log.e("INFO", "Info=" + nPassEdit+"pass = "+s);
     }
 
 

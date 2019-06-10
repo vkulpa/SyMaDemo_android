@@ -68,6 +68,12 @@ typedef unsigned char byte;
 #define   IC_GPRTPB      8
 #define   IC_GK_UDP      9
 
+#define   IC_GPRTPC      10
+#define   IC_RTLH264     11
+
+
+#define   IC_FILES      100
+
 
 #define  bit0_OnLine            1
 #define  bit1_LocalRecording    2
@@ -87,7 +93,7 @@ typedef unsigned char byte;
 //IC_GPRTP,    //192.168.28.X   GP
 //IC_GPRTPB,   //192.168.29.X   JH
 //IC_GPH264A,   //192.168.30.X
-
+//IC_GPRTPC     192.168.31.1
 
 //#define   D_H264file
 
@@ -164,7 +170,7 @@ public:
     int nDisplayHeight;
     bool nNeedRedraw;
 
-    AVFrame *pFrameYUV_D;
+
 
     bool F_RecreateEnv(void);
     void F_DispSurface();
@@ -199,9 +205,9 @@ public:
     static void *WriteThreadFunction(void *param);
     void ClearQueue();
 
-    AVFrame *pFrameRecord;
+
     AVCodecContext *m_codecCtx;
-    AVFrame *m_decodedFrame;
+
     void _DispDecordData(void);
 private:
 
@@ -228,11 +234,7 @@ private:
     int m_videoStream;
 
 
-    AVFrame *frame_a;
-    AVFrame *frame_b;
-    AVFrame *frame_c;
 
-    AVFrame *frame_SnapBuffer;
 
 
     struct SwsContext *img_convert_ctx;
@@ -263,7 +265,16 @@ private:
 
 public:
 
+
     AVFrame *pFrameYUV;
+    AVFrame *m_decodedFrame;
+    AVFrame *pFrameRecord;
+    AVFrame *pFrameYUV_D;
+    AVFrame *frame_a;
+    AVFrame *frame_b;
+    AVFrame *frame_c;
+    AVFrame *frame_SnapBuffer;
+
 
     bool  F_WriteAudio(jbyte * data,int nLen);
     int Releaseffmpeg(void);

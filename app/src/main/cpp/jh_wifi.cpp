@@ -4,6 +4,8 @@ extern "C" {
 #include "jh_wifi.h"
 #include "Defines.h"
 #include "libavcodec/jni.h"
+#include "speex/speex_preprocess.h"
+#include "speex/speex_echo.h"
 #ifdef __cplusplus
 }
 #endif
@@ -11,6 +13,8 @@ extern "C" {
 
 #include <jni.h>
 
+
+#include "RTL_DownLoad.h"
 
 #include "JPEG_BUFFER.h"
 #include "myRTP.h"
@@ -97,6 +101,12 @@ MyMediaCoder myMediaCoder;
 //#define  GKA_IP   "175.16.10.2"
 
 
+pthread_t rev_Udp_thread = -1;
+int rev_udp_socket = -1;
+bool  bNeedExitReadUDP=false;
+
+
+
 uint32_t nUdpInx = 0;
 
 std::string sServerIP = "192.168.254.1";
@@ -141,6 +151,9 @@ C_FFMpegPlayer m_FFMpegPlayer;
 
 MySocket_GKA mysocket;
 
+
+RTL_DownLoad    mRTL_DownLoad;
+
 //JNIEnv *g_env = 0;
 //jclass *g_class = 0;
 
@@ -148,12 +161,19 @@ MySocket_GKA mysocket;
 //jmethodID image_mid;
 pthread_mutex_t check_Lock;
 
+
+jmethodID onUdpRevData_mid;
+
+
 jmethodID status_mid;
 jmethodID key_mid;
 jmethodID gp_status_mid;
 jmethodID dir_mid;
 jmethodID Receive_mid;
 
+
+
+jmethodID  onReadRtlData_mid;
 
 jmethodID  G_StartAudio_mid;
 
@@ -195,6 +215,8 @@ jclass mediaCode_Class;
 bool bStoped = false;
 
 uint8_t cmd[20];
+
+
 
 //jobject surfaceA = NULL;
 
@@ -302,7 +324,7 @@ void DisConnect(bool bNoNormal);
 void F_ResetCheckT(int n);
 
 int F_ReadAck(int ms);
-
+int send_cmd_udp(uint8_t *msg, int nLen, const char *host, uint16_t port);
 ///Sonix
 
 extern int encord_colorformat;
@@ -357,6 +379,10 @@ pthread_t checkLinkid = -1;
 
 T_REQ_MSG req_msg;
 
+
+int    nPhotoW = 640;
+int    nPhotoH = 360;
+bool   bPhotoSet = false;  //  如果 为 true 表示拍照时用  nPhotoW   nPhotoH
 
 //uint8_t nRelinkTime = 0;
 
@@ -482,7 +508,7 @@ int send_cmd_udp(uint8_t *msg, int nLen, const char *host, uint16_t port) {
     server_addr.sin_addr.s_addr = inet_addr(host);
     server_addr.sin_port = htons(port);
     /* 创建socket */
-    int client_socket_fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+    int client_socket_fd = socket(AF_INET, SOCK_DGRAM | SOCK_CLOEXEC, IPPROTO_UDP);
     if (client_socket_fd < 0) {
         LOGE("Create Socket Failed:");
         return -1;
@@ -623,7 +649,7 @@ void *F_ReadUdp8001_Thread(void *dat) {
                     // LOGE("Connect success!\n");
                     if (FD_ISSET(Read_sock, &readset)) {
                         socklen_t td;
-                        n = recvfrom(Read_sock, buff, 100, 0, (struct sockaddr *) &clientAddr, &td);
+                        n = recvfrom(Read_sock, buff, 100, 0, (struct sockaddr *) &clientAddr, (socklen_t *)&td);
                     }
                     ret = 1;
 
@@ -892,6 +918,7 @@ void *checkRelinkerThrad(void *param) {
                         {
                             LOGE_B("Relinker!!!!  %d  dat = %d", (int) nRelinker_T, dat);
                             naInit_Re_B();
+                            nCheckT_pre=av_gettime() / 1000;
                         }
                     }
                 }
@@ -913,6 +940,7 @@ extern AVFrame *gl_Frame;
 jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env;
     gJavaVM = vm;
+
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
         DEBUG_PRINT("Failed to get the environment using GetEnv()");
         return -1;
@@ -942,6 +970,9 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         }
 
         //G_getIP = env->GetStaticMethodID(data_Clazz, "G_getIP", "()I");
+
+
+        onReadRtlData_mid = env->GetStaticMethodID(data_Clazz, "onReadRtlData", "([B)V");
 
         F_InitEncoder_mid = env->GetStaticMethodID(data_Clazz, "F_InitEncoder", "(IIII)I");
         offerEncoder_mid  = env->GetStaticMethodID(data_Clazz, "offerEncoder", "([BI)V");
@@ -995,6 +1026,13 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         if (key_mid == NULL) {
             DEBUG_PRINT("14");
         }
+
+
+        onUdpRevData_mid = env->GetStaticMethodID(data_Clazz, "onUdpRevData", "([B)V");
+        if (onUdpRevData_mid == NULL) {
+            DEBUG_PRINT("15");
+        }
+
 
         gp_status_mid = NULL;
 
@@ -1111,7 +1149,7 @@ int naInit_Re(void);
 
 int64_t nPreTimeA = 0;
 
-int F_GetIP(void);
+int32_t F_GetIP(void);
 
 
 
@@ -1120,46 +1158,120 @@ void F_AdjIcType(int type)
     if(type == F_GetIpfor4Bytes(192,168,234))
     {
         nICType = IC_GK;
+        sServerIP = "192.168.234.1";
     }
     else if(type == F_GetIpfor4Bytes(192,168,123))
     {
         nICType = IC_SN;
+        sServerIP = "192.168.123.1";
     }
     else if(type == F_GetIpfor4Bytes(175,16,10))
     {
         nICType = IC_GKA;
+        sServerIP = "175.16.10.2";
     }
     else if(type == F_GetIpfor4Bytes(192,168,25))
     {
         nICType = IC_GP;
+        sServerIP = "192.168.25.1";
     }
     else if(type == F_GetIpfor4Bytes(192,168,26))
     {
         nICType = IC_GPRTSP;
+        sServerIP = "192.168.26.1";
     }
     else if(type == F_GetIpfor4Bytes(192,168,27))
     {
         nICType = IC_GPH264;
+        sServerIP = "192.168.27.1";
     }
     else if(type == F_GetIpfor4Bytes(192,168,28))
     {
         nICType = IC_GPRTP;
+        sServerIP = "192.168.28.1";
     }
     else if(type == F_GetIpfor4Bytes(192,168,29))
     {
         nICType = IC_GPRTPB;
+        sServerIP = "192.168.29.1";
     }
     else if(type == F_GetIpfor4Bytes(192,168,30))
     {
         nICType = IC_GPH264A;
-    } else
+        sServerIP = "192.168.30.1";
+    }  else if(type == F_GetIpfor4Bytes(192,168,31))
+    {
+        nICType = IC_GPRTPC;
+        sServerIP = "192.168.31.1";
+    }
+    else if(type == F_GetIpfor4Bytes(192,168,32)) {
+        nICType = IC_RTLH264;
+        sServerIP = "192.168.32.1";
+    }
+    else
     {
         nICType =IC_NO;
+        sServerIP = "127.0.0.1";
     }
 
 }
 
+
+void F_SetnRTL_RTC_Time()
+{
+    int len=0;
+
+    char sHead[]="AMEBA:DISCOVER:";
+    uint8_t data[1000];
+    memset(data,0,1000);
+
+    len =(int)strlen(sHead);
+    memcpy(data,sHead,len);
+
+    int64_t time  = av_gettime()/1000;
+    sprintf((char *)(data+len), "%lld",(long long)time); //将100转为16进制表示的字符串。
+    len = (int)strlen((char *)data);
+    len+=1;
+    char *pData = (char *)data;
+    LOGE("%s",pData);
+    send_cmd_udp(data,len, sServerIP.c_str(), 49152);
+
+}
+
 int F_GetIPByJava(void);
+
+
+void F_GetServerIP(void)
+{
+    if(nICType != IC_NO)  //已经获取到了 IP信息
+        return;
+    int32_t ip = F_GetIP();
+    if(ip<=0) {
+        ip = (int32_t) F_GetIPByJava();
+        F_AdjIcType(ip & 0x00FFFFFF);
+    }
+
+
+
+
+//    ip = ip&0x00FFFFFF;
+//    F_AdjIcType(ip);
+//    if(ip == F_GetIpfor4Bytes(175,16,10))
+//    {
+//        sServerIP = "175.16.10.2";
+//    }
+//    else
+//    {
+//        ip |=0x01000000;
+//        string p1=std::to_string(ip&0xFF);
+//        string p2=std::to_string(((ip>>8)&0xFF));
+//        string p3=std::to_string(((ip>>16)&0xFF));
+//        string p4=std::to_string(((ip>>24)&0xFF));
+//        sServerIP =p1+"."+p2+"."+p3+"."+p4;
+//    }
+
+}
+
 
 int _naInit_(const char *pFileName)
 {
@@ -1189,11 +1301,10 @@ int _naInit_(const char *pFileName)
         memcpy(sPlayPath, pFileName, nPathLen);
     }
 
-    sServerIP = sPlayPath;
-    std::string src = sServerIP;
+    std::string sServerIP1 = sPlayPath;
+    std::string src = sServerIP1;
     std::string dst;
-    transform(sServerIP.begin(), sServerIP.end(), sServerIP.begin(), ::tolower);
-    //sServerIP = dst;
+    transform(sServerIP1.begin(), sServerIP1.end(), sServerIP1.begin(), ::tolower);
 
 
 
@@ -1208,13 +1319,22 @@ int _naInit_(const char *pFileName)
 //IC_GPH264A,   //192.168.30.X
 //IC_GPRTPB,   //192.168.29.X
 
-    int ip = F_GetIPByJava();
-    if(ip==0) {
-        F_GetIP();
-    } else
-    {
-        F_AdjIcType(ip&0x00FFFFFF);
+//    int ip = F_GetIPByJava();
+//    if(ip==0) {
+//        F_GetIP();
+//    } else
+//    {
+//        F_AdjIcType(ip&0x00FFFFFF);
+//
+//    }
 
+    nICType = IC_NO;
+
+    F_GetServerIP();
+
+    if(sPlayPath[0]=='/')
+    {
+        nICType = IC_FILES;
     }
 
     if(nICType == IC_NO) {
@@ -1222,6 +1342,8 @@ int _naInit_(const char *pFileName)
         return -100;
     }
 
+
+/*
     if (nICType == IC_GK) {
         sServerIP = "192.168.234.1";
     } else if (nICType == IC_GP) {
@@ -1240,41 +1362,46 @@ int _naInit_(const char *pFileName)
         sServerIP = "192.168.28.1";
     } else if (nICType == IC_GPRTPB) {
         sServerIP = "192.168.29.1";
-    } else if (nICType == IC_GPH264A) {
+    } else if (nICType == IC_GPRTPC) {
+        sServerIP = "192.168.31.1";
+    }else if (nICType == IC_GPH264A) {
         sServerIP = "192.168.30.1";
-    } else if (nICType == IC_GK_UDP) {
+    }
+    else if (nICType == IC_RTLH264) {
+        sServerIP = "192.168.32.1";
+    }
+    else if (nICType == IC_GK_UDP) {
         sServerIP = "192.168.16.1";
     } else {
         sServerIP = "192.168.240.1";
     }
+*/
 
-    idx = sServerIP.find("rtsp://192.168.26.1");
-    if (idx != std::string::npos)
-    {
-        nICType = IC_GPRTSP;
-        sServerIP = "192.168.26.1";
-    }
+    if(sServerIP=="192.168.25.1" || sServerIP=="192.168.26.1") {
+        idx = sServerIP1.find("rtsp://192.168.26.1");
+        if (idx != std::string::npos) {
+            nICType = IC_GPRTSP;
+            sServerIP = "192.168.26.1";
+        }
 
-    idx = sServerIP.find("rtsp://192.168.25.1");
-    if (idx != std::string::npos)
-    {
-        nICType = IC_GPRTSP;
-        sServerIP = "192.168.25.1";
-    }
+        idx = sServerIP1.find("rtsp://192.168.25.1");
+        if (idx != std::string::npos) {
+            nICType = IC_GPRTSP;
+            sServerIP = "192.168.25.1";
+        }
 
-    idx = sServerIP.find("http://192.168.26.1");
-    if (idx != std::string::npos)
-    {
-        nICType = IC_GP;
-        sServerIP = "192.168.26.1";
-    }
-    idx = sServerIP.find("http://192.168.25.1");
-    if (idx != std::string::npos)
-    {
-        nICType = IC_GP;
-        sServerIP = "192.168.25.1";
-    }
+        idx = sServerIP1.find("http://192.168.26.1");
+        if (idx != std::string::npos) {
+            nICType = IC_GP;
+            sServerIP = "192.168.26.1";
+        }
 
+        idx = sServerIP1.find("http://192.168.25.1");
+        if (idx != std::string::npos) {
+            nICType = IC_GP;
+            sServerIP = "192.168.25.1";
+        }
+    }
 
     m_FFMpegPlayer.nIC_Type = (uint8_t)nICType;
 
@@ -1332,7 +1459,7 @@ int Connect_GPH264(void);
 bool bInitMediaA = false;
 
 
-
+void F_SentRTPStop();
 
 int naInit_Re_B(void) {
     int ret = 0;
@@ -1359,7 +1486,81 @@ int naInit_Re_B(void) {
 */
 
     F_Read_Status_Service();
-    if (nICType == IC_GPH264A) {
+    if(nICType == IC_GPRTPC)
+    {
+        bStoped = true;
+        bInit = true;
+        if (GP_tcp_VideoSocket.bConnected) {
+            return -1;
+        }
+
+        nCheckT_pre = av_gettime() / 1000;
+        F_SetRelinkerT(1000 * 5);
+        m_FFMpegPlayer.nfps = 20;
+        m_FFMpegPlayer.nDisplayHeight = 480;  //
+
+        F_SentRTPStop();
+        usleep(1000 * 30);
+        F_SentRTPStop();
+        usleep(1000 * 30);
+        F_SentRTPStop();
+        usleep(1000 * 20);
+
+        //F_Rec_RTP_Data_Service();
+
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0x10;
+        msg[6] = 0x00;
+        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+        usleep(1000 * 25);
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0x20;
+        msg[6] = 0x00;
+        msg[7] = 0x00;
+        msg[8] = 0x00;
+        msg[9] = 0x00;
+        msg[10] = 0x00;
+
+        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
+        usleep(1000 * 10);
+
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0xD0;
+        msg[6] = 0x01;
+        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+        usleep(1000 * 15);
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0xD0;
+        msg[6] = 0x01;
+        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+        usleep(1000 * 10);
+
+        if (Connect_GPH264() < 0) {
+            ret = -1;
+        }
+        else
+            bInit = true;
+        return 0;
+
+
+    }
+    if (nICType == IC_GPH264A || nICType==IC_RTLH264) {
 
         bStoped = true;
         bInit = true;
@@ -1493,6 +1694,14 @@ int naInit_Re_B(void) {
         {
 
             //m_FFMpegPlayer.InitMedia("");
+
+            F_SentRTPStop();
+            usleep(1000 * 30);
+            F_SentRTPStop();
+            usleep(1000 * 30);
+            F_SentRTPStop();
+            usleep(1000 * 20);
+
             F_Rec_RTP_Data_Service();
 
             msg[0] = 'J';
@@ -1634,6 +1843,7 @@ void F_GP_InitA(void)
     usleep(1000*5);
 }
 
+
 int naInit_Re(void) {
     //bInitMedia = false;
     bInitMediaA = false;
@@ -1657,14 +1867,15 @@ int naInit_Re(void) {
     bInit = false;
     nCheckT_pre = av_gettime() / 1000;
     F_SetRelinkerT(4000);
-    pthread_mutex_init(&m_mutex, NULL);
+    pthread_mutex_init(&m_mutex, nullptr);
     bInit = true;
 
 
-    F_Read_Status_Service();
+    if(nICType != IC_FILES)
+        F_Read_Status_Service();
 
     int i32Ret = -1;
-    if (nICType == IC_GPH264A) {
+    if (nICType == IC_GPH264A || nICType == IC_RTLH264) {
 
         int ret = 0;
 
@@ -1776,6 +1987,8 @@ int naInit_Re(void) {
             F_SendStatus2Jave();
         //    F_RecRP_RTSP_Status_Service(); //SN
 
+
+
             msg[0] = 'J';
             msg[1] = 'H';
             msg[2] = 'C';
@@ -1806,6 +2019,97 @@ int naInit_Re(void) {
         }
         return 0;
     }
+    if(nICType == IC_GPRTPC)
+    {
+        nCheckT_pre = av_gettime() / 1000;
+        F_SetRelinkerT(1000 * 5);
+        m_FFMpegPlayer.nfps = 20;
+        m_FFMpegPlayer.nDisplayHeight = 360;  //
+        m_FFMpegPlayer.nDisplayWidth = 640;
+
+        //先发stop
+
+        F_SentRTPStop();
+        usleep(1000 * 30);
+        F_SentRTPStop();
+        usleep(1000 * 30);
+        F_SentRTPStop();
+        usleep(1000 * 20);
+
+        m_FFMpegPlayer.InitMedia("");
+
+        //F_Rec_RTP_Data_Service();
+
+
+
+
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0x20;
+        msg[6] = 0x00;
+        msg[7] = 0x00;
+        msg[8] = 0x00;
+        msg[9] = 0x00;
+        msg[10] = 0x00;
+        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
+        usleep(1000 * 50);
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0x20;
+        msg[6] = 0x00;
+        msg[7] = 0x00;
+        msg[8] = 0x00;
+        msg[9] = 0x00;
+        msg[10] = 0x00;
+        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
+        usleep(1000 * 40);
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0x10;
+        msg[6] = 0x00;
+        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+        usleep(1000 * 10);
+
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0xD0;
+        msg[6] = 0x01;
+        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+        usleep(1000 * 15);
+        msg[0] = 'J';
+        msg[1] = 'H';
+        msg[2] = 'C';
+        msg[3] = 'M';
+        msg[4] = 'D';
+        msg[5] = 0xD0;
+        msg[6] = 0x01;
+        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+        usleep(1000 * 10);
+
+        if (Connect_GPH264() < 0)
+        {
+
+        } else
+        {
+
+        }
+
+        return 0;
+
+
+    }
 
     if (nICType == IC_GPRTSP || nICType == IC_GPRTP || nICType == IC_GPRTPB) {
         nCheckT_pre = av_gettime() / 1000;
@@ -1817,8 +2121,20 @@ int naInit_Re(void) {
         if (nICType == IC_GPRTP || nICType == IC_GPRTPB)       //自定义RTP    IC_GPRTP 凌通的自定义RTP    IC_GPRTPB 乐信的自定义RTP
         {
 
+            //先发stop
+
+            F_SentRTPStop();
+            usleep(1000 * 30);
+            F_SentRTPStop();
+            usleep(1000 * 30);
+            F_SentRTPStop();
+            usleep(1000 * 20);
+
             m_FFMpegPlayer.InitMedia("");
             F_Rec_RTP_Data_Service();
+
+
+
 
 
 
@@ -1969,6 +2285,7 @@ Java_com_joyhonest_wifination_wifination_naInit(JNIEnv *env, jclass type, jstrin
 
 
     env->ReleaseStringUTFChars(pFileName_, pFileName);
+
     return i32Ret;
 }
 
@@ -2057,10 +2374,10 @@ int naStop_B(void) {
         GPRTP_rev_thread = -1;
     }
 
-    if (nICType == IC_GPH264A) {
+    if (nICType == IC_GPH264A || nICType==IC_RTLH264) {
         bInit = false;
-        bNeedExit = true;
-        usleep(1000 * 50);
+        //bNeedExit = true;
+        //usleep(1000 * 50);
         DisConnect(true);
         //ret  = m_FFMpegPlayer.Stop();
         nSDStatus &= bit0_OnLine ^ 0xFF;
@@ -2084,7 +2401,17 @@ int naStop_B(void) {
         m_MySonix.closeCommandSocket();
         m_MySonix.closeVideoSocket();
         return 0;
-    } else if (nICType == IC_GPRTP || nICType == IC_GPRTPB) {
+    }else if(nICType == IC_GPRTPC)
+    {
+        bInit = false;
+        //bNeedExit = true;
+        //usleep(1000 * 50);
+        DisConnect(true);
+        nSDStatus &= bit0_OnLine ^ 0xFF;
+        F_SendStatus2Jave();
+    }
+
+    else if (nICType == IC_GPRTP || nICType == IC_GPRTPB) {
         F_SendStatus2Jave();
         return 0;
     } else if (nICType == IC_GP) {
@@ -2099,11 +2426,12 @@ int naStop_B(void) {
 }
 
 
-void F_SentRTPStop();
+
 
 int naStop(void)
 {
     int ret = 0;
+    mRTL_DownLoad.disConnected();
     F_StartAdjRecTime(false);
     bInit = false;
     bNeedExit = true;
@@ -2128,7 +2456,7 @@ int naStop(void)
     }
 
 
-    if (nICType == IC_GPH264A) {
+    if (nICType == IC_GPH264A || nICType==IC_RTLH264) {
         F_SendStatus2Jave();
         DisConnect(true);
         ret = m_FFMpegPlayer.Stop();
@@ -2157,6 +2485,15 @@ int naStop(void)
         m_MySonix.closeVideoSocket();
         m_FFMpegPlayer.Stop();
         return 0;
+    }
+    if(nICType == IC_GPRTPC)
+    {
+        DisConnect(true);
+        F_SentRTPStop();
+        F_SendStatus2Jave();
+        m_FFMpegPlayer.Stop();
+        return 0;
+
     }
     if (nICType == IC_GPRTP || nICType == IC_GPRTPB) {
         F_SentRTPStop();
@@ -2203,8 +2540,9 @@ int naStop(void)
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naStop(JNIEnv *env, jclass type) {
     bNeedStop = true;
+    bNeedExitReadUDP = true;
     naStop();
-
+    nICType = IC_NO;
     return 0;
 }
 
@@ -2262,24 +2600,24 @@ JNIEnv *getJNIEnv(int *needsDetach) {
 void F_SentGp_Status2Jave(int nStatus) {
     int needsDetach = 0;
     JNIEnv *evn = getJNIEnv(&needsDetach);
-    if (evn == NULL) {
+    if (evn == nullptr) {
         return;
     }
-    if (gp_status_mid != NULL) {
+    if (gp_status_mid != nullptr) {
         evn->CallStaticVoidMethod(objclass, gp_status_mid, nStatus);
     }
     if (needsDetach)
         gJavaVM->DetachCurrentThread();
-    return;
+
 }
 
 int F_SendKey2Jave(int nKey) {
     int needsDetach = 0;
     JNIEnv *evn = getJNIEnv(&needsDetach);
-    if (evn == NULL) {
+    if (evn == nullptr) {
         return -1;
     }
-    if (key_mid != NULL) {
+    if (key_mid != nullptr) {
         evn->CallStaticVoidMethod(objclass, key_mid, nKey);
     }
     if (needsDetach)
@@ -2315,7 +2653,7 @@ void F_OnSave2ToGallery_mid(int n) {
 
 //////////测试信息
 
-int F_GetIP(void)
+int32_t F_GetIP(void)
 {
 
     nICType = IC_NO;
@@ -2339,7 +2677,7 @@ int F_GetIP(void)
     }
     byte *ffp = new byte[ifc.ifc_len];
     ifr = (struct ifreq *)ffp;
-    if(ifr == NULL)
+    if(ifr == nullptr)
     {
         return -3;
     }
@@ -2352,7 +2690,8 @@ int F_GetIP(void)
     numif = ifc.ifc_len / sizeof(struct ifreq);
 
     int ss = 0;
-    string sname="";
+    //string sname="";
+    bool bFind = false;
     for (i = 0; i < numif; i++)
     {
         struct ifreq *r = &ifr[i];
@@ -2362,9 +2701,9 @@ int F_GetIP(void)
         F_AdjIcType(ip&0x00FFFFFF);
         if(nICType != IC_NO)
         {
+            bFind = true;
             break;
         }
-
 
         /*
         sname = r->ifr_name;
@@ -2387,7 +2726,10 @@ int F_GetIP(void)
 
     }
     delete []ffp;
-    return ip;
+    if(bFind)
+        return ip;
+    else
+        return 0;
 
     /*
 
@@ -2589,6 +2931,27 @@ void offerEncoder(uint8_t *data,int nLen)
     }
 }
 
+
+void F_onReadRtlData(uint8_t *data,int nLen)
+{
+    if(onReadRtlData_mid!=NULL)
+    {
+        int needsDetach = 0;
+        JNIEnv *evn = getJNIEnv(&needsDetach);
+        if (evn == NULL) {
+            return ;
+        }
+        jbyteArray jbarray = evn->NewByteArray(nLen);
+        evn->SetByteArrayRegion(jbarray, 0, nLen,(jbyte*) data);
+        evn->CallStaticVoidMethod(objclass, onReadRtlData_mid, jbarray);
+        evn->DeleteLocalRef(jbarray);
+
+        if (needsDetach)
+            gJavaVM->DetachCurrentThread();
+        return ;
+    }
+}
+
 void F_InitEncoder(int w,int h,int bitfrate,int fps )
 {
     if(F_InitEncoder_mid!=NULL)
@@ -2687,29 +3050,37 @@ int PlatformDisplay() {
 
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jbyteArray cmd_,
-                                                   jint n) {
+                                                   jint nLen1) {
 
-    jbyte *cmd_b = env->GetByteArrayElements(cmd_, NULL);
-    uint8_t cmd[80];
-    uint8_t msg[20];
+    jbyte *cmd_b = env->GetByteArrayElements(cmd_, nullptr);
+
+    int nLen = nLen1;
+    //int len_array = env->GetArrayLength(cmd_);
+    //if(nLen>len_array)
+    //    nLen = len_array;
+    //int n = n1;
+
+    uint16_t ncheck = 0;
+    uint8_t cmd[200];
+    uint8_t msg[200];
 #if 0
     F_OnGetWifiData((byte *)cmd_b,n);
 
 #else
     if (nICType == IC_GK) {
 
-        if (n > 40 - 12) {
+        if (nLen > 40 - 12) {
             env->ReleaseByteArrayElements(cmd_, cmd_b, 0);
             return -1;
         }
         int i = 0;
         int x = 0;
-        cmd[i++] = 0x5b;
+        cmd[i++] = 0x5b;     //0
         cmd[i++] = 0x52;
         cmd[i++] = 0x74;
         cmd[i++] = 0x3e;
 
-        cmd[i++] = 12 + n;
+        cmd[i++] = (uint8_t)(12 + nLen);
         cmd[i++] = 0;
 
         cmd[i++] = 1;
@@ -2717,10 +3088,10 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
 
         cmd[i++] = 0xe0;
         cmd[i++] = 0x00;
-        cmd[i++] = 0;  //10
+        cmd[i++] = 0;          //10
         cmd[i++] = 0;          //11
-        for (x = 0; x < n; x++) {
-            cmd[i++] = cmd_b[x];
+        for (x = 0; x < nLen; x++) {
+            cmd[i++] =(uint8_t) cmd_b[x];
         }
         uint16_t checksum = 0;
         for (x = 0; x < i; x++) {
@@ -2735,21 +3106,22 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
     } else if (nICType == IC_GP) {
         cmd[0] = 0xA5;
         cmd[1] = 0x5A;
-        cmd[2] = n + 2;
+        cmd[2] = (uint8_t)(nLen + 2);
         int x = 0;
-        for (x = 0; x < n; x++) {
+        for (x = 0; x < nLen; x++) {
             if (x < 40)
-                cmd[x + 3] = cmd_b[x];
+                cmd[x + 3] =(uint8_t) cmd_b[x];
         }
-        uint16_t ncheck = 0;
-        for (int i = 0; i < n + 3; i++) {
+        ncheck = 0;
+        for (int i = 0; i < nLen + 3; i++) {
             ncheck += cmd[i];
         }
-        cmd[n + 3] = (uint8_t) ncheck;
-        cmd[n + 4] = (uint8_t) (ncheck >> 8);
 
-        send_cmd_udp(cmd, n + 5, sServerIP.c_str(), 25000);
-    } else if (nICType == IC_GPRTSP || nICType == IC_GPRTP || nICType == IC_GPRTPB || nICType == IC_GPH264A) {
+        cmd[nLen + 3] = (uint8_t) ncheck;
+        cmd[nLen + 4] = (uint8_t) (ncheck >> 8);
+
+        send_cmd_udp(cmd, nLen + 5, sServerIP.c_str(), 25000);
+    } else if (nICType == IC_GPRTSP || nICType == IC_GPRTP || nICType == IC_GPRTPB || nICType == IC_GPH264A || nICType==IC_RTLH264 || nICType == IC_GPRTPC || nICType == IC_GPH264) {
 
         if (cmd_b[0] == 'J' &&
             cmd_b[1] == 'H' &&
@@ -2771,65 +3143,68 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
                 send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
             }
         } else {
-            cmd[0] = 0xA5;
-            cmd[1] = 0x5A;
-            cmd[2] = n + 2;
-            int x = 0;
-            for (x = 0; x < n; x++) {
-                if (x < 40)
-                    cmd[x + 3] = cmd_b[x];
-            }
-            uint16_t ncheck = 0;
-            for (int i = 0; i < n + 3; i++) {
-                ncheck += cmd[i];
-            }
-            cmd[n + 3] = (uint8_t) ncheck;
-            cmd[n + 4] = (uint8_t) (ncheck >> 8);
-
-            send_cmd_udp(cmd, n + 5, sServerIP.c_str(), 25000);
-        }
-    } else if (nICType == IC_GPH264) {
-        if (cmd_b[0] == 'J' &&
-            cmd_b[1] == 'H' &&
-            cmd_b[2] == 'C' &&
-            cmd_b[3] == 'M' &&
-            cmd_b[4] == 'D') {
-            if (cmd_b[5] == 0x20) {
-                msg[0] = 'J';
-                msg[1] = 'H';
-                msg[2] = 'C';
-                msg[3] = 'M';
-                msg[4] = 'D';
-                msg[5] = 0x20;
-                msg[6] = 0x00;
-                msg[7] = 0x00;
-                msg[8] = 0x00;
-                msg[9] = 0x00;
-                msg[10] = 0x00;
-
-                send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
-            }
-
-        } else {
 
             cmd[0] = 0xA5;
             cmd[1] = 0x5A;
-            cmd[2] = n + 2;
+            cmd[2] = (uint8_t)(nLen + 2);
             int x = 0;
-            for (x = 0; x < n; x++) {
+            for (x = 0; x < nLen; x++) {
                 if (x < 40)
-                    cmd[x + 3] = cmd_b[x];
+                    cmd[x + 3] = (uint8_t)cmd_b[x];
             }
-            uint16_t ncheck = 0;
-            for (int i = 0; i < n + 3; i++) {
+            ncheck = 0;
+            for (int i = 0; i < nLen+ 3; i++) {
                 ncheck += cmd[i];
             }
-            cmd[n + 3] = (uint8_t) ncheck;
-            cmd[n + 4] = (uint8_t) (ncheck >> 8);
+            cmd[nLen + 3] = (uint8_t) ncheck;
+            cmd[nLen + 4] = (uint8_t) (ncheck >> 8);
 
-            send_cmd_udp(cmd, n + 5, sServerIP.c_str(), 25000);
+            send_cmd_udp(cmd, nLen + 5, sServerIP.c_str(), 25000);
         }
-    } else if (nICType == IC_SN) {
+    }
+//    else if (nICType == IC_GPH264) {
+//        if (cmd_b[0] == 'J' &&
+//            cmd_b[1] == 'H' &&
+//            cmd_b[2] == 'C' &&
+//            cmd_b[3] == 'M' &&
+//            cmd_b[4] == 'D') {
+//            if (cmd_b[5] == 0x20) {
+//                msg[0] = 'J';
+//                msg[1] = 'H';
+//                msg[2] = 'C';
+//                msg[3] = 'M';
+//                msg[4] = 'D';
+//                msg[5] = 0x20;
+//                msg[6] = 0x00;
+//                msg[7] = 0x00;
+//                msg[8] = 0x00;
+//                msg[9] = 0x00;
+//                msg[10] = 0x00;
+//
+//                send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
+//            }
+//
+//        } else {
+//
+//            cmd[0] = 0xA5;
+//            cmd[1] = 0x5A;
+//            cmd[2] = n + 2;
+//            int x = 0;
+//            for (x = 0; x < n; x++) {
+//                if (x < 40)
+//                    cmd[x + 3] = cmd_b[x];
+//            }
+//            ncheck = 0;
+//            for (int i = 0; i < n + 3; i++) {
+//                ncheck += cmd[i];
+//            }
+//            cmd[n + 3] = (uint8_t) ncheck;
+//            cmd[n + 4] = (uint8_t) (ncheck >> 8);
+//
+//            send_cmd_udp(cmd, n + 5, sServerIP.c_str(), 25000);
+//        }
+//    }
+    else if (nICType == IC_SN) {
 
         if (cmd_b[0] == 'J' &&
             cmd_b[1] == 'H' &&
@@ -2851,19 +3226,19 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
 
             cmd[0] = 0xA5;
             cmd[1] = 0x5A;
-            cmd[2] = n + 2;
+            cmd[2] = nLen + 2;
             int x = 0;
-            for (x = 0; x < n; x++) {
+            for (x = 0; x < nLen; x++) {
                 if (x < 40)
                     cmd[x + 3] = cmd_b[x];
             }
-            uint16_t ncheck = 0;
-            for (int i = 0; i < n + 3; i++) {
+            ncheck = 0;
+            for (int i = 0; i < nLen + 3; i++) {
                 ncheck += cmd[i];
             }
-            cmd[n + 3] = (uint8_t) ncheck;
-            cmd[n + 4] = (uint8_t) (ncheck >> 8);
-            send_cmd_udp_fd(m_MySonix.uartCommandfd, cmd, n + 5, sServerIP.c_str(), 30864);
+            cmd[nLen + 3] = (uint8_t) ncheck;
+            cmd[nLen + 4] = (uint8_t) (ncheck >> 8);
+            send_cmd_udp_fd(m_MySonix.uartCommandfd, cmd, nLen + 5, sServerIP.c_str(), 30864);
 
         }
     } else if (nICType == IC_GKA) {
@@ -2875,8 +3250,8 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
             udp.seq = nUdpInx;
             udp.sid = session_id;
             udp.flag = 0x12345678;
-            udp.size = n;
-            memcpy(udp.ptz_cmd, cmd_b, n);
+            udp.size = nLen;
+            memcpy(udp.ptz_cmd, cmd_b, nLen);
             send_cmd_udp((uint8_t *) (&udp), sizeof(T_NET_UTP_PTZ_CONTROL), sServerIP.c_str(), 0x7105);
         } else {
             if (bGKA_ConnOK)
@@ -2886,8 +3261,8 @@ Java_com_joyhonest_wifination_wifination_naSentCmd(JNIEnv *env, jclass type, jby
                 Cmd.session_id = session_id;
                 T_NET_PTZ_CONTROL ptz;
                 bzero(&ptz, sizeof(T_NET_PTZ_CONTROL));
-                ptz.size = n;
-                memcpy(ptz.ptz_cmd, cmd_b, n);
+                ptz.size = nLen;
+                memcpy(ptz.ptz_cmd, cmd_b, nLen);
                 MySocketData data;
                 data.AppendData((uint8_t *) &Cmd, sizeof(T_NET_CMD_MSG));
                 data.AppendData((uint8_t *) &ptz, sizeof(T_NET_PTZ_CONTROL));
@@ -2919,43 +3294,52 @@ Java_com_joyhonest_wifination_wifination_naStartCheckSDStatus(JNIEnv *env, jclas
 
 }
 
-JNIEXPORT void JNICALL
-Java_com_joyhonest_wifination_wifination_naSetIcType(JNIEnv *env, jclass type, jint nICTypeA) {
 
-    nICType = nICTypeA;
-    m_FFMpegPlayer.nIC_Type = nICTypeA;
-    if (nICType == IC_SN) {
-        m_FFMpegPlayer.nDisplayWidth = 640;
-        m_FFMpegPlayer.nDisplayHeight = 360;
-    } else {
-        m_FFMpegPlayer.nDisplayWidth = 640;
-        m_FFMpegPlayer.nDisplayHeight = 360;
-    }
-
-    if (nICType == IC_GK) {
-        sServerIP = "192.168.234.1";
-    } else if (nICType == IC_GP) {
-            sServerIP = "192.168.25.1";
-    } else if (nICType == IC_SN) {
-        sServerIP = "192.168.123.1";
-    } else if (nICType == IC_GKA) {
-        sServerIP = "175.16.10.2";
-    } else if (nICType == IC_GPRTSP) {
-        sServerIP = "192.168.26.1";
-    } else if (nICType == IC_GPH264) {
-        sServerIP = "192.168.27.1";
-    } else if (nICType == IC_GPRTP) {
-        sServerIP = "192.168.28.1";
-    } else if (nICType == IC_GPRTPB) {
-        sServerIP = "192.168.29.1";
-    } else if (nICType == IC_GPH264A) {
-        sServerIP = "192.168.30.1";
-    } else if (nICType == IC_GK_UDP) {
-        sServerIP = "192.168.16.1";
-    } else {
-        sServerIP = "192.168.240.1";
-    }
-}
+//JNIEXPORT void JNICALL
+//Java_com_joyhonest_wifination_wifination_naSetIcType(JNIEnv *env, jclass type, jint nICTypeA) {
+//
+//    nICType = nICTypeA;
+//    m_FFMpegPlayer.nIC_Type = nICTypeA;
+//    if (nICType == IC_SN) {
+//        m_FFMpegPlayer.nDisplayWidth = 640;
+//        m_FFMpegPlayer.nDisplayHeight = 360;
+//    } else {
+//        m_FFMpegPlayer.nDisplayWidth = 640;
+//        m_FFMpegPlayer.nDisplayHeight = 360;
+//    }
+//
+//    if (nICType == IC_GK) {
+//        sServerIP = "192.168.234.1";
+//    } else if (nICType == IC_GP) {
+//            sServerIP = "192.168.25.1";
+//    } else if (nICType == IC_SN) {
+//        sServerIP = "192.168.123.1";
+//    } else if (nICType == IC_GKA) {
+//        sServerIP = "175.16.10.2";
+//    } else if (nICType == IC_GPRTSP) {
+//        sServerIP = "192.168.26.1";
+//    } else if (nICType == IC_GPH264) {
+//        sServerIP = "192.168.27.1";
+//    } else if (nICType == IC_GPRTP) {
+//        sServerIP = "192.168.28.1";
+//    } else if (nICType == IC_GPRTPB) {
+//        sServerIP = "192.168.29.1";
+//    } else if (nICType == IC_GPRTPC) {
+//        sServerIP = "192.168.31.1";
+//    } else if (nICType == IC_GPH264A) {
+//        sServerIP = "192.168.30.1";
+//    }
+//    else if(nICType==IC_RTLH264)
+//    {
+//        sServerIP = "192.168.32.1";
+//    }
+//
+//    else if (nICType == IC_GK_UDP) {
+//        sServerIP = "192.168.16.1";
+//    } else {
+//        sServerIP = "192.168.240.1";
+//    }
+//}
 
 int F_SendHttpComd(string spath) {
     LOGE("Video Cmd _Start_1");
@@ -3086,7 +3470,7 @@ int F_ReadUdpPort25000();
 uint8_t F_rand() {
     //int i= time(0);
     struct timeval tv;
-    gettimeofday(&tv, NULL);
+    gettimeofday(&tv, nullptr);
     long i = tv.tv_sec * 1000000 + tv.tv_usec;
     return (uint8_t) i;
 }
@@ -3217,7 +3601,7 @@ int F_ReadUdpPort25000() {
             FD_SET(Read_25000sock, &readset);
             n = -1;
             {
-                ret = select(Read_25000sock + 1, &readset, NULL, NULL, &tv_out);
+                ret = select(Read_25000sock + 1, &readset, nullptr, nullptr, &tv_out);
                 if (ret == 0) {
                     getsockopt(Read_25000sock, SOL_SOCKET, SO_ERROR, &error, (socklen_t *) &len);
                     if (error == 0)          // 超时，可以做更进一步的处理，如重试等
@@ -3237,7 +3621,7 @@ int F_ReadUdpPort25000() {
                     if (FD_ISSET(Read_25000sock, &readset)) {
                         socklen_t tdlen;
                         n = recvfrom(Read_25000sock, buff25000, 100, 0,
-                                     (struct sockaddr *) &clientAddr, &tdlen);
+                                     (struct sockaddr *) &clientAddr, (socklen_t *)&tdlen);
                     }
                     ret = 1;
                 }
@@ -3291,12 +3675,12 @@ void DisConnect(bool bNoNormal) {
         GK_tcp_SearchSocket.DisConnect();
     }
     if (heartid != -1) {
-        void *ret = NULL;
+        void *ret = nullptr;
         pthread_join(heartid, &ret);
         heartid = -1;
     }
     if (checkLinkid != -1) {
-        void *ret1 = NULL;
+        void *ret1 = nullptr;
         pthread_join(checkLinkid, &ret1);
         checkLinkid = -1;
     }
@@ -3345,7 +3729,7 @@ int F_AdjTime() {
 
 
     T_NET_DATE_TIME date;
-    time_t tt = time(NULL);//这句返回的只是一个时间cuo
+    time_t tt = time(nullptr);//这句返回的只是一个时间cuo
     tm *t = localtime(&tt);
 
     date.usYear = (uint16_t) (t->tm_year + 1900);
@@ -3558,20 +3942,20 @@ void *F_SentHearbeat_A(void *para) {
     }
     heartid = -1;
     LOGE("Exit HeardBeat Thread!");
-    return NULL;
+    return nullptr;
 }
 
 
 void F_StartSendHeart(void) {
     bNeedSentHear = true;
-    int ret = pthread_create(&heartid, NULL, F_SentHearbeat_A, NULL); // 成功返回0，错误返回错误编号
+    int ret = pthread_create(&heartid, nullptr, F_SentHearbeat_A, nullptr); // 成功返回0，错误返回错误编号
 
 }
 
 
 void *F_DisplayThread(void *para) {
 
-    return NULL;
+    return nullptr;
 }
 
 
@@ -3873,7 +4257,7 @@ int Connect_gk_A(void) {
         GK_tcp_NoticeSocket.DisConnect();
     }
     if (heartid != -1) {
-        void *ret = NULL;
+        void *ret = nullptr;
         pthread_join(heartid, &ret);
         heartid = -1;
     }
@@ -3887,13 +4271,27 @@ int Connect_gk_B(void) {
     DisConnect(true);
     return Connect_gk_c();
 }
-
+void F_GetData_SN(char *data, int nLen);
 int Connect_GPH264(void) {
     DEBUG_PRINT("2-----");
     if (GP_tcp_VideoSocket.Connect(sServerIP, 8080) < 0) {
         return -1;
     }
-    GP_tcp_VideoSocket.fuc_getData = F_GetData;
+    if(nICType == IC_RTLH264)
+    {
+        usleep(1000 * 100);
+        F_SetnRTL_RTC_Time();
+        usleep(1000 * 100);
+        F_SetnRTL_RTC_Time();
+    }
+    if(nICType == IC_GPRTPC)
+    {
+        GP_tcp_VideoSocket.fuc_getData_mjpeg = F_GetData_SN;
+        GP_tcp_VideoSocket.nICType = IC_GPRTPC;
+    } else {
+        GP_tcp_VideoSocket.fuc_getData = F_GetData;
+        GP_tcp_VideoSocket.nICType = IC_NO;
+    }
     GP_tcp_VideoSocket.StartReadThread();
     m_FFMpegPlayer.F_StartDispThread();
     return 0;
@@ -3997,7 +4395,7 @@ pthread_t GetFilesThreadId = -1;
 string sDirPath;
 
 
-//JH_Item *jh_item_current =NULL;
+//JH_Item *jh_item_current =nullptr;
 //JH_Item *jh_item_photo  = new JH_Item();
 //JH_Item *jh_item_video  = new JH_Item();
 
@@ -4058,7 +4456,7 @@ void *F_InitPhotos_Items(void *dat) {
     dir_list.type = 255;
     dir_list.file_num = 0;
     dir_list.send_buf = 0;
-    //NULL;
+    //nullptr;
     //2000-1-1 00:00:00  - 2100-1-1 00:00:00           获取所有文件
     dir_list.begin_time.dwYear = 2000;
     dir_list.begin_time.dwMonth = 1;
@@ -4118,7 +4516,7 @@ void *F_InitPhotos_Items(void *dat) {
     SendDir2java("---End");
     GK_tcp_SearchSocket.DisConnect();
     GetDirThreadId = -1;
-    return NULL;
+    return nullptr;
 }
 
 JNIEXPORT jint JNICALL
@@ -4130,7 +4528,7 @@ Java_com_joyhonest_wifination_wifination_naGetPhotoDir(JNIEnv *env, jclass type)
     getDir_PhotOrVideo = 0;     //Photo
     int ret = 0;
     if (GetDirThreadId < 0)
-        ret = pthread_create(&GetDirThreadId, NULL, F_InitPhotos_Items,
+        ret = pthread_create(&GetDirThreadId, nullptr, F_InitPhotos_Items,
                              (void *) (&getDir_PhotOrVideo));  //成功返回0，错误返回错误编号
     return ret;
 
@@ -4145,7 +4543,7 @@ Java_com_joyhonest_wifination_wifination_naGetVideoDir(JNIEnv *env, jclass type)
     getDir_PhotOrVideo = 1; //Video
     int ret = 0;
     if (GetDirThreadId < 0)
-        ret = pthread_create(&GetDirThreadId, NULL, F_InitPhotos_Items,
+        ret = pthread_create(&GetDirThreadId, nullptr, F_InitPhotos_Items,
                              (void *) (&getDir_PhotOrVideo)); // 成功返回0，错误返回错误编号
     return ret;
 }
@@ -4157,10 +4555,10 @@ Java_com_joyhonest_wifination_wifination_naSetdispRect(JNIEnv *env, jclass type,
         m_FFMpegPlayer.nDisplayWidth = w;
         m_FFMpegPlayer.nDisplayHeight = h;
         /*
-        if (m_FFMpegPlayer.My_EncodecodecCtx != NULL) {
+        if (m_FFMpegPlayer.My_EncodecodecCtx != nullptr) {
             avcodec_close(m_FFMpegPlayer.My_EncodecodecCtx);
             avcodec_free_context(&m_FFMpegPlayer.My_EncodecodecCtx);
-            m_FFMpegPlayer.My_EncodecodecCtx = NULL;
+            m_FFMpegPlayer.My_EncodecodecCtx = nullptr;
         }
          */
     }
@@ -4208,7 +4606,7 @@ int F_InitFiles_Items(void *dat) {
     config.res = 0;
     file_list.type = 255;
     file_list.file_num = 0;
-    file_list.send_buf = 0;//NULL;
+    file_list.send_buf = 0;//nullptr;
 
     //2000-1-1 00:00:00  - 2100-1-1 00:00:00           获取所有文件
     file_list.begin_time.dwYear = 2000;
@@ -4670,12 +5068,13 @@ JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naStopRecord(JNIEnv *env, jclass type, jint nType) {
 
     //TODO
-    myMediaCoder.F_CloseEncoder();
 
     if (nType == 0) //Phone
     {
         m_FFMpegPlayer.StopSaveVideo();
         nSDStatus &= (bit1_LocalRecording ^ 0xFF);
+
+
     } else if (nType == 1)  //SD
     {
         if (nICType == IC_GK) {
@@ -4748,7 +5147,10 @@ Java_com_joyhonest_wifination_wifination_naStopRecord(JNIEnv *env, jclass type, 
         }
         nSDStatus &= (bit1_LocalRecording ^ 0xFF);
     }
+    usleep(1000*100);
     F_SetRecordAudio(0);
+
+    myMediaCoder.F_CloseEncoder();
     F_SendStatus2Jave();
 }
 
@@ -4760,7 +5162,7 @@ void F_StopRecordAll() {
     } else if (nICType == IC_GKA) {
         //  if (nSDStatus & SD_Recording)
         F_SD_Stop_Recrod();
-    } else if (nICType == IC_GPRTSP || nICType == IC_GPRTP || nICType == IC_GPRTPB || nICType == IC_GPH264 || nICType == IC_GPH264A) {
+    } else if (nICType == IC_GPRTSP || nICType == IC_GPRTP || nICType == IC_GPRTPB || nICType == IC_GPH264 || nICType == IC_GPH264A || nICType==IC_RTLH264) {
         //if(nSdStatus_GP & 0x0100)
         {
             uint8_t msg[7];
@@ -4816,9 +5218,9 @@ Java_com_joyhonest_wifination_wifination_naSetDirectBuffer(JNIEnv *env, jclass t
                                                            jint nLen) {
     buffer = (unsigned char *) env->GetDirectBufferAddress(bufferA);
     m_FFMpegPlayer.Rgbabuffer = buffer;
-    nBufferLen = nLen - 200;
+    nBufferLen = nLen - 1024;
     cmd_buffer = buffer + nBufferLen;
-    memset(cmd_buffer, 0, 200);
+    memset(cmd_buffer, 0, 1024);
 
 }
 
@@ -4881,21 +5283,21 @@ jstring stoJstring(JNIEnv* env, const char* pat)
 
 int SendThumb2java(uint8_t *dat, uint32_t nLen, const char *sName) {
     int needsDetach = 0;
-    if (sName == NULL)
+    if (sName == nullptr)
         return -2;
     JNIEnv *evn = getJNIEnv(&needsDetach);
-    if (evn == NULL) {
+    if (evn == nullptr) {
         return -1;
     }
     int nCount = strlen(sName);
     if (nCount > 0) {
         //jstring  str = stoJstring(evn,sName);
         jstring str = evn->NewStringUTF(sName);
-        jbyte *jy = NULL;
-        if (dat == NULL) {
+        jbyte *jy = nullptr;
+        if (dat == nullptr) {
             nLen = 0;
-            if (GetThunb_mid != NULL) {
-                evn->CallStaticVoidMethod(objclass, GetThunb_mid, NULL, str);
+            if (GetThunb_mid != nullptr) {
+                evn->CallStaticVoidMethod(objclass, GetThunb_mid, nullptr, str);
             }
         } else {
             jy = (jbyte *) dat;
@@ -4903,7 +5305,7 @@ int SendThumb2java(uint8_t *dat, uint32_t nLen, const char *sName) {
             jbyteArray jbarray = evn->NewByteArray(nLen);
             evn->SetByteArrayRegion(jbarray, 0, nLen, jy);
 
-            if (GetThunb_mid != NULL) {
+            if (GetThunb_mid != nullptr) {
                 evn->CallStaticVoidMethod(objclass, GetThunb_mid, jbarray, str);
             }
             evn->DeleteLocalRef(jbarray);
@@ -4933,9 +5335,9 @@ int F_GetThumb(uint8_t *data, uint32_t nLen, const char *filename) {
     struct SwsContext *img_convert_ctxBmp_abc;
     AVFrame *pFrameRGB_abc;
 
-    int ret = avcodec_open2(m_codecCtx_abc, codec_abc, NULL);
+    int ret = avcodec_open2(m_codecCtx_abc, codec_abc, nullptr);
 
-    uint8_t *bufffff = NULL;
+    uint8_t *bufffff = nullptr;
     uint32_t nDataLen = 0;
 
 
@@ -4953,7 +5355,7 @@ int F_GetThumb(uint8_t *data, uint32_t nLen, const char *filename) {
         }
         if(ret<0)
         {
-            SendThumb2java(NULL, 0, filename);
+            SendThumb2java(nullptr, 0, filename);
             return -1;
         }
 
@@ -4962,7 +5364,7 @@ int F_GetThumb(uint8_t *data, uint32_t nLen, const char *filename) {
         ret = avcodec_decode_video2(m_codecCtx_abc, m_decodedFrame_abc, &frameFinished,
                                     &packet_abc);
         if (ret < 0) {
-            SendThumb2java(NULL, 0, filename);
+            SendThumb2java(nullptr, 0, filename);
             return -1;
         }
          */
@@ -4972,7 +5374,7 @@ int F_GetThumb(uint8_t *data, uint32_t nLen, const char *filename) {
                                                 160,// m_codecCtx_abc->width / 2,
                                                 90,//m_codecCtx_abc->height / 2,
                                                 AV_PIX_FMT_RGBA,
-                                                SWS_BILINEAR, NULL, NULL, NULL); //
+                                                SWS_BILINEAR, nullptr, nullptr, nullptr); //
         pFrameRGB_abc = av_frame_alloc();
 
         pFrameRGB_abc->format = AV_PIX_FMT_RGBA;
@@ -5001,7 +5403,7 @@ int F_GetThumb(uint8_t *data, uint32_t nLen, const char *filename) {
     } else {
         avcodec_free_context(&m_codecCtx_abc);
         av_frame_free(&m_decodedFrame_abc);
-        SendThumb2java(NULL, 0, filename);
+        SendThumb2java(nullptr, 0, filename);
     }
     return -1;
 }
@@ -5065,10 +5467,10 @@ int PackLen = 1024 * 256;
 void F_CallDownloadCallBack(int nPercentage, const char *sFileName, int nError) {
     int needsDetach = 0;
     JNIEnv *evn = getJNIEnv(&needsDetach);
-    if (evn == NULL) {
+    if (evn == nullptr) {
         return;
     }
-    if (GetDownLoad_mid != NULL) {
+    if (GetDownLoad_mid != nullptr) {
         jstring str = evn->NewStringUTF(sFileName);
         evn->CallStaticVoidMethod(objclass, GetDownLoad_mid, nPercentage, str, nError);
         evn->DeleteLocalRef(str);
@@ -5122,12 +5524,12 @@ void *F_GetThumb_(void *dat) {
     while (thread_id == -1) { ;
     }
     if (thread_id == -2)
-        return NULL;
+        return nullptr;
     uint32_t nLen = strlen(filename);
     if (nLen > 39) {
         ret = -1;
         F_ClearThreadID(thread_id);
-        SendThumb2java(NULL, 0, filename);
+        SendThumb2java(nullptr, 0, filename);
         delete info;
         return &ret;
     }
@@ -5141,7 +5543,7 @@ void *F_GetThumb_(void *dat) {
     if (serchSocket.Connect("175.16.10.2", 0x7102) < 0) {
         ret = -1;
         F_ClearThreadID(thread_id);
-        SendThumb2java(NULL, 0, filename);
+        SendThumb2java(nullptr, 0, filename);
         delete info;
         return &ret;
     }
@@ -5149,7 +5551,7 @@ void *F_GetThumb_(void *dat) {
 
     T_REQ_MSG msg;
 
-    unsigned char *imgdat = NULL;
+    unsigned char *imgdat = nullptr;
     int nret;
     T_NET_SD_REC_THUMB_LIST thumb;
     memset(thumb.file_name, 0, 40);
@@ -5208,7 +5610,7 @@ void *F_GetThumb_(void *dat) {
     serchSocket.DisConnect();
     ret = 0;
     F_ClearThreadID(thread_id);
-    SendThumb2java(NULL, 0, filename);
+    SendThumb2java(nullptr, 0, filename);
     delete info;
     return &ret;
 
@@ -5226,7 +5628,7 @@ Java_com_joyhonest_wifination_wifination_naGetThumb(JNIEnv *env, jclass type, js
     const char *filename = sd.c_str();
     uint32_t nLen = strlen(filename);
     if (nLen > 39) {
-        //SendThumb2java(NULL, 0, filename);
+        //SendThumb2java(nullptr, 0, filename);
         env->ReleaseStringUTFChars(filename_, filenameB);
         return -1;
     }
@@ -5333,10 +5735,13 @@ Java_com_joyhonest_wifination_wifination_isPhoneRecording(JNIEnv *env, jclass ty
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naGetGP_1RTSP_1Status(JNIEnv *env, jclass type) {
 
+
+    F_GetServerIP();
+    F_Read_Status_Service();
     uint8_t msg[20];
 
-
-    if (nICType == IC_GPRTSP || nICType == IC_GPRTP || nICType == IC_GPRTPB) {
+    //if (nICType == IC_GPRTSP || nICType == IC_GPRTP || nICType == IC_GPRTPB)
+    {
         msg[0] = 'J';
         msg[1] = 'H';
         msg[2] = 'C';
@@ -5364,32 +5769,32 @@ Java_com_joyhonest_wifination_wifination_naGetGP_1RTSP_1Status(JNIEnv *env, jcla
 
     }
 
-    if (nICType == IC_GPH264) {
-        msg[0] = 'J';
-        msg[1] = 'H';
-        msg[2] = 'C';
-        msg[3] = 'M';
-        msg[4] = 'D';
-        msg[5] = 0x10;
-        msg[6] = 0x00;
-        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
-        usleep(1000 * 10);
-
-        msg[0] = 'J';
-        msg[1] = 'H';
-        msg[2] = 'C';
-        msg[3] = 'M';
-        msg[4] = 'D';
-        msg[5] = 0x20;
-        msg[6] = 0x00;
-        msg[7] = 0x00;
-        msg[8] = 0x00;
-        msg[9] = 0x00;
-        msg[10] = 0x00;
-
-        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
-        usleep(1000 * 20);
-    }
+//    if (nICType == IC_GPH264) {
+//        msg[0] = 'J';
+//        msg[1] = 'H';
+//        msg[2] = 'C';
+//        msg[3] = 'M';
+//        msg[4] = 'D';
+//        msg[5] = 0x10;
+//        msg[6] = 0x00;
+//        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+//        usleep(1000 * 10);
+//
+//        msg[0] = 'J';
+//        msg[1] = 'H';
+//        msg[2] = 'C';
+//        msg[3] = 'M';
+//        msg[4] = 'D';
+//        msg[5] = 0x20;
+//        msg[6] = 0x00;
+//        msg[7] = 0x00;
+//        msg[8] = 0x00;
+//        msg[9] = 0x00;
+//        msg[10] = 0x00;
+//
+//        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
+//        usleep(1000 * 20);
+//    }
 
     return 0;
 
@@ -5430,6 +5835,10 @@ void F_SentRTPHeartBeep() {
 
 
 void F_Rec_RTP_Data_Service() {
+
+
+    //F_Read_Status_Service();
+
     struct timeval tv;
     tv.tv_sec = 0;
     tv.tv_usec = 1000 * 1;
@@ -5440,39 +5849,35 @@ void F_Rec_RTP_Data_Service() {
     if (GPRTP_UDP_SOCKET > 0) {
         return;
     }
+
     GPRTP_UDP_SOCKET = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
 
+    /*
     if (GPRTP_UDP_SOCKET > 0) {
         setsockopt(GPRTP_UDP_SOCKET, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
     } else {
         return;
     }
+     */
     int value = 1;
     int status;
+
     status = setsockopt(GPRTP_UDP_SOCKET, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value));
     status = setsockopt(GPRTP_UDP_SOCKET, SOL_SOCKET, SO_REUSEPORT, &value, sizeof(value));
 
-    // unsigned char file_buffer[20];
-    // FILE *f = fopen("/proc/sys/net/core/rmem_max","r");
-    // fread(file_buffer, 1, 16, f);
 
-
-
+    /*
     int nRecvBuf = 400 * 1024;       //设置成
     int len = sizeof(nRecvBuf);
-    //  int res =
+
     setsockopt(GPRTP_UDP_SOCKET, SOL_SOCKET, SO_RCVBUF, (const char *) &nRecvBuf, sizeof(nRecvBuf));
-    //获取系统修改后的大小
-//    res = getsockopt(GPRTP_UDP_SOCKET, SOL_SOCKET, SO_RCVBUF, &nRecvBuf, (socklen_t*)&len);
+     */
 
     bzero((char *) &myaddr, sizeof(myaddr));
     myaddr.sin_family = AF_INET;
     myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     myaddr.sin_port = htons(10900);
-
     int res = (int)::bind(GPRTP_UDP_SOCKET, (struct sockaddr *) &myaddr, sizeof(myaddr));
-
-    //int res = (int)::bind(GPRTP_UDP_SOCKET, (struct sockaddr *) &myaddr, sizeof(myaddr));
     if (res < 0) {
         DEBUG_PRINT("10900 bind failed!");
         shutdown(GPRTP_UDP_SOCKET, 0);
@@ -5482,7 +5887,7 @@ void F_Rec_RTP_Data_Service() {
     }
     int ret = -1;
     if (GPRTP_rev_thread == -1) {
-        ret = pthread_create(&GPRTP_rev_thread, NULL, doReceive_rtp, (void *) NULL); // 成功返回0，错误返回错误编号
+        ret = pthread_create(&GPRTP_rev_thread, nullptr, doReceive_rtp, (void *) nullptr); // 成功返回0，错误返回错误编号
         if (ret != 0) {
             GPRTP_rev_thread = -1;
         }
@@ -5491,7 +5896,7 @@ void F_Rec_RTP_Data_Service() {
 }
 
 //void F_RecRP_RTSP_Status_Service()
-void F_Read_Status_Service()
+void F_Read_Status_Service(void)
 {
     struct timeval tv;
     tv.tv_sec = 0;
@@ -5537,7 +5942,7 @@ void F_Read_Status_Service()
 
     int ret = -1;
     if (rev_cmd_thread == -1) {
-        ret = pthread_create(&rev_cmd_thread, NULL, doReceive_cmd, (void *) NULL); // 成功返回0，错误返回错误编号
+        ret = pthread_create(&rev_cmd_thread, nullptr, doReceive_cmd, (void *) nullptr); // 成功返回0，错误返回错误编号
         if (ret != 0)
         {
             rev_cmd_thread = -1;
@@ -5554,7 +5959,7 @@ bool less_second(const myRTP *m1, const myRTP *m2) {
 #define   buffer_Len  1450
 
 uint8_t readRtpBuffer[buffer_Len];
-char *jpgbuffer = NULL;
+char *jpgbuffer = nullptr;
 
 
 ///
@@ -5585,26 +5990,71 @@ JPEG_BUFFER *F_FindJpegBuffer(int njpginx) {
 
 }
 
+
+int m_InxArray[3];
+
+void sortA2(void)
+{
+    int i, j, temp;
+    int length = 3;
+    for (i = 0; i < length; ++i) {
+        for (j = length - 1; j > i; --j) {
+            if (m_InxArray[j] < m_InxArray[j - 1]) {
+                temp = m_InxArray[j];
+                m_InxArray[j] = m_InxArray[j - 1];
+                m_InxArray[j - 1] = temp;
+            }
+        }
+    }
+}
+
+
 JPEG_BUFFER *F_ClearJpegBuffer() {
     int ix0 = jpg0.nJpegInx;
     int ix1 = jpg1.nJpegInx;
     int ix2 = jpg2.nJpegInx;
-    if (ix0 > ix1) {
-        if (ix1 > ix2) {
-            jpg2.Clear();
-            return &jpg2;
-        } else {
-            jpg1.Clear();
-            return &jpg1;
-        }
-    } else {
-        if (ix0 < ix2) {
-            jpg0.Clear();
-            return &jpg0;
-        } else {
-            jpg2.Clear();
-            return &jpg2;
-        }
+
+
+
+//    if (ix0 > ix1) {
+//        if (ix1 > ix2) {
+//            jpg2.Clear();
+//            return &jpg2;
+//        } else {
+//            jpg1.Clear();
+//            return &jpg1;
+//        }
+//    } else {
+//        if (ix0 < ix2) {
+//            jpg0.Clear();
+//            return &jpg0;
+//        } else {
+//            jpg2.Clear();
+//            return &jpg2;
+//        }
+//    }
+
+
+
+    m_InxArray[0]=ix0;
+    m_InxArray[1]=ix1;
+    m_InxArray[2]=ix2;
+    sortA2();
+
+    if(m_InxArray[0] == ix0)
+    {
+        jpg0.Clear();
+        return &jpg0;
+    }
+    else if(m_InxArray[0] == ix1)
+    {
+        jpg1.Clear();
+        return &jpg1;
+    }
+
+    else{
+        jpg2.Clear();
+        return &jpg2;
     }
 
 }
@@ -5616,16 +6066,16 @@ list<myRTP *> list2;
 list<myRTP *> list3;
 list<myRTP *> list4;
 
-list<myRTP *> *listA = NULL;
+list<myRTP *> *listA = nullptr;
 
 void F_ClearList(list<myRTP *> *listB) {
     list<myRTP *>::iterator it;
-    if (listB != NULL) {
+    if (listB != nullptr) {
         while (!listB->empty()) {
             it = listB->begin();
-            if ((*it) != NULL) {
+            if ((*it) != nullptr) {
                 delete (*it);
-                (*it) = NULL;
+                (*it) = nullptr;
             }
             listB->pop_front();
         }
@@ -5752,7 +6202,7 @@ list<myRTP *> *FindList(uint32_t ix) {
          }
          */
     }
-    return NULL;
+    return nullptr;
 }
 
 
@@ -5760,6 +6210,8 @@ list<myRTP *> *FindList(uint32_t ix) {
 
 void *doReceive_rtp(void *dat) {
 
+
+    LOGE("Start Thread RecData");
     struct sockaddr_in servaddr;
     memset(readRtpBuffer, 0, buffer_Len);
     fd_set rfd;     // 读描述符集
@@ -5767,9 +6219,9 @@ void *doReceive_rtp(void *dat) {
     int LEN_Buffer = 250 * 1024;
 
     if (nICType == IC_GPRTP) {
-        if (jpgbuffer != NULL) {
+        if (jpgbuffer != nullptr) {
             delete[]jpgbuffer;
-            jpgbuffer = NULL;
+            jpgbuffer = nullptr;
         }
         jpgbuffer = new char[LEN_Buffer];
     }
@@ -5784,7 +6236,7 @@ void *doReceive_rtp(void *dat) {
     list<myRTP *>::iterator it;
     list<myRTP *>::iterator it1;
 
-    uint8_t *buff = NULL;
+    uint8_t *buff = nullptr;
 
 
     int nCurrent = 0;
@@ -5797,21 +6249,24 @@ void *doReceive_rtp(void *dat) {
 
 
     jpg0.Clear();
-    jpg0.buffer = (uint8_t *) malloc(LEN_Buffer);
+    //jpg0.buffer = (uint8_t *) malloc(LEN_Buffer);
 
 
     jpg1.Clear();
-    jpg1.buffer = (uint8_t *) malloc(LEN_Buffer);
+    //jpg1.buffer = (uint8_t *) malloc(LEN_Buffer);
 
     jpg2.Clear();
-    jpg2.buffer = (uint8_t *) malloc(LEN_Buffer);
+    //jpg2.buffer = (uint8_t *) malloc(LEN_Buffer);
 
     uint16_t jpginx = 0;
     uint8_t jpg_pack_count = 0;
     uint8_t jpg_udp_inx = 0;
 
 
-    JH_TestInfo testinfo;
+    //JH_TestInfo testinfo;
+
+
+    struct timeval tv = {0, 100};     //
 
     int xxt = 0;
     int size;
@@ -5826,37 +6281,31 @@ void *doReceive_rtp(void *dat) {
                 nTime1_pre = nTime1_current;
             }
         }
-
-        struct timeval timeoutA = {0, 100};     //
+        tv.tv_sec = 0;
+        tv.tv_usec = 1000*10;
         FD_ZERO(&rfd); // 在使用之前总是要清空
         FD_SET(GPRTP_UDP_SOCKET, &rfd); // 把socka放入要测试的描述符集中
-        nRet = select(GPRTP_UDP_SOCKET + 1, &rfd, NULL, NULL, &timeoutA);// 检测是否有套接口是否可读
+        nRet = select(GPRTP_UDP_SOCKET + 1, &rfd, nullptr, nullptr, &tv);// 检测是否有套接口是否可读
         if (nRet > 0) {
             int nRecEcho = 0;
             if (FD_ISSET(GPRTP_UDP_SOCKET, &rfd)) {
-                nRecEcho = recvfrom(GPRTP_UDP_SOCKET, readRtpBuffer, sizeof(readRtpBuffer), 0, (sockaddr *) &servaddr, &size);
+                nRecEcho = (int)recvfrom(GPRTP_UDP_SOCKET, readRtpBuffer, sizeof(readRtpBuffer), 0, (sockaddr *) &servaddr, (socklen_t *)&size);
                 if (nICType == IC_GPRTPB)
                 {
                     if (nRecEcho >= 9)
                     {
-
                         nCheckT_pre = av_gettime() / 1000;
-
                         jpginx =(uint16_t)( readRtpBuffer[1] * 0x100 + readRtpBuffer[0]);
                         jpg_pack_count = (uint8_t) readRtpBuffer[2];
                         jpg_udp_inx = (uint8_t) readRtpBuffer[3];
                         if (jpg_udp_inx >= 250)
                             continue;
-
-                        testinfo.F_InsertInof(jpginx, jpg_pack_count, jpg_udp_inx);
-
                         JPEG_BUFFER *jpg = F_FindJpegBuffer(jpginx);
                         if (jpg->nJpegInx == 0 || jpg->nJpegInx == jpginx) {
                             jpg->nJpegInx = jpginx;
                         } else {
                             LOGE("Find packed error!");
                         }
-
                         if (jpg_udp_inx * (1450 - 8) + (1450 - 8) < LEN_Buffer)
                         {
                             if (jpg->mInx[jpg_udp_inx] == 0)
@@ -5913,7 +6362,7 @@ void *doReceive_rtp(void *dat) {
 
                         for (int xx = 0; xx < 5; xx++) {
 
-                            listA = NULL;
+                            listA = nullptr;
                             if (xx == 0) {
                                 for (it = list0.begin(); it != list0.end(); it++) {
                                     if ((*it)->mBuffer[1] & 0x80) {
@@ -5956,7 +6405,7 @@ void *doReceive_rtp(void *dat) {
                             }
 
 
-                            if (listA != NULL && !listA->empty()) {
+                            if (listA != nullptr && !listA->empty()) {
                                 listA->sort(greater<myRTP *>());
                                 int ix = 0;
                                 bFind = false;
@@ -6006,9 +6455,9 @@ void *doReceive_rtp(void *dat) {
     }
 
 
-    if (jpgbuffer != NULL) {
+    if (jpgbuffer != nullptr) {
         delete[]jpgbuffer;
-        jpgbuffer = NULL;
+        jpgbuffer = nullptr;
     }
 
 
@@ -6022,12 +6471,14 @@ void *doReceive_rtp(void *dat) {
     jpg1.Release();
     jpg2.Release();
 
+
     F_ClearList(&list0);
     F_ClearList(&list1);
     F_ClearList(&list2);
+    GPRTP_rev_thread = -1;
 
     LOGE("Exit Thread RecData");
-    return NULL;
+    return nullptr;
 
 }
 
@@ -6063,20 +6514,18 @@ void *doReceive_cmd(void *dat) {
         }
 
         tv.tv_sec = 0;
-        tv.tv_usec = 1000*10;
+        tv.tv_usec = 1000*5;
 
         FD_ZERO(&readset); // 在使用之前总是要清空
         // 开始使用select
         FD_SET(rev_socket, &readset); // 把socka放入要测试的描述符集中
 
-        int nRet = select(rev_socket + 1, &readset, NULL, NULL, &tv);// 检测是否有套接口是否可读
+        int nRet = select(rev_socket + 1, &readset, nullptr, nullptr, &tv);// 检测是否有套接口是否可读
         if (nRet <= 0) {
-            usleep(2000);
             continue;
         }
         if (!FD_ISSET(rev_socket, &readset))
         {
-            usleep(2000);
             continue;
         }
         memset(readBuff, 0, 1500);
@@ -6111,56 +6560,174 @@ void *doReceive_cmd(void *dat) {
             }
             else
             {
-                if(nbytes>200)
+                if(nbytes>1024)
                 {
-                    nbytes=200;
+                    nbytes=1024;
                 }
                 if(bDebug)
                 {
                     int nb = nbytes;
-                    if(nb>50)
+                    if(nb>1024)
                     {
-                        nb=50;
+                        nb=1024;
                     }
-                    memset(cmd_buffer, 0, 200);
+                    memset(cmd_buffer, 0, 1024);
                     memcpy(cmd_buffer, readBuff, (size_t)(nb)); //wifi透传数据
-                    int32_t datA = 0xAABBCC00;
-                    datA |=((nbytes)&0xFF);
+                    int32_t datA = 0xFFFF0000;
+                    datA |=((nb)&0xFFFF);
                     F_SentGp_Status2Jave(datA);
                 }
 
 
+                int32_t dat=0;
                 if (nbytes >= 8)
                 {
-                    if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 'T' && readBuff[6] == 'C')
+
+
+                    int nLen=0;
+                    if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D')
                     {
-                        if (cmd_buffer != NULL)
-                        {
-                            memset(cmd_buffer, 0, 200);
-                            memcpy(cmd_buffer, readBuff + 7, (size_t)(nbytes - 7)); //wifi透传数据
-                            int32_t datA = 0x55AA5500;
-                            datA |=((nbytes - 7)&0xFF);
-                            F_SentGp_Status2Jave(datA);
-                        }
+                         int16_t nCmdType = (int16_t)(readBuff[5]*0x100+readBuff[6]);
+                         switch(nCmdType)
+                         {
+                             case 0x5443:    //'T'=0x54  'C'=43
+                                 if (cmd_buffer != nullptr)
+                                 {
+                                      nLen = nbytes - 7;
+                                     if(nLen>1024)
+                                         nLen=1024;
+                                     memset(cmd_buffer, 0, 1024);
+                                     memcpy(cmd_buffer, readBuff + 7, nLen); //wifi透传数据
+//                                     int32_t datA = 0x55AA5500;
+//                                     datA |=((nbytes - 7)&0xFF);
+                                     dat = 0x54430000;
+                                     dat |=((nLen)&0xFF);
+                                     F_SentGp_Status2Jave(dat);
+                                 }
+                                break;
+                             case 0x1020:                //返回LED灯亮度
+                                 dat = 0x10200000;
+                                 dat |=readBuff[7];
+                                 F_SentGp_Status2Jave(dat);
+                                 break;
+                             case 0x1021:                //返回电量
+                                 dat = 0x10210000;
+                                 dat |=readBuff[7];
+                                 F_SentGp_Status2Jave(dat);
+                                 break;
+                             case 0x2000:
+
+                                 if(nbytes>=47)
+                                 {
+                                     nLen = nbytes - 7;
+                                     if(nLen>1024)
+                                         nLen=1024;
+                                     memset(cmd_buffer, 0, 1024);
+                                     memcpy(cmd_buffer, readBuff + 7, nLen);
+//                                     int32_t dat = 0xAA55AA00;// GP RTPB  回传 模块本身信息数据
+//                                     dat |=((nbytes - 7)&0xFF);
+                                     dat = 0x20000000;
+                                     dat |=((nLen)&0xFF);
+                                     F_SentGp_Status2Jave(dat);
+                                 }
+                                 break;
+                             case 0x0006: {
+                                 uint8_t nStyle = readBuff[7];
+//                                 dat = 0x11223300;//             //Style type
+//                                 dat |=nStyle;
+                                 dat = 0x00060000;
+                                 dat |= nStyle;
+                                 F_SentGp_Status2Jave(dat);
+                             }
+                                 break;
+                             case 0x3005: {
+                                 if (nbytes >= 9) {
+                                     uint16_t nLen = (uint16_t) (readBuff[7] + readBuff[8] * 0x100);
+                                     if (nbytes >= nLen + 9) {
+                                         if (nLen > 1024)
+                                             nLen = 1024;
+                                         memset(cmd_buffer, 0, 1024);
+                                         memcpy(cmd_buffer, readBuff + 9, nLen);
+                                         dat = 0x30050000;//   返回 30 05 命令读取设备flash数据
+                                         dat |= (nLen & 0xFFFF);
+                                         F_SentGp_Status2Jave(dat);
+                                     }
+                                 }
+                             }
+                                 break;
+                             case 0x3006: {
+                                 if (nbytes >= 7) {
+                                     dat = 0x30060001;//   返回 30 06 命令写设备flash数据是否成功
+                                     if (readBuff[7] == 0)
+                                         dat = 0x30060000;//   返回 30 06 命令写设备flash数据
+                                     F_SentGp_Status2Jave(dat);
+                                 }
+                             }
+                                 break;
+
+                             default:
+                                 break;
+
+                         }
                     }
-                    else  if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 0x20 && readBuff[6] == 0x00)
-                    {
-                        if(nbytes>=47)
-                        {
-                            memset(cmd_buffer, 0, 200);
-                            memcpy(cmd_buffer, readBuff + 7, nbytes - 7);
-                            int32_t dat = 0xAA55AA00;// GP RTPB  回传 模块本身信息数据
-                            dat |=((nbytes - 7)&0xFF);
-                            F_SentGp_Status2Jave(dat);
-                        }
-                    }
-                    else if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 0x00 && readBuff[6] == 0x06)
-                    {
-                            uint8_t  nStyle= readBuff[7];
-                            int32_t dat = 0x11223300;// //Style type
-                            dat |=nStyle;
-                            F_SentGp_Status2Jave(dat);
-                    }
+
+//                    if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 'T' && readBuff[6] == 'C')
+//                    {
+//                        if (cmd_buffer != nullptr)
+//                        {
+//                            memset(cmd_buffer, 0, 1024);
+//                            memcpy(cmd_buffer, readBuff + 7, (size_t)(nbytes - 7)); //wifi透传数据
+//                            int32_t datA = 0x55AA5500;
+//                            datA |=((nbytes - 7)&0xFF);
+//                            F_SentGp_Status2Jave(datA);
+//                        }
+//                    }
+//                    else  if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 0x20 && readBuff[6] == 0x00)
+//                    {
+//                        if(nbytes>=47)
+//                        {
+//                            memset(cmd_buffer, 0, 1024);
+//                            memcpy(cmd_buffer, readBuff + 7, nbytes - 7);
+//                            int32_t dat = 0xAA55AA00;// GP RTPB  回传 模块本身信息数据
+//                            dat |=((nbytes - 7)&0xFF);
+//                            F_SentGp_Status2Jave(dat);
+//                        }
+//                    }
+//                    else if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 0x00 && readBuff[6] == 0x06)
+//                    {
+//                            uint8_t  nStyle= readBuff[7];
+//                            int32_t dat = 0x11223300;// //Style type
+//                            dat |=nStyle;
+//                            F_SentGp_Status2Jave(dat);
+//                    }
+//                    else if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 0x30 && readBuff[6] == 0x05)
+//                    {
+//                          if(nbytes>=9)
+//                          {
+//                                 uint16_t nLen =(uint16_t)(readBuff[7]+readBuff[8]*0x100);
+//                                 if(nbytes>=nLen+9)
+//                                 {
+//                                     memset(cmd_buffer, 0, 1024);
+//                                     memcpy(cmd_buffer, readBuff + 9, nLen);
+//                                     int32_t dat = 0x30050000;//   返回 30 05 命令读取设备flash数据
+//                                     dat |=(nLen &0xFFFF);
+//                                     F_SentGp_Status2Jave(dat);
+//                                 }
+//                          }
+//                    }
+//                    else if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D' && readBuff[5] == 0x30 && readBuff[6] == 0x06)
+//                    {
+//                        if(nbytes>=7)
+//                        {
+//                            //memset(cmd_buffer, 0, 1024);
+//                            //memcpy(cmd_buffer, readBuff + 7, 1);'
+//                            int32_t dat = 0x30060001;//   返回 30 06 命令写设备flash数据
+//                            if(readBuff[7] ==0)
+//                                int32_t dat = 0x30060000;//   返回 30 06 命令写设备flash数据
+//                            F_SentGp_Status2Jave(dat);
+//                        }
+//                    }
+
                 }
 
                 if (nbytes == 7)
@@ -6171,19 +6738,21 @@ void *doReceive_cmd(void *dat) {
 
                             if((readBuff[6]&0x10) !=0)
                             {
-
-                                int32_t dat = 0xAA555500;// 0x55AA5500;
+                                //int32_t dat = 0xAA555500;// 0x55AA5500;
+                                dat = 0xFFFE0000;//
                                 dat |= (readBuff[6] & 0x0F);
                                 F_SentGp_Status2Jave(dat);
-
                             }
                             else {
+
+                                dat=0xFFFD0000;
 
                                 nSdStatus_GP &= 0xFFFF00FF;
                                 readBuff[6] ^= 0x04;
                                 if (readBuff[6] & 0x01)  //正在录像
                                 {
                                     nSdStatus_GP |= 0x0100;
+                                    dat |= 0x0100;
                                     nSDStatus |= SD_Recording;              //录像按键
                                 } else {
                                     nSDStatus &= (SD_Recording ^ 0xFFFF);
@@ -6192,6 +6761,7 @@ void *doReceive_cmd(void *dat) {
                                 if (readBuff[6] & 0x02)  //  拍照
                                 {
                                     nSdStatus_GP |= 0x0200;                 //拍照按键
+                                    dat |= 0x0200;
                                     nSDStatus |= SD_SNAP;
                                 } else {
                                     nSDStatus &= ((SD_SNAP ^ 0xFFFF) & 0xFFFF);
@@ -6199,6 +6769,7 @@ void *doReceive_cmd(void *dat) {
                                 if (readBuff[6] & 0x04)  //SD
                                 {
                                     nSdStatus_GP |= 0x0400;
+                                    dat |= 0x0400;
                                     nSDStatus |= SD_Ready;
                                     LOGE("SD_Ready");
                                 } else {
@@ -6207,34 +6778,44 @@ void *doReceive_cmd(void *dat) {
 
                                 if (readBuff[6] & 0x08)  //卡满
                                 {
+                                    dat |= 0x0800;
                                     nSdStatus_GP |= 0x0800;
                                     nSDStatus &= (SD_Ready ^ 0xFFFF);
                                 }
                                 if (readBuff[6] & 0x10)  //低电
                                 {
+                                    dat |= 0x1000;
                                     nSdStatus_GP |= 0x1000;
                                 }
-
                                 F_SendStatus2Jave();
-                                F_SentGp_Status2Jave(nSdStatus_GP);
+                                //F_SentGp_Status2Jave(nSdStatus_GP);
+                                F_SentGp_Status2Jave(dat);
                             }
                         }
 
                         if (readBuff[5] == 0x00) {         //按键命令
-                            nSdStatus_GP &= 0xFFFFFF00;
-                            nSdStatus_GP |= readBuff[6];
-                            F_SentGp_Status2Jave(nSdStatus_GP);
-                            F_SendKey2Jave((nSdStatus_GP & 0xFF));
+                            //nSdStatus_GP &= 0xFFFFFF00;
+
+                            dat=0xFFFC0000;
+                            dat |=readBuff[6];
+                            //nSdStatus_GP = 0x0;
+                            //nSdStatus_GP |= readBuff[6];
+                            F_SentGp_Status2Jave(dat);
+                            F_SendKey2Jave(readBuff[6]&0xFF);
+
+
                         }
                         if (readBuff[5] == 0x20)  //通道
                         {
                             // readBuff[6]  通道数
-                            nSdStatus_GP &= 0xFF00FFFF;
-                            tmp = readBuff[6];
-                            tmp <<= 16;
-                            tmp &= 0x00FF0000;
-                            nSdStatus_GP |= tmp;
-                            F_SentGp_Status2Jave(nSdStatus_GP);
+                            dat=0xFFFB0000;
+                            dat |=readBuff[6];
+                            //nSdStatus_GP &= 0xFF00FFFF;
+//                            tmp = readBuff[6];
+//                            tmp <<= 16;
+//                            tmp &= 0x00FF0000;
+//                            nSdStatus_GP |= tmp;
+                            F_SentGp_Status2Jave(dat);
                         }
 
                     }
@@ -6247,7 +6828,7 @@ void *doReceive_cmd(void *dat) {
     delete[]readBuffA;
 
     LOGE("Exit ReadStatus Thread!");
-    return NULL;
+    return nullptr;
 }
 
 
@@ -6323,147 +6904,147 @@ JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naFillFlyCmdByC(JNIEnv *env, jclass type, jint nType) {
 
 
-    jclass clazz = NULL;
+    jclass clazz = nullptr;
     FLY_CMD cmd_Data;
-    jfieldID fid = NULL;
+    jfieldID fid = nullptr;
     clazz = env->FindClass(fly_classpath);
-    if (clazz == NULL)
+    if (clazz == nullptr)
         return;
-    jbyte *bytes = NULL;
-    jbyteArray jbd = NULL;
+    jbyte *bytes = nullptr;
+    jbyteArray jbd = nullptr;
     if (nType == 1) {
         fid = env->GetStaticFieldID(clazz, "Roll", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.Roll = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "Pitch", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.Pitch = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "Thro", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.Thro = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "Yaw", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.Yaw = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "TrimRoll", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.TrimRoll = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "TrimPitch", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.TrimPitch = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "TrimThro", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.TrimThro = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "TrimYaw", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.TrimYaw = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "FastMode", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.FastMode = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "CFMode", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.CFMode = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
         fid = env->GetStaticFieldID(clazz, "FlipMode", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.FlipMode =(uint32_t)( env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "GpsMode", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.GpsMode = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "Mode", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.Mode = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "LevelCor", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.LevelCor = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
 
         fid = env->GetStaticFieldID(clazz, "MagCor", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.MagCor = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "AutoTakeoff", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.AutoTakeoff =(uint32_t)( env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "AutoLand", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.AutoLand = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "GoHome", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.GoHome =(uint32_t)( env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "Stop", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.Stop = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "FollowMe", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.FollowMe = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "CircleFly", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.CircleFly = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "PointFly", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.PointFly = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "FollowMe_A", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.FollowMe_A = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "Photo", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.Photo = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "Video", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.Video = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "CamMovStep", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.CamMovStep = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "CamMovDir", "I");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             cmd_Data.CamMovDir = (uint32_t)(env->GetStaticIntField(clazz, fid));
         }
 
         fid = env->GetStaticFieldID(clazz, "cmd", "[B");
-        if (fid != NULL) {
+        if (fid != nullptr) {
             //获取Record对象data值
             jbd = (jbyteArray) env->GetStaticObjectField(clazz, fid);
             bytes = env->GetByteArrayElements(jbd, 0);
@@ -6471,7 +7052,7 @@ Java_com_joyhonest_wifination_wifination_naFillFlyCmdByC(JNIEnv *env, jclass typ
     }
     jbyte *buffer = (jbyte *) (&cmd_Data);
     int nSize = sizeof(cmd_Data);
-    if (bytes != NULL) {
+    if (bytes != nullptr) {
         int chars_len = env->GetArrayLength(jbd);
 
         int nSi = min(nSize, chars_len - 3);
@@ -6493,7 +7074,7 @@ Java_com_joyhonest_wifination_wifination_naFillFlyCmdByC(JNIEnv *env, jclass typ
             bytes[14] = checksum;
         }
     }
-    if (bytes != NULL)
+    if (bytes != nullptr)
         env->ReleaseByteArrayElements(jbd, bytes, 0);
 
 
@@ -6504,7 +7085,7 @@ Java_com_joyhonest_wifination_wifination_naFillFlyCmdByC(JNIEnv *env, jclass typ
 int _naSave2FrameMp4(uint8_t *data, int nLen, int b, bool keyframe) {
     if (b == 0)  //sps  pps
     {
-        uint8_t *sData = (uint8_t *) data;
+        uint8_t *sData =  data;
         int nSize = nLen;
 
         int sps, pps;
@@ -6522,11 +7103,13 @@ int _naSave2FrameMp4(uint8_t *data, int nLen, int b, bool keyframe) {
 
         m_FFMpegPlayer.AddMp4Video(sData + sps, pps - sps - 4, sData + pps, nSize - pps);
 
+
+
     }
     else
     {
         nRecTime++;
-        m_FFMpegPlayer.WriteMp4Frame((uint8_t *) data, nLen, keyframe);
+        m_FFMpegPlayer.WriteMp4Frame( data, nLen, keyframe);
     }
     return 0;
 
@@ -6534,7 +7117,7 @@ int _naSave2FrameMp4(uint8_t *data, int nLen, int b, bool keyframe) {
 
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naSave2FrameMp4(JNIEnv *env, jclass type, jbyteArray data_, jint nLen, jint b, jboolean keyframe) {
-    jbyte *data = env->GetByteArrayElements(data_, NULL);
+    jbyte *data = env->GetByteArrayElements(data_, nullptr);
     _naSave2FrameMp4((uint8_t *) data, nLen, b, keyframe);
     env->ReleaseByteArrayElements(data_, data, 0);
     return 0;
@@ -6573,9 +7156,7 @@ Java_com_joyhonest_wifination_wifination_naGetwifiFps(JNIEnv *env, jclass type) 
 JNIEXPORT jstring JNICALL
 Java_com_joyhonest_wifination_wifination_naGetControlType(JNIEnv *env, jclass type)
 {
-    int typeA = F_GetIP();
-    typeA &=0x00FFFFFF;
-    F_AdjIcType(typeA);
+    F_GetServerIP();
     if(nICType == IC_GKA)
     {
         ;
@@ -6584,8 +7165,6 @@ Java_com_joyhonest_wifination_wifination_naGetControlType(JNIEnv *env, jclass ty
     {
         sver="";
         F_Read_Status_Service();
-        typeA &=0x00FFFFFF;
-        typeA |=0x01000000;
         uint8 msg[20];
         msg[0] = 'J';
         msg[1] = 'H';
@@ -6598,11 +7177,11 @@ Java_com_joyhonest_wifination_wifination_naGetControlType(JNIEnv *env, jclass ty
         msg[8] = 0x00;
         msg[9] = 0x00;
         msg[10] = 0x00;
-        send_cmd_udp(msg, 11, typeA, 20000);
+        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
         usleep(1000*200);
         if (sver.length()==0)
         {
-            send_cmd_udp(msg, 11, typeA, 20000);
+            send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
             usleep(1000*100);
         }
     }
@@ -6618,8 +7197,8 @@ void F_ProcessDecordData(uint8_t *data, int32_t nLen, int width, int height, int
 
 #if 1
     //LOGE("w = %d h = %d", width, height);
-    if (m_FFMpegPlayer.m_codecCtx == NULL ||
-        m_FFMpegPlayer.m_decodedFrame == NULL) {
+    if (m_FFMpegPlayer.m_codecCtx == nullptr ||
+        m_FFMpegPlayer.m_decodedFrame == nullptr) {
         return;
     }
     m_FFMpegPlayer.m_codecCtx->width = width;
@@ -6729,7 +7308,7 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
 
         av_frame_copy(myYUV, frame_a);
 
-        if (frame_a != NULL)
+        if (frame_a != nullptr)
         {
             av_freep(&frame_a->data[0]);
             av_frame_free(&frame_a);
@@ -6758,7 +7337,7 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
                           libyuv::kFilterLinear);
 
         Adj23D(frame_b, myYUV);
-        if (frame_b != NULL) {
+        if (frame_b != nullptr) {
             av_freep(&frame_b->data[0]);
             av_frame_free(&frame_b);
         }
@@ -6773,7 +7352,7 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
                            myYUV->width, myYUV->height);
 
     ret = 1;
-    if (myYUV != NULL) {
+    if (myYUV != nullptr) {
         av_freep(&myYUV->data[0]);
         av_frame_free(&myYUV);
     }
@@ -6783,7 +7362,7 @@ bool F_SetBackGroud(jbyte *data, jint width, jint height) {
 JNIEXPORT jboolean JNICALL
 Java_com_joyhonest_wifination_wifination_naSetBackground(JNIEnv *env, jclass type, jbyteArray data_, jint width, jint height) {
     jboolean re = 0;
-    if (gl_Frame == NULL) {
+    if (gl_Frame == nullptr) {
         LOGE("ext 234");
         return re;
     }
@@ -6796,7 +7375,7 @@ Java_com_joyhonest_wifination_wifination_naSetBackground(JNIEnv *env, jclass typ
     //    return re;
     //}
 
-    jbyte *data = env->GetByteArrayElements(data_, NULL);
+    jbyte *data = env->GetByteArrayElements(data_, nullptr);
     bool rr = F_SetBackGroud(data, width, height);
     if(rr)
     {
@@ -6829,9 +7408,10 @@ Java_com_joyhonest_wifination_wifination_naGkASetRecordResolution(JNIEnv *env, j
 extern "C"
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_JH_1GLSurfaceView_naDecordFrame(JNIEnv *env, jclass type, jbyteArray data_, int size) {
-    jbyte *data = env->GetByteArrayElements(data_, NULL);
+    jbyte *data = env->GetByteArrayElements(data_, nullptr);
+    int len_array = env->GetArrayLength(data_);
     MySocketData dat;
-    dat.AppendData(data, size);
+    dat.AppendData(data, len_array);
     //m_FFMpegPlayer.F_DispH264NoBuffer(&dat);
     env->ReleaseByteArrayElements(data_, data, 0);
     return 0;
@@ -6930,10 +7510,11 @@ extern "C"
 JNIEXPORT jboolean JNICALL
 Java_com_joyhonest_wifination_AudioEncoder_naSentVoiceData(JNIEnv *env, jclass type, jbyteArray data_, jint nLen)
 {
-    jbyte *data = env->GetByteArrayElements(data_, NULL);
-    if(nLen!=0)
+    jbyte *data = env->GetByteArrayElements(data_, nullptr);
+    int len_array = env->GetArrayLength(data_);
+    if(len_array!=0)
     {
-        m_FFMpegPlayer.F_WriteAudio(data,nLen);
+        m_FFMpegPlayer.F_WriteAudio(data,len_array);
     }
     env->ReleaseByteArrayElements(data_, data, 0);
     return true;
@@ -6956,7 +7537,8 @@ extern "C"
 JNIEXPORT void JNICALL
 Java_com_joyhonest_wifination_wifination_naSetDislplayData(JNIEnv *env, jclass type, jbyteArray data_, jint width, jint height)
 {
-    jbyte *data = env->GetByteArrayElements(data_, NULL);
+    jbyte *data = env->GetByteArrayElements(data_, nullptr);
+
 
     jint w2 = width/2;
     jint  nlen = width*height;
@@ -7044,23 +7626,23 @@ Java_com_joyhonest_wifination_wifination_naSetDebug(JNIEnv *env, jclass type, jb
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_joyhonest_wifination_wifination_naWriteport20000(JNIEnv *env, jclass type, jbyteArray cmd_, jint nleng) {
-    jbyte *cmd = env->GetByteArrayElements(cmd_, NULL);
-
+Java_com_joyhonest_wifination_wifination_naWriteport20000(JNIEnv *env, jclass type, jbyteArray cmd_, jint nleng1) {
+    jbyte *cmd = env->GetByteArrayElements(cmd_, nullptr);
+    int len_array = env->GetArrayLength(cmd_);
     // TODO
     uint8 msg[200];
-    if(nleng>200)
+    if(len_array>200)
     {
-        nleng=200;
+        len_array=200;
     }
-    if(cmd!=NULL && nleng!=0)
+    if(cmd!=nullptr && len_array!=0)
     {
-        for(int i=0;i<nleng;i++)
+        for(int i=0;i<len_array;i++)
         {
             msg[i]=(uint8)cmd[i];
         }
     }
-    send_cmd_udp(msg, nleng, sServerIP.c_str(), 20000);
+    send_cmd_udp(msg, len_array, sServerIP.c_str(), 20000);
     env->ReleaseByteArrayElements(cmd_, cmd, 0);
 }
 
@@ -7079,3 +7661,328 @@ Java_com_joyhonest_wifination_wifination_naSetMirror(JNIEnv *env, jclass type, j
 
     m_FFMpegPlayer.bMirror = b;
 }
+
+//////////////--------------
+
+
+
+
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_joyhonest_wifination_wifination_naSentUdpData(JNIEnv *env, jclass type, jstring sIP_, jint nPort,jbyteArray data_, jint nLen2) {
+    bool   bre = false;
+    const char *sIP = env->GetStringUTFChars(sIP_, 0);
+    jbyte *data = env->GetByteArrayElements(data_, nullptr);
+    int len_array = env->GetArrayLength(data_);
+
+    int re = send_cmd_udp((uint8_t *)data, (int)len_array, sIP, (uint16_t) nPort);
+    if(re>=0)
+    {
+        bre = true;
+    }
+
+    env->ReleaseStringUTFChars(sIP_, sIP);
+    env->ReleaseByteArrayElements(data_, data, 0);
+    return bre;
+
+}
+
+
+
+
+
+
+void *doReceiveUdp_cmd(void *dat);
+
+void F_StartRead_Udp(int nPort)
+{
+    struct timeval tv;
+    tv.tv_sec = 0;
+    tv.tv_usec = 1000 * 10;
+    struct sockaddr_in myaddr;
+    if (rev_Udp_thread > 0) {
+        return;
+    }
+
+    if (rev_udp_socket > 0) {
+        return;
+    }
+    rev_udp_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+    if (rev_udp_socket > 0) {
+        setsockopt(rev_udp_socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    } else {
+        return;
+    }
+
+    bzero((char *) &myaddr, sizeof(myaddr));
+    myaddr.sin_family = AF_INET;
+    myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    myaddr.sin_port = htons(nPort);
+
+    int value = 1;
+    int status;
+    status = setsockopt(rev_udp_socket, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value));
+    status = setsockopt(rev_udp_socket, SOL_SOCKET, SO_REUSEPORT, &value, sizeof(value));
+    int ad = sizeof(myaddr);
+    int ac = sizeof(struct sockaddr);
+    int res =(int)(::bind(rev_udp_socket,(struct sockaddr *)&myaddr,(socklen_t)(sizeof(myaddr))));
+    if (res < 0)
+    {
+        DEBUG_PRINT("rev_socket bind failed!");
+        shutdown(rev_udp_socket, 0);
+        close(rev_udp_socket);
+        rev_udp_socket = -1;
+        return;
+    }
+
+    int ret = -1;
+    if (rev_Udp_thread == -1) {
+        //ret = pthread_create(&rev_Udp_thread, nullptr, doReceive_cmd, (void *) nullptr); // 成功返回0，错误返回错误编号
+        ret = pthread_create(&rev_Udp_thread, nullptr, doReceiveUdp_cmd, (void *) nullptr); // 成功返回0，错误返回错误编号
+        if (ret != 0)
+        {
+            rev_Udp_thread = -1;
+        }
+    }
+
+}
+
+
+void F_RevData2Jave(byte *data, int nLen) {
+        int needsDetach = 0;
+        if (data == nullptr)
+            return;
+        if (nLen == 0)
+            return;
+
+        JNIEnv *evn = getJNIEnv(&needsDetach);
+        if (evn == nullptr) {
+            return;
+        }
+        int nCount = nLen;
+        if (nCount > 0) {
+            jbyteArray jbarray = evn->NewByteArray(nCount);
+            jbyte *jy = (jbyte *) data;
+            evn->SetByteArrayRegion(jbarray, 0, nCount, jy);
+            if (onUdpRevData_mid != nullptr) {
+                evn->CallStaticVoidMethod(objclass, onUdpRevData_mid, jbarray);
+            }
+            evn->DeleteLocalRef(jbarray);
+        }
+
+        if (needsDetach)
+            gJavaVM->DetachCurrentThread();
+}
+
+
+
+
+void *doReceiveUdp_cmd(void *dat) {
+
+
+    struct sockaddr_in servaddr; /* the server's full addr */
+    struct timeval tv;
+    fd_set readset;
+    size_t nbytes;
+
+    byte *readBuff = new byte[1400];
+
+    socklen_t size = (socklen_t)sizeof(servaddr);
+
+    while(!bNeedExitReadUDP)
+    {
+        tv.tv_sec = 0;
+        tv.tv_usec = 1000*10;
+
+        FD_ZERO(&readset); // 在使用之前总是要清空
+        // 开始使用select
+        FD_SET(rev_udp_socket, &readset); // 把socka放入要测试的描述符集中
+
+        int nRet = select(rev_udp_socket + 1, &readset, nullptr, nullptr, &tv);// 检测是否有套接口是否可读
+        if (nRet <= 0) {
+            usleep(1000*5);
+            continue;
+        }
+        if (!FD_ISSET(rev_udp_socket, &readset))
+        {
+            usleep(1000*5);
+            continue;
+        }
+        memset(readBuff, 0, 1400);
+        nbytes = recvfrom(rev_udp_socket, readBuff, 1400, 0, (struct sockaddr *) &servaddr, (socklen_t *) &size);
+        if (nbytes <= 0) {
+            continue;
+        }
+        else {
+            F_RevData2Jave(readBuff,nbytes);
+        }
+
+    }
+    LOGE("Exit Udp ReadThread");
+    return nullptr;
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_joyhonest_wifination_wifination_naStartReadUdp(JNIEnv *env, jclass type, jint nPort) {
+
+    // TODO
+    bNeedExitReadUDP = false;
+    F_StartRead_Udp(nPort);
+    return 1;
+
+}
+
+extern "C"
+JNIEXPORT jboolean JNICALL
+Java_com_joyhonest_wifination_wifination_naStopReadUdp(JNIEnv *env, jclass type) {
+
+    // TODO
+    if(rev_Udp_thread>0) {
+        bNeedExitReadUDP = true;
+        void *ret = nullptr;
+        pthread_join(rev_Udp_thread, &ret);
+        rev_Udp_thread = -1;
+    }
+
+    return 1;
+
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetSnapPhoto(JNIEnv *env, jclass type, jint w, jint h, jboolean b) {
+
+    // TODO
+    nPhotoW = w;
+    nPhotoH = h;
+    bPhotoSet = b;
+
+}
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naWriteData2Flash(JNIEnv *env, jclass type, jbyteArray data_, jint nLen2) {
+    jbyte *data = env->GetByteArrayElements(data_, nullptr);
+    int len_array = env->GetArrayLength(data_);
+    uint8_t *msg = new uint8_t[len_array+9];
+
+    msg[0] = 'J';
+    msg[1] = 'H';
+    msg[2] = 'C';
+    msg[3] = 'M';
+    msg[4] = 'D';
+    msg[5] = 0x30;
+    msg[6] = 0x06;
+    msg[7] = (uint8_t)len_array;
+    msg[8] = (uint8_t)(len_array>>8);
+    memcpy(msg+9,data,len_array);
+    send_cmd_udp(msg, len_array+9, sServerIP.c_str(), 20000);
+    env->ReleaseByteArrayElements(data_, data, 0);
+}
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naReadDataFromFlash(JNIEnv *env, jclass type) {
+    // TODO
+    uint8_t msg[10];
+    msg[0] = 'J';
+    msg[1] = 'H';
+    msg[2] = 'C';
+    msg[3] = 'M';
+    msg[4] = 'D';
+    msg[5] = 0x30;
+    msg[6] = 0x05;
+    msg[7] = (uint8_t)510;
+    msg[8] = (uint8_t)(510>>8);
+    send_cmd_udp(msg, 9, sServerIP.c_str(), 20000);
+}
+
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_joyhonest_wifination_wifination_naGetRtl_1Mode(JNIEnv *env, jclass type) {
+
+    if(mRTL_DownLoad.Connect() == 0)
+    {
+        usleep(1000*20);
+        mRTL_DownLoad.F_GetMode();
+    }
+    return 0;
+}
+
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_joyhonest_wifination_wifination_naGetRtl_1List(JNIEnv *env, jclass type, jint nType, jint inx) {
+        if(mRTL_DownLoad.Connect() == 0)
+        {
+            usleep(1000*20);
+            mRTL_DownLoad.F_ReadList((int)nType,inx);
+        }
+        return 0;
+
+}
+
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_joyhonest_wifination_wifination_naDownLoadRtlFile(JNIEnv *env, jclass type, jstring sFileName_) {
+    const char *sFileName = env->GetStringUTFChars(sFileName_, 0);
+
+    if(mRTL_DownLoad.Connect() == 0)
+    {
+        usleep(1000*20);
+        mRTL_DownLoad.DownLoadFile(sFileName);
+    }
+
+    env->ReleaseStringUTFChars(sFileName_, sFileName);
+        return 0;
+}
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_joyhonest_wifination_wifination_naCancelRTL(JNIEnv *env, jclass type) {
+
+    mRTL_DownLoad.disConnected();
+    return 0;
+
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naSetLedPWM(JNIEnv *env, jclass type, jbyte nPwm) {
+
+    // TODO
+
+    uint8_t msg[10];
+    msg[0] = 'J';
+    msg[1] = 'H';
+    msg[2] = 'C';
+    msg[3] = 'M';
+    msg[4] = 'D';
+    msg[5] = 0x20;
+    msg[6] = 0x02;
+    msg[7] = (uint8_t)nPwm;
+    send_cmd_udp(msg, 8, sServerIP.c_str(), 20000);
+
+}
+
+
+extern "C"
+JNIEXPORT void JNICALL
+Java_com_joyhonest_wifination_wifination_naGetLedPWM(JNIEnv *env, jclass type) {
+
+    // TODO
+    uint8_t msg[10];
+    msg[0] = 'J';
+    msg[1] = 'H';
+    msg[2] = 'C';
+    msg[3] = 'M';
+    msg[4] = 'D';
+    msg[5] = 0x30;
+    msg[6] = 0x07;
+    send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+
+}
+

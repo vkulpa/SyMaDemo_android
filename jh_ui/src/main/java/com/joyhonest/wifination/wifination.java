@@ -23,6 +23,9 @@ import java.nio.ByteBuffer;
 
 public class wifination {
 
+
+    private  final  static int CmdLen = 1024;
+
     public final static int IC_NO = -1;
     public final static int IC_GK = 0;
     public final static int IC_GP = 1;
@@ -54,7 +57,9 @@ public class wifination {
 
     private final static String TAG = "wifination";
     private static final wifination m_Instance = new wifination();
-    private static final int BMP_Len = (((1280 + 3) / 4) * 4) * 4 * 720 + 1024;
+    private static final int BMP_Len = (((1920 + 3) / 4) * 4) * 4 * 1080 + 1024;
+
+
 
     public static Context appContext = null;
 
@@ -63,13 +68,16 @@ public class wifination {
             System.loadLibrary("jh_wifi");
             AudioEncoder = new AudioEncoder();
             videoMediaCoder = new VideoMediaCoder();
+
+            mDirectBuffer = ByteBuffer.allocateDirect(BMP_Len + CmdLen);     //获取每帧数据，主要根据实际情况，分配足够的空间。
+            naSetDirectBuffer(mDirectBuffer, BMP_Len + CmdLen);
+
         } catch (UnsatisfiedLinkError Ule) {
             Log.e(TAG, "Cannot load jh_wifi.so ...");
             Ule.printStackTrace();
         } finally {
 
-            mDirectBuffer = ByteBuffer.allocateDirect(BMP_Len + 200);     //获取每帧数据，主要根据实际情况，分配足够的空间。
-            naSetDirectBuffer(mDirectBuffer, BMP_Len + 200);
+
         }
     }
 
@@ -96,11 +104,24 @@ public class wifination {
         IC_GPRTSP     sPath = @"rtsp://192.168.26.1:8080/?action=stream"
         其他模块：      sPath=@“”;
     */
+
+
+    //写数据到设备
+    public static native  void naWriteData2Flash(byte[]data,int nLen);
+    //需要读取设备数据，读取的数据从OnGetGP_Status 返回
+    public static native  void naReadDataFromFlash();
+
+    public static native  void  naSetLedPWM(byte nPwm);
+
+    public static native  void  naGetLedPWM();
+
+
+
     public static native int naInit(String pFileName);
 
     //停止播放
     public static native int naStop();
-    //向飞控发送命令
+    //向飞控发送命令OnGetGP_Status
     public static native int naSentCmd(byte[] cmd, int nLen);
 
     //图像是否翻转
@@ -160,11 +181,24 @@ public class wifination {
     }
 
 
+
+
+
     private static native void naSetRevBmpA(boolean b);
 
     //设定是否手势识别， True，每一帧也会由 ReceiveBmp 返回，不同的是 SDK内部还是会显示视频。 如果APP 自己来实现手势识别和显示，
     // 可以用 naSetRevBmp 来替代
     private static native void naSetGestureA(boolean b);
+
+
+    //RTL
+
+    //onReadRtlData  返回读取结果。
+
+    public static native  int naGetRtl_Mode();
+    public static native  int naGetRtl_List(int bImage,int inx);
+    public static native  int naDownLoadRtlFile(String sFileName);
+    public static native  int naCancelRTL();
 
 
     //设定 客户 只针对 GKA， “sima” 表示 客户是司马 ，目前只有这一个设定
@@ -195,7 +229,7 @@ public class wifination {
 
     public static native int naPlay();
     public static native int naStartCheckSDStatus(boolean bStart);
-    public static native void naSetIcType(int nICType);
+
     public static native void naSet3DA(boolean b);
     public static native int naSetGPFps(int nFps);
     public static native int naGkASetRecordResolution(boolean b20P);
@@ -233,7 +267,7 @@ public class wifination {
 
     public static native int naGetwifiFps();
 
-    public static native String naGetControlType(); //获取飞控型号，主要针对 SYMA  国科
+    public static native String naGetControlType(); //获取飞控型号，主要针对 SYMA  国科t
 
     public static native boolean naSetBackground(byte[] data, int width, int height);
 
@@ -271,6 +305,8 @@ public class wifination {
     public static native  void naSetMirror(boolean b);
 
 
+    public static  native void naSetSnapPhoto(int w,int h,boolean b);
+
 
     public static native void init();
 
@@ -281,6 +317,15 @@ public class wifination {
     public static native void drawFrame();
 
 
+
+/*
+    public static  native  void CancelNoiseInit(int frame_size, int sample_rate);
+
+    public static  native  int CancelNoisePreprocess(byte[] cmd, int nLen);
+
+    public static  native  void CancelNoiseDestroy();
+*/
+
     public  static boolean  bGesture = false;
     public  static boolean  bRevBmp = false;
 
@@ -289,8 +334,25 @@ public class wifination {
 
 
 
+    public static void naSetGesture_vol(float aa)
+    {
+        ObjectDetector.MINIMUM_CONFIDENCE_TF_OD_API = aa;
+    }
+
+///////JoyTrip
+
+    public static native boolean naSentUdpData(String sIP, int nPort,byte[] data, int nLen);
+    public static native boolean naStartReadUdp(int nPort); // 收到数据后，会通过onUdpRevData 返回
+    public static native boolean naStopReadUdp();
+    private static  void onUdpRevData(byte[] data)
+    {
+          EventBus.getDefault().post(data,"onUdpRevData");
+    }
 
 
+
+
+////////////////
 
     private static void G_StartAudio(int b) {
         if (b != 0) {
@@ -461,67 +523,196 @@ public class wifination {
 
 
     private static void OnGetGP_Status(int nStatus) {
-        if(((nStatus & 0xFFFFFF00) == 0xAABBCC00))   //所有通过串口传过来的数据 ，用于与固件调试时使用
+        int nType =  ((nStatus>>16) & 0xFFFF);
+        switch(nType)
         {
-            int nLen = (nStatus & 0xFF);
-            if (nLen > 200)
-                nLen = 200;
-
-            byte[] cmd = new byte[nLen];
-
-            ByteBuffer buf = wifination.mDirectBuffer;
-            buf.rewind();
-            for (int i = 0; i < nLen; i++) {
-                cmd[i] = buf.get(i + BMP_Len);
+            case 0x1020:           //夜视灯PWM
+            {
+                Integer ix = (nStatus & 0xFF);
+                EventBus.getDefault().post(ix, "OnGetPwmData");
             }
-            EventBus.getDefault().post(cmd, "GetDataFromRs232");
-        }
-        else if ((nStatus & 0xFFFFFF00) == 0x55AA5500)  // wifi模块透传回来的数据
-        {
-            int nLen = (nStatus & 0xFF);
-            if (nLen > 200)
-                nLen = 200;
+                break;
+            case   0x3005:    //读取flash数据
+            {
+                int nLen = (nStatus & 0xFFFF);
+                if (nLen > CmdLen)
+                    nLen = CmdLen;
+                byte[] cmd = new byte[nLen];
 
-            byte[] cmd = new byte[nLen];
-
-            ByteBuffer buf = wifination.mDirectBuffer;
-            buf.rewind();
-            for (int i = 0; i < nLen; i++) {
-                cmd[i] = buf.get(i + BMP_Len);
+                ByteBuffer buf = wifination.mDirectBuffer;
+                //buf.rewind();
+                for (int i = 0; i < nLen; i++) {
+                    cmd[i] = buf.get(i + BMP_Len);
+                }
+                EventBus.getDefault().post(cmd, "ReadDataFromFlash");
             }
-            EventBus.getDefault().post(cmd, "GetWifiSendData");
-        }
-        else if ((nStatus & 0xFFFFFF00) == 0xAA55AA00)    //GP RTPB  回传 模块本身信息数据
-        {
-            int nLen = (nStatus & 0xFF);
-            if (nLen > 200)
-                nLen = 200;
-            byte[] cmd = new byte[nLen];
-            ByteBuffer buf = wifination.mDirectBuffer;
-            buf.rewind();
-            for (int i = 0; i < nLen; i++) {
-                cmd[i] = buf.get(i + BMP_Len);
+                break;
+            case   0x3006:      //写数据结果
+            {
+                int re  = 1;
+                int nLen = (nStatus & 0x00FF);
+                if(nLen==1)
+                {
+                    re = 1;
+                }
+                else
+                {
+                    re = 0;
+                }
+                Integer ii = re;
+                EventBus.getDefault().post(ii, "WriteData2FlashResult");
             }
-            EventBus.getDefault().post(cmd, "GetWifiInfoData");
-        }
-        else if ((nStatus & 0xFFFFFF00) == 0xAA555500)    //GP 回传电量
-        {
-            int nBattery = nStatus &0x0F;
-            Integer nB = nBattery;
-            EventBus.getDefault().post(nB, "OnGetBatteryLevel");
-        }
-        else if ((nStatus & 0xFFFFFF00) == 0x11223300)    //回传电量显示nStyle
-        {
-            int nStyle = nStatus &0x0F;
-            Integer nB = nStyle;
-            EventBus.getDefault().post(nB, "OnGetSetStyle");
+                break;
+            case 0xFFFF:                    //所有通过串口传过来的数据 ，用于与固件调试时使用
+            {
+                int nLen = (nStatus & 0xFFFF);
+                if (nLen > CmdLen)
+                    nLen = CmdLen;
+
+                byte[] cmd = new byte[nLen];
+
+                ByteBuffer buf = wifination.mDirectBuffer;
+                //buf.rewind();
+                for (int i = 0; i < nLen; i++) {
+                    cmd[i] = buf.get(i + BMP_Len);
+                }
+                EventBus.getDefault().post(cmd, "GetDataFromRs232");
+            }
+                break;
+            case 0x5443:            //wifi透传数据
+            {
+                int nLen = (nStatus & 0xFF);
+
+                byte[] cmd = new byte[nLen];
+
+                ByteBuffer buf = wifination.mDirectBuffer;
+                //buf.rewind();
+                for (int i = 0; i < nLen; i++) {
+                    cmd[i] = buf.get(i + BMP_Len);
+                }
+                EventBus.getDefault().post(cmd, "GetWifiSendData");
+            }
+                break;
+            case  0x2000://              回传 模块本身信息数据
+            {
+                int nLen = (nStatus & 0xFF);
+                byte[] cmd = new byte[nLen];
+                ByteBuffer buf = wifination.mDirectBuffer;
+                //buf.rewind();
+                for (int i = 0; i < nLen; i++) {
+                    cmd[i] = buf.get(i + BMP_Len);
+                }
+                EventBus.getDefault().post(cmd, "GetWifiInfoData");
+            }
+                break;
+
+            case 0x1021:
+            case 0xFFFE:            //电量
+            {
+                Integer nB = nStatus &0x0F;;
+                EventBus.getDefault().post(nB, "OnGetBatteryLevel");
+            }
+                break;
+
+            case  0x0006:       //返回显示Style
+            {
+                Integer nB = nStatus &0x0F;
+                EventBus.getDefault().post(nB, "OnGetSetStyle");
+            }
+                break;
+
+            case 0xFFFC:            //按键  -- 这是为了兼容之前的SDK，新版的SDK通过  OnKeyPress  返回
+                Integer ix = nStatus &0xFF;                //返回 模块按键
+                EventBus.getDefault().post(ix, "OnGetGP_Status");
+                break;
+
         }
 
-        else {
-            Integer ix = nStatus;                //返回 模块按键
-            Log.e(TAG, "Get data = " + nStatus);
-            EventBus.getDefault().post(ix, "OnGetGP_Status");
-        }
+
+//        if(((nStatus & 0xFFFF0000) == 0x30050000))  //读取flash数据
+//        {
+//            int nLen = (nStatus & 0xFFFF);
+//            if (nLen > CmdLen)
+//                nLen = CmdLen;
+//            byte[] cmd = new byte[nLen];
+//
+//            ByteBuffer buf = wifination.mDirectBuffer;
+//            //buf.rewind();
+//            for (int i = 0; i < nLen; i++) {
+//                cmd[i] = buf.get(i + BMP_Len);
+//            }
+//            EventBus.getDefault().post(cmd, "ReadDataFromFlash");
+//        }
+//        else if(((nStatus & 0xFFFF0000) == 0x30060000))  //写数据结果
+//        {
+//            int re  = 1;
+//            int nLen = (nStatus & 0x00FF);
+//            if(nLen==1)
+//            {
+//                re = 1;
+//            }
+//            else
+//            {
+//                re = 0;
+//            }
+//            Integer ii = re;
+//            EventBus.getDefault().post(ii, "WriteData2FlashResult");
+//        }
+//        else if(((nStatus & 0xFFFFFF00) == 0xAABBCC00))   //所有通过串口传过来的数据 ，用于与固件调试时使用
+//        {
+//            int nLen = (nStatus & 0xFF);
+//            if (nLen > CmdLen)
+//                nLen = CmdLen;
+//
+//            byte[] cmd = new byte[nLen];
+//
+//            ByteBuffer buf = wifination.mDirectBuffer;
+//            //buf.rewind();
+//            for (int i = 0; i < nLen; i++) {
+//                cmd[i] = buf.get(i + BMP_Len);
+//            }
+//            EventBus.getDefault().post(cmd, "GetDataFromRs232");
+//        }
+//        else if ((nStatus & 0xFFFFFF00) == 0x55AA5500)  // wifi模块透传回来的数据
+//        {
+//            int nLen = (nStatus & 0xFF);
+//
+//            byte[] cmd = new byte[nLen];
+//
+//            ByteBuffer buf = wifination.mDirectBuffer;
+//            //buf.rewind();
+//            for (int i = 0; i < nLen; i++) {
+//                cmd[i] = buf.get(i + BMP_Len);
+//            }
+//            EventBus.getDefault().post(cmd, "GetWifiSendData");
+//        }
+//        else if ((nStatus & 0xFFFFFF00) == 0xAA55AA00)    //GP RTPB  回传 模块本身信息数据
+//        {
+//            int nLen = (nStatus & 0xFF);
+//
+//            byte[] cmd = new byte[nLen];
+//            ByteBuffer buf = wifination.mDirectBuffer;
+//            //buf.rewind();
+//            for (int i = 0; i < nLen; i++) {
+//                cmd[i] = buf.get(i + BMP_Len);
+//            }
+//            EventBus.getDefault().post(cmd, "GetWifiInfoData");
+//        }
+//        else if ((nStatus & 0xFFFFFF00) == 0xAA555500)    //GP 回传电量
+//        {
+//            Integer nB = nStatus &0x0F;;
+//            EventBus.getDefault().post(nB, "OnGetBatteryLevel");
+//        }
+//        else if ((nStatus & 0xFFFFFF00) == 0x11223300)    //回传电量显示nStyle
+//        {
+//            Integer nB = nStatus &0x0F;
+//            EventBus.getDefault().post(nB, "OnGetSetStyle");
+//        }
+//
+//        else {
+//            Integer ix = nStatus;                //返回 模块按键
+//            EventBus.getDefault().post(ix, "OnGetGP_Status");
+//        }
     }
 
     //// 测试信息。。。。。
@@ -571,6 +762,7 @@ public class wifination {
     /////// 以下 SYMA 不使用 --------
     private static void OnKeyPress(int nStatus) {
         Integer n = nStatus;
+        Log.v("GKey","Key = "+nStatus);
         EventBus.getDefault().post(n, "key_Press");
         EventBus.getDefault().post(n, "Key_Pressed");
     }
@@ -584,7 +776,8 @@ public class wifination {
         // 此函数需要把数据尽快处理和保存。
         // 图像数据保存在mDirectBuffer中，格式为ARGB_8888
 
-        Bitmap bmp = Bitmap.createBitmap(i & 0xFFFF, (i & 0xFFFF0000) >> 16, Bitmap.Config.ARGB_8888);
+        //Bitmap bmp = Bitmap.createBitmap(i & 0xFFFF, (i & 0xFFFF0000) >> 16, Bitmap.Config.ARGB_8888);
+        Bitmap bmp = Bitmap.createBitmap(i & 0xFFFF, ((i >> 16)& 0xFFFF), Bitmap.Config.ARGB_8888);
         ByteBuffer buf = wifination.mDirectBuffer;
         buf.rewind();
         bmp.copyPixelsFromBuffer(buf);    //
@@ -595,9 +788,7 @@ public class wifination {
             if(sig!=null)
                 sig.GetNumber(bmp);
         }
-
     }
-
 
     ///////////video Media
     private  static int F_InitEncoder(int width,int height,int bitrate,int fps)
@@ -613,6 +804,7 @@ public class wifination {
          }
     }
 
+
     private  static void F_CloseEncoder()
     {
         if(videoMediaCoder!=null)
@@ -621,5 +813,29 @@ public class wifination {
         }
     }
 
+    private static void onReadRtlData(byte[]data)
+    {
+        //REMODE0;
+        if(data.length == 8 )
+        {
+            String string = new String(data);
+            int nMode = -1;
+            if(string.equals("REMODE0;"))
+            {
+                nMode = 0;
+            }
+            if(string.equals("REMODE1;"))
+            {
+                nMode = 1;
+            }
+            if(nMode!=-1)
+            {
+                Integer nM = nMode;
+                EventBus.getDefault().post(nM,"onGetRtlMode");
+                return;
+            }
+        }
+        EventBus.getDefault().post(data,"onReadRtlData");
+    }
 
 }

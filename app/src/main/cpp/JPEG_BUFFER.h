@@ -15,12 +15,13 @@ public:
     void Clear(void);
     void Release(void);
     uint8_t *buffer;
-    uint16_t  nCount;
+    uint32_t  nCount;
     uint32_t  nJpegInx;
     uint16_t   mInx[800];
     int64_t   nSize;
     int32_t   bOK;
 
+    bool  AppendData(uint8_t *data,int nLen);
 
     bool    bKeyFrame;
 

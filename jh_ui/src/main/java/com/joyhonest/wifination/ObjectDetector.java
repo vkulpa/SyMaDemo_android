@@ -21,13 +21,16 @@ public class ObjectDetector
 
 
     private static Context  AppContext=null;
-    private   static  int   cropSize = 300;
+    //private   static  int   cropSize = 300;
+    public    static  int  nWidth=300;
+    public    static  int  nHeight=300;
+
     private  boolean  bBusy = false;
     private  boolean   bStar=false;
     private Classifier detector;
 
-    private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.80f;
-    private static final int TF_OD_API_INPUT_SIZE = 300;
+    public static  float MINIMUM_CONFIDENCE_TF_OD_API = 0.80f;
+    //private static final int TF_OD_API_INPUT_SIZE = 300;
 
     private static final String TF_OD_API_MODEL_FILE ="file:///android_asset/frozen_inference_graph.pb";
     private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/mydata.txt";
@@ -36,17 +39,27 @@ public class ObjectDetector
 
     private Matrix frameToCropTransform;
     private Matrix cropToFrameTransform;
-    private Bitmap croppedBitmap;
+    private Bitmap croppedBitmap = null;
     private Canvas canvas;
     private Handler handler;
     private HandlerThread handlerThread;
 
+
+
+    public void  F_SetWidth_Height(int nW,int nH)
+    {
+        nWidth = nW;
+        nHeight = nH;
+        if(croppedBitmap!=null)
+            croppedBitmap.recycle();
+        croppedBitmap = Bitmap.createBitmap(nWidth, nHeight, Bitmap.Config.ARGB_8888);
+        canvas = new Canvas(croppedBitmap);
+    }
+
     private   ObjectDetector()
     {
-        croppedBitmap = Bitmap.createBitmap(cropSize, cropSize, Bitmap.Config.ARGB_8888);
+        croppedBitmap = Bitmap.createBitmap(nWidth, nHeight, Bitmap.Config.ARGB_8888);
         canvas = new Canvas(croppedBitmap);
-
-
     }
 
     public  void SetAppCentext(Context context)
@@ -60,11 +73,11 @@ public class ObjectDetector
             if(detector==null)
             {
                 try {
-                    detector = JH_ObjectDetectionAPIModel.create(
-                            AppContext.getAssets(), TF_OD_API_MODEL_FILE, TF_OD_API_LABELS_FILE, TF_OD_API_INPUT_SIZE);
-                    cropSize = TF_OD_API_INPUT_SIZE;
+//                    detector = JH_ObjectDetectionAPIModel.create(
+//                            AppContext.getAssets(), TF_OD_API_MODEL_FILE, TF_OD_API_LABELS_FILE, TF_OD_API_INPUT_SIZE);
+                    //cropSize = TF_OD_API_INPUT_SIZE;
+                    detector = JH_ObjectDetectionAPIModel.create(AppContext.getAssets(), TF_OD_API_MODEL_FILE, TF_OD_API_LABELS_FILE, nWidth,nHeight);
                 } catch (final IOException e) {
-
                 }
             }
         }
@@ -127,7 +140,7 @@ public class ObjectDetector
             frameToCropTransform =
                     ImageUtils.getTransformationMatrix(
                             width, height,
-                            cropSize, cropSize,
+                            nWidth, nHeight,
                             0, false);
 
             cropToFrameTransform = new Matrix();
@@ -154,21 +167,54 @@ public class ObjectDetector
         float minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
 
         boolean bFind =false;
+        String id="";
+        boolean bfirset=true;
+        int nMax=0;
+        int nre=0;
+        int SetMax = (int) (minimumConfidence * 100);
         for (final Classifier.Recognition result : results)
         {
+
             final RectF location = result.getLocation();
-            if (location != null && result.getConfidence() >= minimumConfidence)
+            if(location!=null) {
+                if (bfirset)// && result.getConfidence() >= minimumConfidence)
+                {
+                    nre = (int) (result.getConfidence() * 100);
+                    id = result.getTitle();
+                    nMax = nre;
+                } else {
+                    int tm = (int) (result.getConfidence() * 100);
+                    if (tm >= nre) {
+                        nre = tm;
+                        nMax = nre;
+                        id = result.getTitle();
+                    }
+                }
+                bfirset = false;
+            }
+
+//            if (location != null && result.getConfidence() >= minimumConfidence)
+//            {
+//                //Log.i("MyTAG",result.getTitle());
+//                String id = result.getTitle();
+//                bFind = true;
+//                EventBus.getDefault().post(id,"GetGueset");
+//                break;
+//            }
+        }
+
+        if(!id.isEmpty())
+        {
+            if(nMax>=SetMax)
             {
-                Log.i("MyTAG",result.getTitle());
-                String id = result.getTitle();
-                bFind = true;
+                bFind=true;
                 EventBus.getDefault().post(id,"GetGueset");
-                break;
             }
         }
+
         if(!bFind)
         {
-            Log.i("MyTAG","Not Found!!");
+            //Log.i("MyTAG","Not Found!!");
             EventBus.getDefault().post("","GetGueset");
         }
         bBusy = false;

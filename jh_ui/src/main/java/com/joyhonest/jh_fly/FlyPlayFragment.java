@@ -1016,6 +1016,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
 
         //68 01 09 80 80 80 80 20 08 00 00 00 20
 
+/*
         cmd[0] = (byte) 0x68;   //油门
         cmd[1] = (byte) 0x01;
         cmd[2] = (byte) 0x09;
@@ -1034,7 +1035,7 @@ public class FlyPlayFragment extends Fragment implements View.OnClickListener {
         wifination.naSentCmd(cmd, 13);
         return;
 
-
+*/
 
 
 /*
@@ -1079,7 +1080,7 @@ Data9：Data0- Data8异或后，再加0X55
         //if(myControl.getVisibility()!=View.VISIBLE)
         //    return;
 
-/*
+
         if (JH_App.bisPathMode)
             return;
 
@@ -1226,7 +1227,7 @@ Data9：Data0- Data8异或后，再加0X55
         cmd[9] = (byte) (((cmd[0] ^ cmd[1] ^ cmd[2] ^ cmd[3] ^ cmd[4] ^ cmd[5] ^ cmd[6] ^ cmd[7] ^ cmd[8]) & 0xFF) + 0x55);
         wifination.naSentCmd(cmd, 10);
         //  Log.e("Cmd:  ","Sent NromalComd  X1=" +X1+" Y1="+Y1+" X2="+X2+" Y2="+Y2+"  temp="+nTestTemp);
-*/
+
 
         /*
 

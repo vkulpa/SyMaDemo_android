@@ -638,19 +638,19 @@ public class main_fragment extends Fragment implements View.OnClickListener {
                 X1 = 0xFF;
             }
 
-            i = 0;
-            cmd[i++] = 0x66;           //0
-            cmd[i++] = (byte) X2;
-            cmd[i++] = (byte) Y2;
-            cmd[i++] = (byte) Y1;
-            cmd[i++] = (byte) X1;
-            cmd[i++] = (byte) flag;     //5
-            cmd[i++] = (byte) flag2;
-            cmd[i++] = (byte) flag3;
-            cmd[i++] = (byte) X_ADJ2;
-            cmd[i++] = (byte) Y_ADJ2;
-            cmd[i++] = (byte) X_ADJ1;
-            wifination.naSentCmd(cmd, i);
+
+            cmd[0] = 0x66;           //0
+            cmd[1] = (byte) X2;
+            cmd[2] = (byte) Y2;
+            cmd[3] = (byte) Y1;
+            cmd[4] = (byte) X1;
+            cmd[5] = (byte) flag;     //5
+            cmd[6] = (byte) flag2;
+            cmd[7] = (byte) flag3;
+            cmd[8] = (byte) X_ADJ2;
+            cmd[9] = (byte) Y_ADJ2;
+            cmd[10] = (byte) X_ADJ1;
+            wifination.naSentCmd(cmd, 11);
         }
     }
 
@@ -723,8 +723,10 @@ public class main_fragment extends Fragment implements View.OnClickListener {
     @Override
     public void onClick(View view) {
         if (view == But_Path) {
-            // EventBus.getDefault().post(myControl.RockeLeft,"MyContronl_setSize");
+
             EventBus.getDefault().post("abc", "GotoPath");
+            //wifination.naGetRtl_List(false,0);
+            //wifination.naDownLoadRtlFile("20190101_000014.mp4");
 
         }
         if (view == But_HeadLess) {
@@ -737,11 +739,42 @@ public class main_fragment extends Fragment implements View.OnClickListener {
 
         }
         if (view == But_Power) {
-            if (myControl.getVisibility() == View.VISIBLE) {
-                F_Power(false);
-            } else {
-                F_Power(true);
-            }
+
+            F_NeedReadCmd();
+
+
+//            if (myControl.getVisibility() == View.VISIBLE) {
+//                F_Power(false);
+//            } else {
+//                F_Power(true);
+//            }
+
+        }
+
+        if (view == But_Adj) {
+
+//            F_Write();
+
+            //aivenlau
+            myControl.F_SetRotateAdj(0x80);
+            myControl.F_SetForwardBackAdj(0x80);
+            myControl.F_SetLeftRightAdj(0x80);
+
+            JH_App.nAdjRota = 0x80;
+            JH_App.nAdjForwardBack = 0x80;
+            JH_App.nAdjLeftRight = 0x80;
+            JH_App.F_ReadSaveSetting(true);
+
+
+            bAdj = true;
+            But_Adj.setBackgroundResource(R.mipmap.trest_sel_jh);
+            new Handler().postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    bAdj = false;
+                    But_Adj.setBackgroundResource(R.mipmap.trest_nor_jh);
+                }
+            }, 1000);
         }
 
         if (view == But_KeyStop) {
@@ -810,27 +843,7 @@ public class main_fragment extends Fragment implements View.OnClickListener {
                 }, 500);
             }
         }
-        if (view == But_Adj) {
-            myControl.F_SetRotateAdj(0x80);
-            myControl.F_SetForwardBackAdj(0x80);
-            myControl.F_SetLeftRightAdj(0x80);
 
-            JH_App.nAdjRota = 0x80;
-            JH_App.nAdjForwardBack = 0x80;
-            JH_App.nAdjLeftRight = 0x80;
-            JH_App.F_ReadSaveSetting(true);
-
-
-            bAdj = true;
-            But_Adj.setBackgroundResource(R.mipmap.trest_sel_jh);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    bAdj = false;
-                    But_Adj.setBackgroundResource(R.mipmap.trest_nor_jh);
-                }
-            }, 1000);
-        }
         if (view == But_Sensor) {
             int Sensor_img = R.mipmap.gravity_sel_jh;
             bSensor = !bSensor;
@@ -902,20 +915,22 @@ public class main_fragment extends Fragment implements View.OnClickListener {
                 }
 
 
-                wifination.naStopRecord_All();
+                wifination.naStopRecord_All(); //aivenlau
+                //wifination.naStopRecord(wifination.TYPE_ONLY_PHONE);
+
                 if (sRecordFileName.length() > 10) {
                     sRecordFileName = "";
                 }
                 //JH_App.nRecTime=0;
             } else {
                 sRecordFileName = JH_App.F_GetSaveName(false);
-                wifination.naStartRecord(sRecordFileName, wifination.TYPE_BOTH_PHONE_SD);
-                //JH_App.nRecTime = System.currentTimeMillis() / 1000;
-                //JH_App.nRecTime = 0;
+
+                 wifination.naStartRecord(sRecordFileName, wifination.TYPE_BOTH_PHONE_SD); //aivenlau
+
+                //wifination.naStartRecord(sRecordFileName, wifination.TYPE_ONLY_PHONE);
+
                 RecordTime_textView.setText("00:00");
-                //NSString *str = [self F_GetSaveName:NO];
-                //[self.wifiCamera   naStartRecord:str SaveTyoe:TYPE_BOTH_PHONE_SD Destination:TYPE_DEST_SNADBOX];
-                //_nRecTime=[[NSDate date] timeIntervalSince1970] * 1000;
+
             }
         }
     }
@@ -1081,6 +1096,33 @@ public class main_fragment extends Fragment implements View.OnClickListener {
 
 
         RecordTime_textView.setText(str);
+
+    }
+
+    private void F_NeedReadCmd()
+    {
+        wifination.naReadDataFromFlash();
+    }
+
+    private  void F_Write()
+    {
+        byte []cmd = new byte[512];
+        cmd[0]=(byte)0xAA;
+        cmd[1]=(byte)0x55;
+        cmd[2]=(byte)0xBB;
+        cmd[3]=(byte)0xCC;
+        int x;
+        for(int i=4;i<512;i++)
+        {
+            x=i;
+            if(x>0xFF)
+                x-=0xFF;
+            cmd[i]=(byte)x;
+        }
+        cmd[510]=0x55;
+        cmd[511]=(byte)0xAA;
+
+        wifination.naWriteData2Flash(cmd,512);
 
     }
 
