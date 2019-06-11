@@ -21,110 +21,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0fbf7360-da3a-4b40-a494-2341116135a5" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.gradle/4.6/fileContent/fileContent.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.6/fileHashes/fileHashes.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.6/fileHashes/fileHashes.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.6/fileHashes/resourceHashesCache.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.6/javaCompile/classAnalysis.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.6/javaCompile/jarAnalysis.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.6/javaCompile/javaCompile.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.6/javaCompile/taskHistory.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.6/taskHistory/taskHistory.bin" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/4.6/taskHistory/taskHistory.lock" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/buildOutputCleanup.lock" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/cache.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.gradle/buildOutputCleanup/outputFiles.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/caches/build_file_checksums.ser" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__android_arch_lifecycle_runtime_1_0_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_support_appcompat_v7_26_1_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_support_constraint_constraint_layout_1_1_3.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_support_constraint_constraint_layout_1_1_3_aar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_support_constraint_constraint_layout_1_1_3_aar.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_support_support_compat_26_1_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_support_support_core_ui_26_1_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_support_support_core_utils_26_1_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_support_support_fragment_26_1_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_support_support_v4_26_1_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__com_android_support_transition_26_1_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_simple_androideventbus_1_0_5_1.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_simple_androideventbus_1_0_5_1_aar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_simple_androideventbus_1_0_5_1_aar.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_tensorflow_tensorflow_android_1_10_0.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_tensorflow_tensorflow_android_1_10_0_aar.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/libraries/Gradle__org_tensorflow_tensorflow_android_1_13_1_aar.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/libraries/Gradle__org_tensorflow_tensorflow_android_1_13_1_aar.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/.ninja_deps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/.ninja_log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/3.6.0-rc2/CMakeCCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/3.6.0-rc2/CMakeCCompiler.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/3.6.0-rc2/CMakeCXXCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/3.6.0-rc2/CMakeCXXCompiler.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_C.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_C.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_CXX.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_CXX.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/3.6.0-rc2/CMakeSystem.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/3.6.0-rc2/CMakeSystem.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/CMakeOutput.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/feature_tests.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/CMakeFiles/feature_tests.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/android_gradle_build.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/android_gradle_build.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/build.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/cmake_build_command.txt" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/cmake_build_command.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/rules.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/arm64-v8a/rules.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/.ninja_deps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/.ninja_log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeCCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeCCompiler.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeCXXCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeCXXCompiler.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_C.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_C.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_CXX.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_CXX.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeSystem.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeSystem.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/CMakeOutput.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/feature_tests.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/CMakeFiles/feature_tests.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/android_gradle_build.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/android_gradle_build.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/build.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/cmake_build_command.txt" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/cmake_build_command.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/rules.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/debug/armeabi-v7a/rules.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/CMakeCache.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/CMakeFiles/CMakeOutput.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/CMakeFiles/feature_tests.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/CMakeFiles/feature_tests.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/android_gradle_build.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/android_gradle_build.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/build.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/cmake_build_command.txt" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/cmake_build_command.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/rules.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/arm64-v8a/rules.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/.ninja_deps" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/.ninja_log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeCCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeCCompiler.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeCXXCompiler.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeCXXCompiler.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_C.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_C.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_CXX.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeDetermineCompilerABI_CXX.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeSystem.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/3.6.0-rc2/CMakeSystem.cmake" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/CMakeOutput.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/feature_tests.bin" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/feature_tests.bin" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/FFMpegPlayerCore.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/FFMpegPlayerCore.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/GL/CameraOpenGLES.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/GL/CameraOpenGLES.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/GL/cameraShader.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/GL/cameraShader.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/GL/opengles/esUtil.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/GL/opengles/esUtil.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/GL/opengles/matrix.c.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/GL/opengles/matrix.c.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/JH_TestInfo.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/JH_TestInfo.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/JPEG_BUFFER.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/JPEG_BUFFER.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MyDownLoad_GKA.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MyDownLoad_GKA.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MyFrame.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MyFrame.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MyMediaCoder.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MyMediaCoder.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MySocketData.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MySocketData.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MySocket_GKA.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MySocket_GKA.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MySonix.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/MySonix.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/bitvector.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/bitvector.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/exp_golomb.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/exp_golomb.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/h264_rbsp.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/h264_rbsp.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/pps_parse.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/pps_parse.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/sps_parse.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/h264prase/sps_parse.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/imageutils_jni.cc.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/imageutils_jni.cc.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/jh_wifi.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/jh_wifi.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/myRTP.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/myRTP.cpp.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/rgb2yuv.cc.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/rgb2yuv.cc.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/yuv2rgb.cc.o" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/CMakeFiles/jh_wifi.dir/src/main/cpp/yuv2rgb.cc.o" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/rules.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/app/.externalNativeBuild/cmake/release/armeabi-v7a/rules.ninja" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/CMakeLists.txt" beforeDir="false" afterPath="$PROJECT_DIR$/app/CMakeLists.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/app.iml" beforeDir="false" afterPath="$PROJECT_DIR$/app/app.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/build.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/app/build.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/release/output.json" beforeDir="false" afterPath="$PROJECT_DIR$/app/release/output.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/main_fragment.java" beforeDir="false" afterPath="$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/main_fragment.java" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/app/.externalNativeBuild/" />
     <ignored path="$PROJECT_DIR$/app/build/intermediates/annotation_processor_list/" />
@@ -218,7 +116,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/app/src/main/cpp/jh_wifi.cpp">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="198">
+            <state relative-caret-position="111015">
               <caret line="7401" column="65" selection-start-line="7401" selection-start-column="41" selection-end-line="7401" selection-end-column="65" />
             </state>
           </provider>
@@ -227,12 +125,8 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/main_fragment.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="309">
-              <caret line="274" column="54" lean-forward="true" selection-start-line="274" selection-start-column="54" selection-end-line="274" selection-end-column="54" />
-              <folding>
-                <element signature="e#32443#32444#0" expanded="true" />
-                <element signature="e#32491#32492#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="-4450">
+              <caret line="452" column="27" lean-forward="true" selection-start-line="452" selection-start-column="27" selection-end-line="452" selection-end-column="27" />
             </state>
           </provider>
         </entry>
@@ -249,7 +143,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/JH_App.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="214">
+            <state relative-caret-position="14610">
               <caret line="1039" selection-start-line="1039" selection-end-line="1039" />
             </state>
           </provider>
@@ -267,7 +161,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/wifination/wifination.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="228">
+            <state relative-caret-position="2265">
               <caret line="153" column="42" selection-start-line="153" selection-start-column="40" selection-end-line="153" selection-end-column="42" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -297,7 +191,7 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/wifination/VideoMediaCoder.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
+            <state relative-caret-position="255">
               <caret line="24" column="5" selection-start-line="24" selection-start-column="5" selection-end-line="24" selection-end-column="5" />
               <folding>
                 <element signature="e#527#528#0" expanded="true" />
@@ -324,7 +218,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>naSetIcType</find>
       <find>ncheck</find>
       <find>IC_GPRTPC</find>
       <find>sname</find>
@@ -354,6 +247,7 @@
       <find>bRecord720P</find>
       <find>naSna</find>
       <find>naGkASetRecordResolution</find>
+      <find>nIsOldFlyControl</find>
     </findStrings>
     <replaceStrings>
       <replace />
@@ -411,7 +305,6 @@
         <option value="$PROJECT_DIR$/app/src/main/AndroidManifest.xml" />
         <option value="$PROJECT_DIR$/app/build.gradle" />
         <option value="$PROJECT_DIR$/app/src/main/cpp/jh_wifi.h" />
-        <option value="$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/main_fragment.java" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/joyhonest/symademo/SplashActivity.java" />
         <option value="$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/wifination/JH_ObjectDetectionAPIModel.java" />
         <option value="$PROJECT_DIR$/jh_ui/src/main/assets/mydata.txt" />
@@ -427,6 +320,7 @@
         <option value="$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/PlayActivity.java" />
         <option value="$PROJECT_DIR$/jh_ui/build.gradle" />
         <option value="$PROJECT_DIR$/app/src/main/cpp/jh_wifi.cpp" />
+        <option value="$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/main_fragment.java" />
       </list>
     </option>
   </component>
@@ -460,6 +354,17 @@
             <path>
               <item name="SyMaDemo_android" type="b2602c69:ProjectViewProjectNode" />
               <item name="External Libraries" type="cb654da1:ExternalLibrariesNode" />
+            </path>
+          </expand>
+          <select />
+        </subPane>
+      </pane>
+      <pane id="PackagesPane">
+        <subPane>
+          <expand>
+            <path>
+              <item name="SyMaDemo_android" type="58d84e3e:PackageViewProjectNode" />
+              <item name="app" type="616d4139:PackageViewModuleNode" />
             </path>
           </expand>
           <select />
@@ -513,17 +418,6 @@
             <path>
               <item name="SyMaDemo_android" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
-            </path>
-          </expand>
-          <select />
-        </subPane>
-      </pane>
-      <pane id="PackagesPane">
-        <subPane>
-          <expand>
-            <path>
-              <item name="SyMaDemo_android" type="58d84e3e:PackageViewProjectNode" />
-              <item name="app" type="616d4139:PackageViewModuleNode" />
             </path>
           </expand>
           <select />
@@ -671,10 +565,10 @@
     <frame x="0" y="23" width="2560" height="1342" extended-state="0" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.5874499" visible="true" weight="0.175139" />
+      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.58465606" visible="true" weight="0.175139" />
       <window_info id="Structure" order="1" sideWeight="0.3895131" side_tool="true" weight="0.175139" />
       <window_info id="Designer" order="2" />
-      <window_info id="Captures" order="3" sideWeight="0.41255006" side_tool="true" visible="true" weight="0.175139" />
+      <window_info id="Captures" order="3" sideWeight="0.4153439" side_tool="true" visible="true" weight="0.175139" />
       <window_info x="24" y="612" width="489" height="1215" id="Build Variants" order="4" sideWeight="0.3895131" side_tool="true" weight="0.175139" />
       <window_info id="Image Layers" order="5" />
       <window_info id="Favorites" order="6" sideWeight="0.26941746" side_tool="true" weight="0.23153296" />
@@ -688,14 +582,14 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" sideWeight="0.4733916" weight="0.32681337" />
       <window_info anchor="bottom" id="Gradle Console" order="7" sideWeight="0.6985703" side_tool="true" weight="0.301381" />
-      <window_info anchor="bottom" id="Android Profiler" order="8" sideWeight="0.7299444" weight="0.33659333" />
+      <window_info anchor="bottom" id="Android Profiler" order="8" show_stripe_button="false" sideWeight="0.7299444" weight="0.33659333" />
       <window_info anchor="bottom" id="Android Monitor" order="9" sideWeight="0.4364575" weight="0.4313566" />
-      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.43764892" side_tool="true" visible="true" weight="0.38956806" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.426529" side_tool="true" visible="true" weight="0.3838631" />
       <window_info anchor="bottom" id="Logcat" order="11" sideWeight="0.54050833" weight="0.34718826" />
       <window_info anchor="bottom" id="Version Control" order="12" sideWeight="0.47895154" weight="0.32762837" />
       <window_info anchor="bottom" id="Terminal" order="13" sideWeight="0.59253377" weight="0.36837816" />
       <window_info anchor="bottom" id="Messages" order="14" sideWeight="0.2847498" weight="0.301381" />
-      <window_info anchor="bottom" id="Build" order="15" sideWeight="0.59054804" weight="0.3838631" />
+      <window_info anchor="bottom" id="Build" order="15" sideWeight="0.573471" visible="true" weight="0.3838631" />
       <window_info anchor="right" id="Commander" order="0" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
@@ -806,30 +700,6 @@
           <line>1039</line>
           <properties />
           <option name="timeStamp" value="43" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/main_fragment.java</url>
-          <line>274</line>
-          <properties />
-          <option name="timeStamp" value="48" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/main_fragment.java</url>
-          <line>280</line>
-          <properties />
-          <option name="timeStamp" value="49" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/main_fragment.java</url>
-          <line>285</line>
-          <properties />
-          <option name="timeStamp" value="50" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" type="java-line">
-          <url>file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/main_fragment.java</url>
-          <line>288</line>
-          <properties />
-          <option name="timeStamp" value="51" />
         </line-breakpoint>
         <line-breakpoint enabled="true" type="com.jetbrains.cidr.execution.debugger.OCBreakpointType">
           <url>file://$PROJECT_DIR$/app/src/main/cpp/FFMpegPlayerCore.cpp</url>
@@ -1258,10 +1128,24 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/app/src/main/cpp/jh_wifi.cpp">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="111015">
+          <caret line="7401" column="65" selection-start-line="7401" selection-start-column="41" selection-end-line="7401" selection-end-column="65" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/PlayActivity.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="9435">
           <caret line="679" column="32" selection-start-line="679" selection-start-column="23" selection-end-line="679" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/JH_App.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="14610">
+          <caret line="1039" selection-start-line="1039" selection-end-line="1039" />
         </state>
       </provider>
     </entry>
@@ -1272,6 +1156,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/wifination/wifination.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2265">
+          <caret line="153" column="42" selection-start-line="153" selection-start-column="40" selection-end-line="153" selection-end-column="42" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/app/build.gradle">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="510">
@@ -1279,9 +1173,16 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/jh_ui/build.gradle">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="195">
+          <caret line="13" column="48" selection-start-line="13" selection-start-column="48" selection-end-line="13" selection-end-column="48" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/wifination/VideoMediaCoder.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
+        <state relative-caret-position="255">
           <caret line="24" column="5" selection-start-line="24" selection-start-column="5" selection-end-line="24" selection-end-column="5" />
           <folding>
             <element signature="e#527#528#0" expanded="true" />
@@ -1301,45 +1202,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/jh_ui/build.gradle">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="195">
-          <caret line="13" column="48" selection-start-line="13" selection-start-column="48" selection-end-line="13" selection-end-column="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/wifination/wifination.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="228">
-          <caret line="153" column="42" selection-start-line="153" selection-start-column="40" selection-end-line="153" selection-end-column="42" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/app/src/main/cpp/jh_wifi.cpp">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="7401" column="65" selection-start-line="7401" selection-start-column="41" selection-end-line="7401" selection-end-column="65" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/JH_App.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="214">
-          <caret line="1039" selection-start-line="1039" selection-end-line="1039" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/jh_ui/src/main/java/com/joyhonest/jh_ui/main_fragment.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="309">
-          <caret line="274" column="54" lean-forward="true" selection-start-line="274" selection-start-column="54" selection-end-line="274" selection-end-column="54" />
-          <folding>
-            <element signature="e#32443#32444#0" expanded="true" />
-            <element signature="e#32491#32492#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="-4450">
+          <caret line="452" column="27" lean-forward="true" selection-start-line="452" selection-start-column="27" selection-end-line="452" selection-end-column="27" />
         </state>
       </provider>
     </entry>

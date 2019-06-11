@@ -268,19 +268,11 @@ public class main_fragment extends Fragment implements View.OnClickListener {
 
 
     public void F_GetSYMA_X5UW() {
-        if (JH_App.nICType != wifination.IC_GKA) {
-            But_KeyUp.setVisibility(View.VISIBLE);
-            But_KeyDn.setVisibility(View.VISIBLE);
-            But_KeyDn.setBackgroundResource(R.mipmap.landing_nor_jh);
-            wifination.naGkASetRecordResolution(true);
-            return;
-        }
         String str = wifination.naGetControlType();
         if (str.equalsIgnoreCase("SYMA_X5UW")) {
             nIsOldFlyControl = _720P_oldCtron;
             wifination.naGkASetRecordResolution(true);
         }
-        //else if(str.equalsIgnoreCase("X5UW-V29"))
         else if (str.equalsIgnoreCase("X5UW2")) {
             nIsOldFlyControl = _720P_newCtron;
             wifination.naGkASetRecordResolution(true);
