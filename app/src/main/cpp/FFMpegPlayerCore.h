@@ -173,13 +173,13 @@ public:
 
 
     bool F_RecreateEnv(void);
-    void F_DispSurface();
+    void F_DispSurface(void);
 
 
     int InitMediaGK(void);
     int InitMediaSN(void);
 
-    AVPacket *F_GetPacket();
+    AVPacket *F_GetPacket(void);
     int decodeAndRender_GKA(MySocketData *dat);
     int decodeAndRender_GKA_B(MySocketData *dat);
 

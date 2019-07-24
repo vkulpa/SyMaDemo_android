@@ -177,12 +177,7 @@ public class Fly_PlayActivity extends AppCompatActivity implements View.OnClickL
         mAsker.onRequestPermissionsResult(grantResults);
     }
 
-    @Subscriber(tag = "GetWifiInfoData")
-    private void GetWifiInfoData(byte[] cmd) {
-        byte nType = cmd[40];
-        byte nPassEdit =cmd[40];
-        Log.e("INFO", "Info=" + nPassEdit);
-    }
+
     @Subscriber(tag = "GetWifiSendData")
     private void GetWifiSendData(byte[] cmd) {
         Log.e("GET Wifi Data", "" + cmd.length);

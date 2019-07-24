@@ -130,6 +130,10 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             {
 
                 JH_App.F_OpenStream();
+
+
+
+
                 if (main_fragment != null) {
                     runOnUiThread(new Runnable() {
                         @Override
@@ -269,6 +273,11 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
         EventBus.getDefault().register(this);
         RssiHander.postDelayed(RssiRunable, 100);
+
+
+
+
+
     }
 
 
@@ -1883,7 +1892,15 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     @Subscriber(tag="Key_Pressed")
     private void Key_Pressed(int nKey)
     {
-        Log.e("Key","key = "+nKey);
+//        Log.e("Key","key = "+nKey);
+//        if(nKey == 4)
+//        {
+//             wifination.naSetScal(1.5f);
+//        }
+//        if(nKey == 5)
+//        {
+//            wifination.naSetScal(1.0f);
+//        }
     }
 
 

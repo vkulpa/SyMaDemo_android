@@ -384,42 +384,15 @@ int    nPhotoW = 640;
 int    nPhotoH = 360;
 bool   bPhotoSet = false;  //  如果 为 true 表示拍照时用  nPhotoW   nPhotoH
 
-//uint8_t nRelinkTime = 0;
 
 
-pthread_t adjRecTime_phread = -1;
-uint32_t nRecTime = 0;
-int64_t nRecStartTime = 0;
+
+uint32_t nRecFrameCount = 0;
 bool bRealRecording = false;
-bool bAdjRecTime = true;
+
 pthread_mutex_t m_adjRecTime_lock = PTHREAD_MUTEX_INITIALIZER;
 
-void *F_adjRecTim(void *data) {
-#if 0
-    int ix = 0;
-    int64_t nCurrent, nBack;
-    nRecTime = 0;
-    nRecStartTime = av_gettime() / 1000;
-    while (bAdjRecTime) {
-        if (ix >= 25)
-        {
-            ix = 0;
-            if (bRealRecording && (nSDStatus & bit1_LocalRecording)) {
-                nBack = nCurrent = av_gettime() / 1000;  //ms
-                nCurrent -= nRecStartTime;
-                nRecStartTime = nBack;//av_gettime()/1000;  //ms
-                pthread_mutex_lock(&m_adjRecTime_lock);
-                nRecTime += nCurrent;
-                pthread_mutex_unlock(&m_adjRecTime_lock);
-            }
-        }
-        ix++;
-        usleep(1000 * 10); //10ms
-    }
-    LOGE("Exit Add RecTime");
-#endif
-    return NULL;
-}
+
 
 JNIEXPORT jint JNICALL
 Java_com_joyhonest_wifination_wifination_naGetRecordTime(JNIEnv *env, jclass type) {
@@ -428,21 +401,11 @@ Java_com_joyhonest_wifination_wifination_naGetRecordTime(JNIEnv *env, jclass typ
     int32_t ret = 0;
     float df = 1000.0f/m_FFMpegPlayer.nRecFps;
     pthread_mutex_lock(&m_adjRecTime_lock);
-    ret = (int32_t)(nRecTime *df);
+    ret = (int32_t)(nRecFrameCount *df);
     pthread_mutex_unlock(&m_adjRecTime_lock);
     return (jint) ret;
 }
 
-void F_StartAdjRecTime(bool b) {
-    if (b) {
-
-        bAdjRecTime = true;
-        bRealRecording = false;
-        pthread_create(&adjRecTime_phread, NULL, F_adjRecTim, NULL);
-    } else {
-        bAdjRecTime = false;
-    }
-}
 
 int send_cmd_tcp(uint8_t *msg, int nLen, char *host, uint16_t port) {
     if (!mysocket.bConnected) {
@@ -522,14 +485,14 @@ int send_cmd_udp(uint8_t *msg, int nLen, const char *host, uint16_t port) {
     return 0;
 
 }
-int send_cmd_udp(uint8_t *msg, int nLen, int nHost, uint16_t port)
-{
-    struct in_addr in_addr;
-    in_addr.s_addr =(__be32)nHost;
-    char *sHost = inet_ntoa(in_addr);
-    return send_cmd_udp(msg,nLen,(const char *)sHost,port);
-
-}
+//int send_cmd_udp(uint8_t *msg, int nLen, int nHost, uint16_t port)
+//{
+//    struct in_addr in_addr;
+//    in_addr.s_addr =(__be32)nHost;
+//    char *sHost = inet_ntoa(in_addr);
+//    return send_cmd_udp(msg,nLen,(const char *)sHost,port);
+//
+//}
 
 int split(const string &str, vector<string> &ret_, string sep = ",") {
     if (str.empty()) {
@@ -1098,6 +1061,9 @@ jint JNI_OnLoad(JavaVM *vm, void *reserved) {
 
     // initClassHelper(env, kInterfacePath, &gInterfaceObject);
     //g_env = env;
+
+    F_Read_Status_Service();
+
     return JNI_VERSION_1_6;
 }
 
@@ -1208,6 +1174,10 @@ void F_AdjIcType(int type)
         nICType = IC_RTLH264;
         sServerIP = "192.168.32.1";
     }
+    else if(type == F_GetIpfor4Bytes(192,168,33)) {
+        nICType = IC_GPRTPB;
+        sServerIP = "192.168.33.1";         //图传用29，但支持SD卡
+    }
     else
     {
         nICType =IC_NO;
@@ -1243,13 +1213,14 @@ int F_GetIPByJava(void);
 
 void F_GetServerIP(void)
 {
-    if(nICType != IC_NO)  //已经获取到了 IP信息
-        return;
+    //if(nICType != IC_NO)  //已经获取到了 IP信息
+    //    return;
+
     int32_t ip = F_GetIP();
     if(ip<=0) {
         ip = (int32_t) F_GetIPByJava();
-        F_AdjIcType(ip & 0x00FFFFFF);
     }
+    F_AdjIcType(ip & 0x00FFFFFF);
 
 
 
@@ -1277,7 +1248,7 @@ int _naInit_(const char *pFileName)
 {
 
     nPreTimeA = 0;
-    F_StartAdjRecTime(true);
+    //F_StartAdjRecTime(true);
     GPRTP_UDP_SOCKET = -1;
     std::string::size_type idx;
     nUdpInx = 0;
@@ -1485,7 +1456,7 @@ int naInit_Re_B(void) {
     }
 */
 
-    F_Read_Status_Service();
+    //F_Read_Status_Service();
     if(nICType == IC_GPRTPC)
     {
         bStoped = true;
@@ -1871,8 +1842,8 @@ int naInit_Re(void) {
     bInit = true;
 
 
-    if(nICType != IC_FILES)
-        F_Read_Status_Service();
+    //if(nICType != IC_FILES)
+    //    F_Read_Status_Service();
 
     int i32Ret = -1;
     if (nICType == IC_GPH264A || nICType == IC_RTLH264) {
@@ -2358,13 +2329,14 @@ int naStop_B(void) {
     int ret = 0;
     bNeedExit = true;
     usleep(1000 * 50);
-    if (rev_socket > 0 || rev_cmd_thread != -1) {
-        if (rev_socket > 0) {
-            close(rev_socket);
-            rev_socket = -1;
-        }
-        rev_cmd_thread = -1;
-    }
+
+//    if (rev_socket > 0 || rev_cmd_thread != -1) {
+//        if (rev_socket > 0) {
+//            close(rev_socket);
+//            rev_socket = -1;
+//        }
+//        rev_cmd_thread = -1;
+//    }
     if (GPRTP_UDP_SOCKET > 0 || GPRTP_rev_thread != -1) {
         //GPRTP_Data
         if (GPRTP_UDP_SOCKET > 0) {
@@ -2432,20 +2404,30 @@ int naStop(void)
 {
     int ret = 0;
     mRTL_DownLoad.disConnected();
-    F_StartAdjRecTime(false);
+    //F_StartAdjRecTime(false);
     bInit = false;
     bNeedExit = true;
     m_FFMpegPlayer.m_Status = E_PlayerStatus_Stoping;
     usleep(1000 * 50);
     nSDStatus = 0;
+
     myMediaCoder.F_CloseDecoder();
-    if (rev_socket > 0 || rev_cmd_thread != -1) {
-        if (rev_socket > 0) {
-            close(rev_socket);
-            rev_socket = -1;
-        }
-        rev_cmd_thread = -1;
-    }
+
+//    if (rev_socket > 0 || rev_cmd_thread != -1) {
+//        if (rev_socket > 0) {
+//            close(rev_socket);
+//            rev_socket = -1;
+//        }
+//        rev_cmd_thread = -1;
+//    }
+
+//    if (rev_socket > 0 ) {
+//        if (rev_socket > 0) {
+//            close(rev_socket);
+//            rev_socket = -1;
+//        }
+//    }
+
     if (GPRTP_UDP_SOCKET > 0 || GPRTP_rev_thread != -1) {
         //GPRTP_Data
         if (GPRTP_UDP_SOCKET > 0) {
@@ -5446,6 +5428,8 @@ Java_com_joyhonest_wifination_wifination_naSetMenuFilelanguage(JNIEnv *env, jcla
     // TODO
     uint8_t n = (uint8_t) nLanguage;
 
+    F_GetServerIP();
+
     int i = 0;
     cmd[i++] = 'U';
     cmd[i++] = 'D';
@@ -5737,20 +5721,18 @@ Java_com_joyhonest_wifination_wifination_naGetGP_1RTSP_1Status(JNIEnv *env, jcla
 
 
     F_GetServerIP();
-    F_Read_Status_Service();
+    //F_Read_Status_Service();
     uint8_t msg[20];
-
-    //if (nICType == IC_GPRTSP || nICType == IC_GPRTP || nICType == IC_GPRTPB)
     {
-        msg[0] = 'J';
-        msg[1] = 'H';
-        msg[2] = 'C';
-        msg[3] = 'M';
-        msg[4] = 'D';
-        msg[5] = 0x10;
-        msg[6] = 0x00;
-        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
-        usleep(1000 * 20);
+//        msg[0] = 'J';
+//        msg[1] = 'H';
+//        msg[2] = 'C';
+//        msg[3] = 'M';
+//        msg[4] = 'D';
+//        msg[5] = 0x10;
+//        msg[6] = 0x00;
+//        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
+//        usleep(1000 * 20);
 
         msg[0] = 'J';
         msg[1] = 'H';
@@ -5768,33 +5750,6 @@ Java_com_joyhonest_wifination_wifination_naGetGP_1RTSP_1Status(JNIEnv *env, jcla
         usleep(1000 * 20);
 
     }
-
-//    if (nICType == IC_GPH264) {
-//        msg[0] = 'J';
-//        msg[1] = 'H';
-//        msg[2] = 'C';
-//        msg[3] = 'M';
-//        msg[4] = 'D';
-//        msg[5] = 0x10;
-//        msg[6] = 0x00;
-//        send_cmd_udp(msg, 7, sServerIP.c_str(), 20000);
-//        usleep(1000 * 10);
-//
-//        msg[0] = 'J';
-//        msg[1] = 'H';
-//        msg[2] = 'C';
-//        msg[3] = 'M';
-//        msg[4] = 'D';
-//        msg[5] = 0x20;
-//        msg[6] = 0x00;
-//        msg[7] = 0x00;
-//        msg[8] = 0x00;
-//        msg[9] = 0x00;
-//        msg[10] = 0x00;
-//
-//        send_cmd_udp(msg, 11, sServerIP.c_str(), 20000);
-//        usleep(1000 * 20);
-//    }
 
     return 0;
 
@@ -5910,13 +5865,7 @@ void F_Read_Status_Service(void)
         return;
     }
     rev_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-/*
-    if (rev_socket > 0) {
-        setsockopt(rev_socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
-    } else {
-        return;
-    }
-*/
+
     bzero((char *) &myaddr, sizeof(myaddr));
     myaddr.sin_family = AF_INET;
     myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
@@ -6505,7 +6454,9 @@ void *doReceive_cmd(void *dat) {
     tv.tv_sec = 0;
     tv.tv_usec = 1000*10;
 
-    while (!bNeedExit) {
+    //while (!bNeedExit)
+    while (true)
+    {
 
 #if 1
         size = sizeof(servaddr);
@@ -6582,8 +6533,6 @@ void *doReceive_cmd(void *dat) {
                 int32_t dat=0;
                 if (nbytes >= 8)
                 {
-
-
                     int nLen=0;
                     if (readBuff[0] == 'J' && readBuff[1] == 'H' && readBuff[2] == 'C' && readBuff[3] == 'M' && readBuff[4] == 'D')
                     {
@@ -6666,8 +6615,18 @@ void *doReceive_cmd(void *dat) {
                                  break;
 
                              default:
+                                 if (cmd_buffer != nullptr)
+                                 {
+                                     nLen = nbytes - 5;
+                                     if(nLen>1024)
+                                         nLen=1024;
+                                     memset(cmd_buffer, 0, 1024);
+                                     memcpy(cmd_buffer, readBuff + 5, nLen); //wifi透传数据
+                                     dat = 0xFBFB0000;
+                                     dat |=((nLen)&0xFFFF);
+                                     F_SentGp_Status2Jave(dat);
+                                 }
                                  break;
-
                          }
                     }
 
@@ -7108,7 +7067,7 @@ int _naSave2FrameMp4(uint8_t *data, int nLen, int b, bool keyframe) {
     }
     else
     {
-        nRecTime++;
+        nRecFrameCount++;
         m_FFMpegPlayer.WriteMp4Frame( data, nLen, keyframe);
     }
     return 0;
@@ -7164,7 +7123,7 @@ Java_com_joyhonest_wifination_wifination_naGetControlType(JNIEnv *env, jclass ty
     else
     {
         sver="";
-        F_Read_Status_Service();
+        //F_Read_Status_Service();
         uint8 msg[20];
         msg[0] = 'J';
         msg[1] = 'H';
@@ -7191,70 +7150,7 @@ Java_com_joyhonest_wifination_wifination_naGetControlType(JNIEnv *env, jclass ty
 // TODO
 
 
-#if 0
-void F_ProcessDecordData(uint8_t *data, int32_t nLen, int width, int height, int nColor) {
 
-
-#if 1
-    //LOGE("w = %d h = %d", width, height);
-    if (m_FFMpegPlayer.m_codecCtx == nullptr ||
-        m_FFMpegPlayer.m_decodedFrame == nullptr) {
-        return;
-    }
-    m_FFMpegPlayer.m_codecCtx->width = width;
-    m_FFMpegPlayer.m_codecCtx->height = height;
-    m_FFMpegPlayer.m_codecCtx->pix_fmt = AV_PIX_FMT_YUV420P;
-    m_FFMpegPlayer.m_decodedFrame->width = width;
-    m_FFMpegPlayer.m_decodedFrame->height = height;
-    m_FFMpegPlayer.m_decodedFrame->format = AV_PIX_FMT_YUV420P;
-
-    if (!bInitMediaA) {
-        bInitMediaA = true;
-        int ret = av_image_alloc(m_FFMpegPlayer.m_decodedFrame->data, m_FFMpegPlayer.m_decodedFrame->linesize, width,
-                                 height,
-                                 AV_PIX_FMT_YUV420P, 4);
-        LOGE("Alloc frame!");
-    }
-
-    int HH = height;
-    int H2 = HH >> 1;
-    int WW = width;
-    int W2 = WW >> 1;
-
-    unsigned char *bufY = m_FFMpegPlayer.m_decodedFrame->data[0];
-    unsigned char *bufU = m_FFMpegPlayer.m_decodedFrame->data[1];
-    unsigned char *bufV = m_FFMpegPlayer.m_decodedFrame->data[2];
-
-    if (nColor == OMX_COLOR_FormatYUV420SemiPlanar) {
-
-        unsigned char *srcY = data;
-        unsigned char *srcU = data + WW * HH;
-        unsigned char *srcV = data + WW * HH + 1;
-        libyuv::NV12ToI420(srcY, WW,
-                           srcU, WW,
-                           bufY, m_FFMpegPlayer.m_decodedFrame->linesize[0],
-                           bufU, m_FFMpegPlayer.m_decodedFrame->linesize[1],
-                           bufV, m_FFMpegPlayer.m_decodedFrame->linesize[2],
-                           WW, HH);
-    }
-    if (nColor == OMX_COLOR_FormatYUV420Planar) {
-        unsigned char *srcY = data;
-        unsigned char *srcU = data + WW * height;
-        unsigned char *srcV = srcU + (W2 * H2);
-        libyuv::I420Copy(srcY, WW,
-                         srcU, W2,
-                         srcV, W2,
-                         bufY, m_FFMpegPlayer.m_decodedFrame->linesize[0],
-                         bufU, m_FFMpegPlayer.m_decodedFrame->linesize[1],
-                         bufV, m_FFMpegPlayer.m_decodedFrame->linesize[2],
-                         WW, HH);
-    }
-    m_FFMpegPlayer._DispDecordData();
-#endif
-
-
-}
-#endif
 
 extern AVFrame *gl_Frame;
 
@@ -7986,3 +7882,52 @@ Java_com_joyhonest_wifination_wifination_naGetLedPWM(JNIEnv *env, jclass type) {
 
 }
 
+bool bTransferSize = false;
+int  nTransferWidth = 640;
+int nTransferHeight = 360;
+AVFrame *pTranFrame= nullptr;
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_joyhonest_wifination_wifination_naSetTransferSize(JNIEnv *env, jclass type, jint nWidth, jint nHeight) {
+
+
+    if((nWidth & 0x07)!=0)    //宽度必须是8的倍数
+    {
+        return -1;
+    }
+    if(pTranFrame!=nullptr)
+    {
+        av_freep(&pTranFrame->data[0]);
+        av_frame_free(&pTranFrame);
+        pTranFrame = nullptr;
+    }
+
+    pTranFrame = av_frame_alloc();
+    pTranFrame->width=nTransferWidth;
+    pTranFrame->height=nTransferHeight;
+                    av_image_alloc(pTranFrame->data, pTranFrame->linesize, nWidth,
+                                   nHeight,
+                                   AV_PIX_FMT_YUV420P,4);
+    bTransferSize = true;
+    nTransferWidth = nWidth;
+    nTransferHeight = nHeight;
+    return 0;
+
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_com_joyhonest_wifination_wifination_naGetDispWH(JNIEnv *env, jclass type) {
+
+    // TODO
+    jint wh = 0;
+    if(m_FFMpegPlayer.pFrameYUV!= nullptr)
+    {
+        int w = m_FFMpegPlayer.pFrameYUV->width;
+        int h = m_FFMpegPlayer.pFrameYUV->height;
+        wh = w*0x10000+(h&0xFFFF);
+    }
+    return wh;
+
+}

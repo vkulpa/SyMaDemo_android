@@ -137,12 +137,7 @@ public class SplashActivity extends AppCompatActivity
 
         EventBus.getDefault().register(this);
 
-        new Handler().postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                wifination.naGetGP_RTSP_Status();
-            }
-        },200);
+
 
     }
 
@@ -151,6 +146,8 @@ public class SplashActivity extends AppCompatActivity
         super.onDestroy();
         EventBus.getDefault().unregister(this);
     }
+
+
 
     public  String getAppVersionName(Context context) {
         String versionName = "";
@@ -172,10 +169,21 @@ public class SplashActivity extends AppCompatActivity
     }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                wifination.naGetGP_RTSP_Status();
+            }
+        },50);
 
+    }
 
     @Subscriber(tag = "GetWifiInfoData")
-    private void GetWifiInfoData(byte[] cmd) {
+    private void GetWifiInfoData(byte[] cmd)
+    {
         byte nType = cmd[40];
         byte nPassEdit =cmd[45];
         byte[] bb= new byte[8];
@@ -184,7 +192,7 @@ public class SplashActivity extends AppCompatActivity
             bb[i]=cmd[46+i];
         }
         String s = new String(bb);
-        Log.e("INFO", "Info=" + nPassEdit+"pass = "+s);
+        Log.e("INFO", "Info a=" + nPassEdit+"pass = "+s);
     }
 
 

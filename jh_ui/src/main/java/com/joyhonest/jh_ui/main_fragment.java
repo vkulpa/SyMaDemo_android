@@ -732,14 +732,14 @@ public class main_fragment extends Fragment implements View.OnClickListener {
         }
         if (view == But_Power) {
 
-            F_NeedReadCmd();
+            //F_NeedReadCmd();
 
 
-//            if (myControl.getVisibility() == View.VISIBLE) {
-//                F_Power(false);
-//            } else {
-//                F_Power(true);
-//            }
+            if (myControl.getVisibility() == View.VISIBLE) {
+                F_Power(false);
+            } else {
+                F_Power(true);
+            }
 
         }
 

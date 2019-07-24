@@ -29,7 +29,7 @@ extern MyMediaCoder myMediaCoder;
 extern float nScal;
 extern uint8_t nSDStatus;
 extern bool bRealRecording;
-extern uint32_t nRecTime;
+extern uint32_t nRecFrameCount;
 extern int nFrameCount;
 
 extern int PlatformDisplay();
@@ -76,7 +76,7 @@ static int interrupt_cb(void *ctx) {
     int64_t da = currentTime - time_out;
 
     if (da >= time_out_dat) {
-        LOGE("error-------------%ld",(long)time_out_dat);
+        LOGE("error-------------%ld", (long) time_out_dat);
         return 1;
     }
     return 0;
@@ -250,7 +250,7 @@ int C_FFMpegPlayer::InitMediaSN(void) {
 
     if (img_convert_ctx != nullptr) {
         sws_freeContext(img_convert_ctx);
-        img_convert_ctx= nullptr;
+        img_convert_ctx = nullptr;
     }
 
 
@@ -935,22 +935,20 @@ bool C_FFMpegPlayer::MP4AacGetConfiguration(uint8_t **ppConfig,
 extern bool bG_Audio;
 
 
-
-
 int C_FFMpegPlayer::AddMp4Video(uint8_t *sps, int len1, uint8_t *pps, int len2) {
 
     if (fileHandle != MP4_INVALID_FILE_HANDLE) {
-            video = MP4AddH264VideoTrack(fileHandle, 90000, (uint32_t) (90000 / nRecFps), (uint16_t) nRecordWidth, (uint16_t) nRecordHeight, sps[1], sps[2], sps[3], 3);
-            if (video == MP4_INVALID_TRACK_ID) {
-                MP4Close(fileHandle, 0);
-                fileHandle = MP4_INVALID_FILE_HANDLE;
-                return -1;
-            } else {
-                MP4AddH264SequenceParameterSet(fileHandle, video, sps, (uint16_t) len1);
-                MP4AddH264PictureParameterSet(fileHandle, video, pps, (uint16_t) len2);
-                MP4SetVideoProfileLevel(fileHandle, 0x7F);
-                LOGE("SPS PPS");
-            }
+        video = MP4AddH264VideoTrack(fileHandle, 90000, (uint32_t) (90000 / nRecFps), (uint16_t) nRecordWidth, (uint16_t) nRecordHeight, sps[1], sps[2], sps[3], 3);
+        if (video == MP4_INVALID_TRACK_ID) {
+            MP4Close(fileHandle, 0);
+            fileHandle = MP4_INVALID_FILE_HANDLE;
+            return -1;
+        } else {
+            MP4AddH264SequenceParameterSet(fileHandle, video, sps, (uint16_t) len1);
+            MP4AddH264PictureParameterSet(fileHandle, video, pps, (uint16_t) len2);
+            MP4SetVideoProfileLevel(fileHandle, 0x7F);
+            LOGE("SPS PPS");
+        }
 
 
         if (bG_Audio) {
@@ -993,7 +991,7 @@ int C_FFMpegPlayer::SaveVideo(const char *path, bool bisH264) {
 
     bisH264 = true;
     bRealRecording = false;
-    nRecTime = 0;
+    nRecFrameCount = 0;
 
     if (bG_Audio) {
         F_SetRecordAudio(1);
@@ -1020,8 +1018,6 @@ int C_FFMpegPlayer::SaveVideo(const char *path, bool bisH264) {
 
     //if (bisH264)
     {
-
-
 
 
         if (fileHandle != MP4_INVALID_FILE_HANDLE) {
@@ -1225,112 +1221,16 @@ int C_FFMpegPlayer::decodeAndRender_GKA_B(MySocketData *data) {
     return 0;
 
 #else
-    char head[] = {0x00, 0x00, 0x00, 0x01};
-    char *pData = (char *) (data->data);
-    char type = typeOfNalu(pData);
-    if (nIC_Type != IC_GKA)
-    {
-        Head_size = 0;
-    } else {
-        Head_size = sizeof(T_NET_FRAME_HEADER);
-    }
-    if (type == 5 || type == 1)
-    {
-        data->nLen -= Head_size;
-    }
-    uint32_t nMySize = data->nLen - 4;
 
-
-    if (type == 7 || type == 8 || type == 6 || type == 5)  //SPS PPS SEI IDR
-    {
-        keyFrame.AppendData((uint8_t *) head, 4);
-        keyFrame.AppendData(data->data, nMySize);
-
-    }
-
-    int nPackLen = 0;
-    int rr = -1;
-
-    int ret = -1;
-    if (type == 5 || type == 1)
-    {
-
-        {
-            if (type == 5)    // I frame
-            {
-                rr = av_new_packet(&packet, keyFrame.nLen);
-                if (rr == 0)
-                {
-                    memcpy(packet.data, keyFrame.data, keyFrame.nLen);
-                    keyFrame.nLen = 0;
-                }
-            }
-            else
-            {
-                rr = av_new_packet(&packet, nMySize + 4);
-                if (rr == 0)
-                {
-                    memcpy(packet.data, head, 4);
-                    memcpy(packet.data + 4, data->data, nMySize);
-                }
-            }
-
-            if (rr == 0)
-            {
-                if (avcodec_send_packet(m_codecCtx, &packet) == 0) {
-                    if (avcodec_receive_frame(m_codecCtx, m_decodedFrame) != 0) {
-                        ret = -1;
-                    } else {
-                        ret = 0;
-                    }
-                } else {
-                    ret = -1;
-                }
-            }
-
-        }
-
-
-        if (ret == 0)
-        {
-            _DispDecordData();
-        }
-        av_packet_unref(&packet);
-    }
-    return 0;
 #endif
 }
 
 
-void C_FFMpegPlayer::_DispDecordData(void)
-{
-    //int ret = 0;
-    //if (ret == 0)
-    //{
+void C_FFMpegPlayer::_DispDecordData(void) {
     nDisplayWidth = m_codecCtx->width;
     nDisplayHeight = m_codecCtx->height;
     InitMediaGK();
     F_RecreateEnv();
-
-//    if (m_codecCtx->pix_fmt != AV_PIX_FMT_YUV420P) {
-//        libyuv::I422ToI420(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
-//                           m_decodedFrame->data[1], m_decodedFrame->linesize[1],
-//                           m_decodedFrame->data[2], m_decodedFrame->linesize[2],
-//                           pFrameYUV->data[0], pFrameYUV->linesize[0],
-//                           pFrameYUV->data[1], pFrameYUV->linesize[1],
-//                           pFrameYUV->data[2], pFrameYUV->linesize[2],
-//                           m_decodedFrame->width, m_decodedFrame->height
-//        );
-//
-//    } else {
-//        libyuv::I420Copy(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
-//                         m_decodedFrame->data[1], m_decodedFrame->linesize[1],
-//                         m_decodedFrame->data[2], m_decodedFrame->linesize[2],
-//                         pFrameYUV->data[0], pFrameYUV->linesize[0],
-//                         pFrameYUV->data[1], pFrameYUV->linesize[1],
-//                         pFrameYUV->data[2], pFrameYUV->linesize[2],
-//                         m_decodedFrame->width, m_decodedFrame->height);
-//    }
 
     if (m_decodedFrame->format == AV_PIX_FMT_YUVJ420P || m_decodedFrame->format == AV_PIX_FMT_YUV420P) {
         libyuv::I420Copy(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
@@ -1340,7 +1240,7 @@ void C_FFMpegPlayer::_DispDecordData(void)
                          pFrameYUV->data[1], pFrameYUV->linesize[1],
                          pFrameYUV->data[2], pFrameYUV->linesize[2],
                          m_decodedFrame->width, m_decodedFrame->height);
-    } else if(m_decodedFrame->format==AV_PIX_FMT_YUV422P || m_decodedFrame->format==AV_PIX_FMT_YUVJ422P){
+    } else if (m_decodedFrame->format == AV_PIX_FMT_YUV422P || m_decodedFrame->format == AV_PIX_FMT_YUVJ422P) {
         libyuv::I422ToI420(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
                            m_decodedFrame->data[1], m_decodedFrame->linesize[1],
                            m_decodedFrame->data[2], m_decodedFrame->linesize[2],
@@ -1349,9 +1249,8 @@ void C_FFMpegPlayer::_DispDecordData(void)
                            pFrameYUV->data[2], pFrameYUV->linesize[2],
                            m_decodedFrame->width, m_decodedFrame->height);
     }
-    else
-    {
-        if(img_convert_ctx != nullptr)
+    else{
+        if (img_convert_ctx != nullptr)
         {
             sws_scale(img_convert_ctx,
                       (const uint8_t *const *) m_decodedFrame->data,
@@ -1364,123 +1263,9 @@ void C_FFMpegPlayer::_DispDecordData(void)
     }
 
     SetYUVFrame(pFrameYUV);
-#if 0
-
-    if (bFlip)
-    {
-        if (frame_a == nullptr)
-        {
-            frame_a = av_frame_alloc();
-            frame_a->format = AV_PIX_FMT_YUV420P;
-            frame_a->width = m_codecCtx->width;
-            frame_a->height = m_codecCtx->height;
-            av_image_alloc(frame_a->data, frame_a->linesize, m_codecCtx->width,
-                           m_codecCtx->height,
-                           AV_PIX_FMT_YUV420P, 4);
-        }
-
-        libyuv::I420Rotate(pFrameYUV->data[0], pFrameYUV->linesize[0],
-                           pFrameYUV->data[1], pFrameYUV->linesize[1],
-                           pFrameYUV->data[2], pFrameYUV->linesize[2],
-                           frame_a->data[0], frame_a->linesize[0],
-                           frame_a->data[1], frame_a->linesize[1],
-                           frame_a->data[2], frame_a->linesize[2],
-                           frame_a->width, frame_a->height,libyuv::kRotate180);
-
-
-        ret = libyuv::I420Copy(frame_a->data[0], frame_a->linesize[0],
-                               frame_a->data[1], frame_a->linesize[1],
-                               frame_a->data[2], frame_a->linesize[2],
-                               pFrameYUV->data[0], frame_a->linesize[0],
-                               pFrameYUV->data[1], frame_a->linesize[1],
-                               pFrameYUV->data[2], frame_a->linesize[2],
-                               frame_a->width, frame_a->height);
-
-    }
-
-
-    if (b3D) {
-        if (b3DA)
-        {
-            /*
-            ret = sws_scale(img_convert_ctx_half,
-                            (const uint8_t *const *) pFrameYUV->data,
-                            pFrameYUV->linesize, 0,
-                            m_codecCtx->height,
-                            frame_b->data, frame_b->linesize);
-                            */
-            libyuv::I420Scale(pFrameYUV->data[0],pFrameYUV->linesize[0],
-                              pFrameYUV->data[1],pFrameYUV->linesize[1],
-                              pFrameYUV->data[2],pFrameYUV->linesize[2],
-                              pFrameYUV->width,pFrameYUV->height,
-                              frame_b->data[0],frame_b->linesize[0],
-                              frame_b->data[1],frame_b->linesize[1],
-                              frame_b->data[2],frame_b->linesize[2],
-                              frame_b->width,frame_b->height,
-                              libyuv::kFilterLinear);
-
-            Adj23D(frame_b, pFrameYUV);
-
-            if (m_decodedFrame != nullptr) {
-                if (m_decodedFrame->key_frame != 0) {
-                    av_frame_copy(frame_SnapBuffer, pFrameYUV);
-                }
-            }
-
-        } else {
-
-            libyuv::I420Scale(pFrameYUV->data[0],pFrameYUV->linesize[0],
-                              pFrameYUV->data[1],pFrameYUV->linesize[1],
-                              pFrameYUV->data[2],pFrameYUV->linesize[2],
-                              pFrameYUV->width,pFrameYUV->height,
-                              frame_b->data[0],frame_b->linesize[0],
-                              frame_b->data[1],frame_b->linesize[1],
-                              frame_b->data[2],frame_b->linesize[2],
-                              frame_b->width,frame_b->height,
-                              libyuv::kFilterLinear);
-            /*
-            ret = sws_scale(img_convert_ctx_half,
-                            (const uint8_t *const *) pFrameYUV->data,
-                            pFrameYUV->linesize, 0,
-                            m_codecCtx->height,
-                            frame_b->data, frame_b->linesize);
-                            */
-
-            Adj23D(frame_b, pFrameYUV);
-        }
-    }
-
-
-
-    {
-        if (m_decodedFrame != nullptr)
-        {
-            if (m_decodedFrame->key_frame != 0)
-            {
-                av_frame_copy(frame_SnapBuffer, pFrameYUV);
-            }
-        }
-        if (m_bSaveSnapshot)
-        {
-            EncodeSnapshot();
-        }
-
-    }
-    bCanDisplay = true;
-
-}
-av_packet_unref(&packet);
-
-if (bCanDisplay) {
-
-    PlatformDisplay();
-
-}
-#endif
 }
 
 
-int PlatformDisplaySN(char *dat, int nLen);
 
 
 int C_FFMpegPlayer::decodeAndRender_RTP(char *data, int nLen) {
@@ -1514,14 +1299,13 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
         ret = -1;
     }
 
-    if (ret == 0) {
-
+    if (ret == 0)
+    {
 
         m_Status = E_PlayerStatus_Playing;
         nDisplayWidth = m_codecCtx->width;
         nDisplayHeight = m_codecCtx->height;
         InitMediaSN();
-
 
         if (m_decodedFrame->format == AV_PIX_FMT_YUVJ420P || m_decodedFrame->format == AV_PIX_FMT_YUV420P) {
             libyuv::I420Copy(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
@@ -1531,7 +1315,7 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
                              pFrameYUV->data[1], pFrameYUV->linesize[1],
                              pFrameYUV->data[2], pFrameYUV->linesize[2],
                              m_decodedFrame->width, m_decodedFrame->height);
-        } else if(m_decodedFrame->format==AV_PIX_FMT_YUV422P || m_decodedFrame->format==AV_PIX_FMT_YUVJ422P){
+        } else if (m_decodedFrame->format == AV_PIX_FMT_YUV422P || m_decodedFrame->format == AV_PIX_FMT_YUVJ422P) {
             libyuv::I422ToI420(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
                                m_decodedFrame->data[1], m_decodedFrame->linesize[1],
                                m_decodedFrame->data[2], m_decodedFrame->linesize[2],
@@ -1539,221 +1323,21 @@ int C_FFMpegPlayer::decodeAndRender_SN(char *data, int nLen) {
                                pFrameYUV->data[1], pFrameYUV->linesize[1],
                                pFrameYUV->data[2], pFrameYUV->linesize[2],
                                m_decodedFrame->width, m_decodedFrame->height);
-        }
-        else
-        {
-             if(img_convert_ctx != nullptr)
-             {
-                          sws_scale(img_convert_ctx,
+        } else {
+            if (img_convert_ctx != nullptr) {
+                sws_scale(img_convert_ctx,
                           (const uint8_t *const *) m_decodedFrame->data,
                           m_decodedFrame->linesize, 0,
                           m_codecCtx->height,
                           pFrameYUV->data, pFrameYUV->linesize);
-             }
+            }
 
 
         }
-
-#if 1
         SetYUVFrame(pFrameYUV);
 
-
-#else
-
-        if (bFlip) {
-            if (frame_a == nullptr) {
-                frame_a = av_frame_alloc();
-                frame_a->format = AV_PIX_FMT_YUV420P;
-                frame_a->width = m_codecCtx->width;
-                frame_a->height = m_codecCtx->height;
-                av_image_alloc(frame_a->data, frame_a->linesize, m_codecCtx->width,
-                               m_codecCtx->height,
-                               AV_PIX_FMT_YUV420P, 4);
-            }
-
-            libyuv::I420Rotate(pFrameYUV->data[0], pFrameYUV->linesize[0],
-                               pFrameYUV->data[1], pFrameYUV->linesize[1],
-                               pFrameYUV->data[2], pFrameYUV->linesize[2],
-                               frame_a->data[0], frame_a->linesize[0],
-                               frame_a->data[1], frame_a->linesize[1],
-                               frame_a->data[2], frame_a->linesize[2],
-                               frame_a->width, frame_a->height,libyuv::kRotate180);
-
-
-            ret = libyuv::I420Copy(frame_a->data[0], frame_a->linesize[0],
-                                   frame_a->data[1], frame_a->linesize[1],
-                                   frame_a->data[2], frame_a->linesize[2],
-                                   pFrameYUV->data[0], frame_a->linesize[0],
-                                   pFrameYUV->data[1], frame_a->linesize[1],
-                                   pFrameYUV->data[2], frame_a->linesize[2],
-                                   frame_a->width, frame_a->height);
-
-        }
-
-
-        if (b3D) {
-            if (b3DA)
-            {
-                libyuv::I420Scale(pFrameYUV->data[0],pFrameYUV->linesize[0],
-                                  pFrameYUV->data[1],pFrameYUV->linesize[1],
-                                  pFrameYUV->data[2],pFrameYUV->linesize[2],
-                                  pFrameYUV->width,pFrameYUV->height,
-                                  frame_b->data[0],frame_b->linesize[0],
-                                  frame_b->data[1],frame_b->linesize[1],
-                                  frame_b->data[2],frame_b->linesize[2],
-                                  frame_b->width,frame_b->height,
-                                  libyuv::kFilterLinear);
-                /*
-                ret = sws_scale(img_convert_ctx_half,
-                                (const uint8_t *const *) pFrameYUV->data,
-                                pFrameYUV->linesize, 0,
-                                m_codecCtx->height,
-                                frame_b->data, frame_b->linesize);
-                                */
-
-                Adj23D(frame_b, pFrameYUV);
-
-                if (m_decodedFrame != nullptr) {
-                    if (m_decodedFrame->key_frame != 0) {
-                        av_frame_copy(frame_SnapBuffer, pFrameYUV);
-                    }
-                }
-
-            } else {
-
-                libyuv::I420Scale(pFrameYUV->data[0],pFrameYUV->linesize[0],
-                                  pFrameYUV->data[1],pFrameYUV->linesize[1],
-                                  pFrameYUV->data[2],pFrameYUV->linesize[2],
-                                  pFrameYUV->width,pFrameYUV->height,
-                                  frame_b->data[0],frame_b->linesize[0],
-                                  frame_b->data[1],frame_b->linesize[1],
-                                  frame_b->data[2],frame_b->linesize[2],
-                                  frame_b->width,frame_b->height,
-                                  libyuv::kFilterLinear);
-                /*
-                ret = sws_scale(img_convert_ctx_half,
-                                (const uint8_t *const *) pFrameYUV->data,
-                                pFrameYUV->linesize, 0,
-                                m_codecCtx->height,
-                                frame_b->data, frame_b->linesize);
-                                */
-
-                Adj23D(frame_b, pFrameYUV);
-            }
-        }
-
-        int nSS = (int)(nScal*100);
-        if(nSS==100)
-        {
-            ;
-        }
-        else
-        {
-            float fScal = nScal;
-
-
-            AVFrame *pFrameYUV_D = av_frame_alloc();
-            pFrameYUV_D->format = AV_PIX_FMT_YUV420P;
-            pFrameYUV_D->width = (int)(nDisplayWidth*fScal);
-            pFrameYUV_D->height = (int)(m_codecCtx->height*fScal);
-            ret = av_image_alloc(
-                    pFrameYUV_D->data, pFrameYUV_D->linesize, pFrameYUV_D->width,
-                    pFrameYUV_D->height,
-                    AV_PIX_FMT_YUV420P, 4);
-
-             libyuv::I420Scale(pFrameYUV->data[0],pFrameYUV->linesize[0],
-                               pFrameYUV->data[1],pFrameYUV->linesize[1],
-                               pFrameYUV->data[2],pFrameYUV->linesize[2],
-                               pFrameYUV->width,pFrameYUV->height,
-                               pFrameYUV_D->data[0],pFrameYUV_D->linesize[0],
-                               pFrameYUV_D->data[1],pFrameYUV_D->linesize[1],
-                               pFrameYUV_D->data[2],pFrameYUV_D->linesize[2],
-                               pFrameYUV_D->width,pFrameYUV_D->height,
-                               libyuv::kFilterLinear);
-
-            av_freep(&pFrameYUV->data[0]);
-            av_frame_free(&pFrameYUV);
-            pFrameYUV = av_frame_alloc();
-
-            pFrameYUV->format = AV_PIX_FMT_YUV420P;
-            pFrameYUV->width = nDisplayWidth;
-            pFrameYUV->height =m_codecCtx->height;
-            ret = av_image_alloc(
-                    pFrameYUV->data, pFrameYUV->linesize, pFrameYUV->width,
-                    pFrameYUV->height,
-                    AV_PIX_FMT_YUV420P, 4);
-
-            int cx =  pFrameYUV_D->width/2;
-            int cy =  pFrameYUV_D->height/2;
-
-            int lx = cx-(pFrameYUV->width/2);
-            lx=(lx+1)/2;
-            lx*=2;
-
-
-            int ly = cy-(pFrameYUV->height/2);
-            ly = (ly+1)/2;
-            ly*=2;
-
-            byte *psrc;
-            byte *pdes;
-
-            byte *pSrcStart = pFrameYUV_D->data[0]+ly*pFrameYUV_D->linesize[0]+lx;
-            pdes = pFrameYUV->data[0];
-
-            for(int yy=0;yy<pFrameYUV->height;yy++)
-            {
-                psrc = pSrcStart+yy*pFrameYUV_D->linesize[0];
-                memcpy(pdes+yy*pFrameYUV->linesize[0],psrc,(size_t)(pFrameYUV->linesize[0]));
-            }
-
-
-
-            pSrcStart = pFrameYUV_D->data[1]+ly/2*pFrameYUV_D->linesize[1]+lx/2;
-            pdes = pFrameYUV->data[1];
-
-            for(int yy=0;yy<pFrameYUV->height/2;yy++)
-            {
-                psrc = pSrcStart+yy*pFrameYUV_D->linesize[1];
-                memcpy(pdes+yy*pFrameYUV->linesize[1],psrc,(size_t )pFrameYUV->linesize[1]);
-                //memset(pdes,0,(size_t )pFrameYUV->linesize[1]);
-            }
-
-            pSrcStart = pFrameYUV_D->data[2]+ly/2*pFrameYUV_D->linesize[2]+lx/2;
-            pdes = pFrameYUV->data[2];
-
-            for(int yy=0;yy<pFrameYUV->height/2;yy++)
-            {
-                psrc = pSrcStart+yy*pFrameYUV_D->linesize[2];
-                memcpy(pdes+yy*pFrameYUV->linesize[1],psrc,(size_t )pFrameYUV->linesize[2]);
-                //memset(pdes,0,(size_t )pFrameYUV->linesize[1]);
-            }
-
-            av_freep(&pFrameYUV_D->data[0]);
-            av_frame_free(&pFrameYUV_D);
-
-        }
-
-        m_decodedFrame->key_frame = 1;
-
-        if (m_decodedFrame != nullptr) {
-
-            if (m_decodedFrame->key_frame != 0) {
-                av_frame_copy(frame_SnapBuffer, pFrameYUV);
-            }
-        }
-
-        if (m_bSaveSnapshot)
-        {
-            {
-                EncodeSnapshot();
-            }
-        }
-        PlatformDisplay();
-#endif
     }
     av_packet_unref(&packet);
-
     return 0;
 
 }
@@ -1767,13 +1351,12 @@ int C_FFMpegPlayer::SetYUVFrame(AVFrame *yunframe) {
         return -1;
     }
 
-
     int ret = 0;
     int nSS = (int) (nScal * 100);
-    if (nSS == 100) { ;
-    } else {
+    if (nSS > 100) {
         float fScal = nScal;
         int nSW = (int) (pFrameYUV->width * fScal);
+        nSW = ((nSW + 7) / 8) * 8;
         int nSH = (int) (pFrameYUV->height * fScal);
 
         if (pFrameYUV_D != nullptr) {
@@ -1817,47 +1400,17 @@ int C_FFMpegPlayer::SetYUVFrame(AVFrame *yunframe) {
         ly = (ly + 1) / 2;
         ly *= 2;
 
-#if 1
 
-        int length = (pFrameYUV_D->height*pFrameYUV_D->height*3)/2;
+        int length = (pFrameYUV_D->width * pFrameYUV_D->height * 3) / 2;
         int nSize = pFrameYUV->width;
-        libyuv::ConvertToI420(pFrameYUV_D->data[0],length,
+        libyuv::ConvertToI420(pFrameYUV_D->data[0], length,
                               pFrameYUV->data[0], nSize,
-                              pFrameYUV->data[1], nSize>>1,
-                              pFrameYUV->data[2], nSize>>1,
-                              lx,ly,
-                              pFrameYUV_D->width,pFrameYUV_D->height,
-                              pFrameYUV->width,pFrameYUV->height,
+                              pFrameYUV->data[1], nSize >> 1,
+                              pFrameYUV->data[2], nSize >> 1,
+                              lx, ly,
+                              pFrameYUV_D->width, pFrameYUV_D->height,
+                              pFrameYUV->width, pFrameYUV->height,
                               libyuv::kRotate0, libyuv::FOURCC_I420);
-#else
-        byte *psrc;
-        byte *pdes;
-
-        byte *pSrcStart = pFrameYUV_D->data[0] + ly * pFrameYUV_D->linesize[0] + lx;
-        pdes = pFrameYUV->data[0];
-
-        for (int yy = 0; yy < pFrameYUV->height; yy++) {
-            psrc = pSrcStart + yy * pFrameYUV_D->linesize[0];
-            memcpy(pdes + yy * pFrameYUV->linesize[0], psrc, (size_t) (pFrameYUV->linesize[0]));
-        }
-
-
-        pSrcStart = pFrameYUV_D->data[1] + ly / 2 * pFrameYUV_D->linesize[1] + lx / 2;
-        pdes = pFrameYUV->data[1];
-
-        for (int yy = 0; yy < pFrameYUV->height / 2; yy++) {
-            psrc = pSrcStart + yy * pFrameYUV_D->linesize[1];
-            memcpy(pdes + yy * pFrameYUV->linesize[1], psrc, (size_t) pFrameYUV->linesize[1]);
-        }
-
-        pSrcStart = pFrameYUV_D->data[2] + ly / 2 * pFrameYUV_D->linesize[2] + lx / 2;
-        pdes = pFrameYUV->data[2];
-
-        for (int yy = 0; yy < pFrameYUV->height / 2; yy++) {
-            psrc = pSrcStart + yy * pFrameYUV_D->linesize[2];
-            memcpy(pdes + yy * pFrameYUV->linesize[1], psrc, (size_t) pFrameYUV->linesize[2]);
-        }
-#endif
     }
 
 
@@ -1871,28 +1424,30 @@ int C_FFMpegPlayer::SetYUVFrame(AVFrame *yunframe) {
     if (frame_SnapBuffer == nullptr) {
         frame_SnapBuffer = av_frame_alloc();
         frame_SnapBuffer->format = AV_PIX_FMT_YUV420P;
-        frame_SnapBuffer->width = m_codecCtx->width;
-        frame_SnapBuffer->height = m_codecCtx->height;
+        frame_SnapBuffer->width = pFrameYUV->width;
+        frame_SnapBuffer->height = pFrameYUV->height;
         av_image_alloc(
-                frame_SnapBuffer->data, frame_SnapBuffer->linesize, m_codecCtx->width,
-                m_codecCtx->height,
+                frame_SnapBuffer->data, frame_SnapBuffer->linesize, pFrameYUV->width,
+                pFrameYUV->height,
                 AV_PIX_FMT_YUV420P, 4);
     }
 
     if (bMirror) {
         if (frame_a != nullptr) {
-            av_freep(&frame_a->data[0]);
-            av_frame_free(&frame_a);
-            frame_a = nullptr;
+            if(frame_a->width!=pFrameYUV->width || frame_a->height!=pFrameYUV->height) {
+                av_freep(&frame_a->data[0]);
+                av_frame_free(&frame_a);
+                frame_a = nullptr;
+            }
         }
 
         if (frame_a == nullptr) {
             frame_a = av_frame_alloc();
             frame_a->format = AV_PIX_FMT_YUV420P;
-            frame_a->width = m_codecCtx->width;
-            frame_a->height = m_codecCtx->height;
-            av_image_alloc(frame_a->data, frame_a->linesize, m_codecCtx->width,
-                           m_codecCtx->height,
+            frame_a->width = pFrameYUV->width;
+            frame_a->height = pFrameYUV->height;
+            av_image_alloc(frame_a->data, frame_a->linesize, pFrameYUV->width,
+                           pFrameYUV->height,
                            AV_PIX_FMT_YUV420P, 4);
         }
         libyuv::I420Mirror(pFrameYUV->data[0], pFrameYUV->linesize[0],
@@ -1917,18 +1472,20 @@ int C_FFMpegPlayer::SetYUVFrame(AVFrame *yunframe) {
     if (bFlip) {
 
         if (frame_a != nullptr) {
-            av_freep(&frame_a->data[0]);
-            av_frame_free(&frame_a);
-            frame_a = nullptr;
+            if(frame_a->width!=pFrameYUV->width || frame_a->height!=pFrameYUV->height) {
+                av_freep(&frame_a->data[0]);
+                av_frame_free(&frame_a);
+                frame_a = nullptr;
+            }
         }
 
         if (frame_a == nullptr) {
             frame_a = av_frame_alloc();
             frame_a->format = AV_PIX_FMT_YUV420P;
-            frame_a->width = m_codecCtx->width;
-            frame_a->height = m_codecCtx->height;
-            av_image_alloc(frame_a->data, frame_a->linesize, m_codecCtx->width,
-                           m_codecCtx->height,
+            frame_a->width = pFrameYUV->width;
+            frame_a->height = pFrameYUV->height;
+            av_image_alloc(frame_a->data, frame_a->linesize, pFrameYUV->width,
+                           pFrameYUV->height,
                            AV_PIX_FMT_YUV420P, 4);
         }
 
@@ -1962,40 +1519,29 @@ int C_FFMpegPlayer::SetYUVFrame(AVFrame *yunframe) {
                           frame_b->width, frame_b->height,
                           libyuv::kFilterLinear);
         Adj23D(frame_b, pFrameYUV);
-        if (m_decodedFrame != nullptr) {
-            libyuv::I420Copy(pFrameYUV->data[0], pFrameYUV->linesize[0],
-                             pFrameYUV->data[0], pFrameYUV->linesize[0],
-                             pFrameYUV->data[0], pFrameYUV->linesize[0],
-                             frame_SnapBuffer->data[0], frame_SnapBuffer->linesize[0],
-                             frame_SnapBuffer->data[1], frame_SnapBuffer->linesize[1],
-                             frame_SnapBuffer->data[2], frame_SnapBuffer->linesize[2],
-                             frame_SnapBuffer->width, frame_SnapBuffer->height);
+    }
 
-        }
-        //if (m_bSaveSnapshot) {
-        //    EncodeSnapshot();
-        //}
-    } else {
-        if (m_decodedFrame != nullptr) {
-            if (m_decodedFrame->key_frame != 0) {
-                av_frame_copy(frame_SnapBuffer, pFrameYUV);
-            }
-        }
-        //if (m_bSaveSnapshot) {
 
-        //    EncodeSnapshot();
-        //}
+
+    if (m_decodedFrame != nullptr)
+    {
+        libyuv::I420Copy(pFrameYUV->data[0], pFrameYUV->linesize[0],
+                         pFrameYUV->data[1], pFrameYUV->linesize[1],
+                         pFrameYUV->data[2], pFrameYUV->linesize[2],
+                         frame_SnapBuffer->data[0], frame_SnapBuffer->linesize[0],
+                         frame_SnapBuffer->data[1], frame_SnapBuffer->linesize[1],
+                         frame_SnapBuffer->data[2], frame_SnapBuffer->linesize[2],
+                         frame_SnapBuffer->width, frame_SnapBuffer->height);
+
     }
     bCanDisplay = true;
     PlatformDisplay();
-
 
     return 0;
 
 }
 
-int C_FFMpegPlayer::decodeAndRender()
-{
+int C_FFMpegPlayer::decodeAndRender() {
     if (nIC_Type == IC_SN)
         return 0;
     int frameFinished = 0;
@@ -2004,13 +1550,14 @@ int C_FFMpegPlayer::decodeAndRender()
     time_out = getCurrentTime();
     firsttimeplay = true;
     F_ResetCheckT(0);
-    while (m_Status == E_PlayerStatus_Playing) {
+    while (m_Status == E_PlayerStatus_Playing)
+    {
         if (av_read_frame(m_formatCtx, &packet) < 0)
             break;
         time_out = getCurrentTime();
         firsttimeplay = true;
-        if (packet.stream_index == m_videoStream) {
-
+        if (packet.stream_index == m_videoStream)
+        {
             if (avcodec_send_packet(m_codecCtx, &packet) == 0) {
                 if (avcodec_receive_frame(m_codecCtx, m_decodedFrame) != 0) {
                     ret = -1;
@@ -2022,10 +1569,7 @@ int C_FFMpegPlayer::decodeAndRender()
             }
             nDisplayWidth = m_codecCtx->width;
             nDisplayHeight = m_codecCtx->height;
-
             if (ret == 0) {
-
-
                 if (m_decodedFrame->format == AV_PIX_FMT_YUVJ420P || m_decodedFrame->format == AV_PIX_FMT_YUV420P) {
                     libyuv::I420Copy(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
                                      m_decodedFrame->data[1], m_decodedFrame->linesize[1],
@@ -2034,7 +1578,7 @@ int C_FFMpegPlayer::decodeAndRender()
                                      pFrameYUV->data[1], pFrameYUV->linesize[1],
                                      pFrameYUV->data[2], pFrameYUV->linesize[2],
                                      m_decodedFrame->width, m_decodedFrame->height);
-                } else if(m_decodedFrame->format==AV_PIX_FMT_YUV422P || m_decodedFrame->format==AV_PIX_FMT_YUVJ422P){
+                } else if (m_decodedFrame->format == AV_PIX_FMT_YUV422P || m_decodedFrame->format == AV_PIX_FMT_YUVJ422P) {
                     libyuv::I422ToI420(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
                                        m_decodedFrame->data[1], m_decodedFrame->linesize[1],
                                        m_decodedFrame->data[2], m_decodedFrame->linesize[2],
@@ -2042,11 +1586,8 @@ int C_FFMpegPlayer::decodeAndRender()
                                        pFrameYUV->data[1], pFrameYUV->linesize[1],
                                        pFrameYUV->data[2], pFrameYUV->linesize[2],
                                        m_decodedFrame->width, m_decodedFrame->height);
-                }
-                else
-                {
-                    if(img_convert_ctx != nullptr)
-                    {
+                } else {
+                    if (img_convert_ctx != nullptr) {
                         sws_scale(img_convert_ctx,
                                   (const uint8_t *const *) m_decodedFrame->data,
                                   m_decodedFrame->linesize, 0,
@@ -2055,43 +1596,12 @@ int C_FFMpegPlayer::decodeAndRender()
                     }
                 }
                 SetYUVFrame(pFrameYUV);
-
-//                sws_scale(img_convert_ctx,
-//                          (const uint8_t *const *) m_decodedFrame->data,
-//                          m_decodedFrame->linesize, 0,
-//                          m_codecCtx->height,
-//                          pFrameYUV->data, pFrameYUV->linesize);
-
-
-//                if (m_codecCtx->pix_fmt != AV_PIX_FMT_YUV420P) {
-//                    libyuv::I422ToI420(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
-//                                       m_decodedFrame->data[1], m_decodedFrame->linesize[1],
-//                                       m_decodedFrame->data[2], m_decodedFrame->linesize[2],
-//                                       pFrameYUV->data[0], pFrameYUV->linesize[0],
-//                                       pFrameYUV->data[1], pFrameYUV->linesize[1],
-//                                       pFrameYUV->data[2], pFrameYUV->linesize[2],
-//                                       m_decodedFrame->width, m_decodedFrame->height
-//                    );
-//
-//                } else {
-//                    libyuv::I420Copy(m_decodedFrame->data[0], m_decodedFrame->linesize[0],
-//                                     m_decodedFrame->data[1], m_decodedFrame->linesize[1],
-//                                     m_decodedFrame->data[2], m_decodedFrame->linesize[2],
-//                                     pFrameYUV->data[0], pFrameYUV->linesize[0],
-//                                     pFrameYUV->data[1], pFrameYUV->linesize[1],
-//                                     pFrameYUV->data[2], pFrameYUV->linesize[2],
-//                                     m_decodedFrame->width, m_decodedFrame->height);
-//                }
-
-//                SetYUVFrame(pFrameYUV);
-
             }
         }
         av_packet_unref(&packet);
     }
     m_bOpenOK = false;
     F_CloseSocket();
-    LOGE("decodeAndRender End");
     m_bSaveVideo = false;
     Releaseffmpeg();
     m_Status = E_PlayerStatus_Stoped;
@@ -2217,22 +1727,14 @@ extern int nBufferLen;
 int encord_colorformat;
 
 
-AVPacket *C_FFMpegPlayer::F_GetPacket() {
+AVPacket *C_FFMpegPlayer::F_GetPacket(void) {
     int ret, got_output;
     if (pFrameYUV == nullptr)
         return nullptr;
     if (m_codecCtx == nullptr)
         return nullptr;
-
-
-
-    // myOpenCV::F_Bitmap2Grey(pFrameYUV->data[0],m_decodedFrame->height,m_decodedFrame->width);
-
-#if 1
-    {
         if (m_FrameQueue_H264.size() < 8) {
             if (m_bSaveVideo) {
-#if 1
                 AVFrame *frame_rec;
                 if (pFrameYUV->width != nRecordWidth || pFrameYUV->height != nRecordHeight) {
                     libyuv::I420Scale(pFrameYUV->data[0], pFrameYUV->linesize[0],
@@ -2271,7 +1773,7 @@ AVPacket *C_FFMpegPlayer::F_GetPacket() {
                 unsigned char *bufU = bufY + WW * HH;
                 unsigned char *bufV = bufU + (W2 * H2);
 
-                if (encord_colorformat ==  OMX_COLOR_FormatYUV420SemiPlanar)   //YUV420 或者 NV2 主要是Android  硬编码，有些机型支持的 数据格式只有OMX_COLOR_FormatYUV420SemiPlanar
+                if (encord_colorformat == OMX_COLOR_FormatYUV420SemiPlanar)   //YUV420 或者 NV2 主要是Android  硬编码，有些机型支持的 数据格式只有OMX_COLOR_FormatYUV420SemiPlanar
                 {
 
                     libyuv::I420ToNV12(srcY, frame_rec->linesize[0],
@@ -2293,18 +1795,15 @@ AVPacket *C_FFMpegPlayer::F_GetPacket() {
                 m_FrameQueue_H264.push(myfram);
                 pthread_cond_signal(&m_Frame_condition);
                 pthread_mutex_unlock(&m_Frame_Queuelock);
-#endif
             }
         }
-    }
 
-    if (m_bSaveSnapshot) {
+    if (m_bSaveSnapshot)
+    {
         EncodeSnapshot();
     }
     F_DispSurface();
-#endif
     return nullptr;
-
 }
 
 void C_FFMpegPlayer::F_AdjUV(int8_t u, int8_t v) {
@@ -2316,17 +1815,16 @@ void F_OnSave2ToGallery_mid(int n);
 extern int nDispStyle;
 
 
-extern int    nPhotoW;// = 640;
-extern int    nPhotoH;// = 360;
-extern bool   bPhotoSet;// = false;  //  如果 为 true 表示拍照时用  nPhotoW   nPhotoH
+extern int nPhotoW;// = 640;
+extern int nPhotoH;// = 360;
+extern bool bPhotoSet;// = false;  //  如果 为 true 表示拍照时用  nPhotoW   nPhotoH
 
 int C_FFMpegPlayer::EncodeSnapshot() {
 
 
     int WW = nRecordWidth;
     int HH = nRecordHeight;
-    if(bPhotoSet)
-    {
+    if (bPhotoSet) {
         WW = nPhotoW;
         HH = nPhotoH;
     }
@@ -2371,7 +1869,7 @@ int C_FFMpegPlayer::EncodeSnapshot() {
     //if (ret != 0) {
     //    return FFMPEGPLAYER_SAVESNAPSHOTFAILED;
     //}
-    AVFrame *frame_Snap;
+    AVFrame *frame_Snap = nullptr;
 
     bool bAlloc = false;
 
@@ -2477,11 +1975,10 @@ int C_FFMpegPlayer::EncodeSnapshot() {
                                      frame_Snap->width, frame_Snap->height);
             delete[]pbufferA;
         }
-
     }
 
-
     ret = -1;
+
     if (avcodec_send_frame(cSnap, frame_Snap) == 0) {
         if (avcodec_receive_packet(cSnap, &pkt) == 0) {
             ret = 0;
@@ -2595,36 +2092,67 @@ int pos;
 extern bool bSentRevBMP;
 extern bool bGesture;
 extern AVFrame *gl_Frame;
-extern int64_t nRecStartTime;
 
-void C_FFMpegPlayer::F_DispSurface()
-{
+
+extern bool bTransferSize;
+extern int nTransferWidth;
+extern int nTransferHeight;
+extern AVFrame *pTranFrame;
+
+void C_FFMpegPlayer::F_DispSurface(void) {
 
     bool bSentRevBMP_bak = bSentRevBMP;
     if (bGesture) {
         bSentRevBMP_bak = true;
     }
-    if (bSentRevBMP_bak) {
-        if (Rgbabuffer != nullptr) {
+    if (bSentRevBMP_bak)
+    {
+        if (Rgbabuffer != nullptr)
+        {
+            int W1 = pFrameYUV->width;
+            int H1 = pFrameYUV->height;
+            if (bTransferSize && pTranFrame != nullptr)
+            {
+                if (pFrameYUV->width != pTranFrame->width || pFrameYUV->height != pTranFrame->height)   //转换为 设定的尺寸，然后传给应用层。
+                {
 
-            libyuv::I420ToABGR(pFrameYUV->data[0], pFrameYUV->linesize[0],
-                               pFrameYUV->data[1], pFrameYUV->linesize[1],
-                               pFrameYUV->data[2], pFrameYUV->linesize[2],
-                               Rgbabuffer, pFrameYUV->width * 4,
-                               pFrameYUV->width, pFrameYUV->height);
-            F_SentRevBmp(pFrameYUV->width + pFrameYUV->height * 0x10000);
+                    libyuv::I420Scale(pFrameYUV->data[0], pFrameYUV->linesize[0],
+                                      pFrameYUV->data[1], pFrameYUV->linesize[1],
+                                      pFrameYUV->data[2], pFrameYUV->linesize[2],
+                                      pFrameYUV->width, pFrameYUV->height,
+                                      pTranFrame->data[0], pTranFrame->linesize[0],
+                                      pTranFrame->data[1], pTranFrame->linesize[1],
+                                      pTranFrame->data[2], pTranFrame->linesize[2],
+                                      nTransferWidth, nTransferHeight,
+                                      libyuv::kFilterLinear);
+
+                    libyuv::I420ToABGR(pTranFrame->data[0], pTranFrame->linesize[0],
+                                       pTranFrame->data[1], pTranFrame->linesize[1],
+                                       pTranFrame->data[2], pTranFrame->linesize[2],
+                                       Rgbabuffer, pTranFrame->width * 4,
+                                       pTranFrame->width, pTranFrame->height);
+                    W1 = pTranFrame->width;
+                    H1 = pTranFrame->height;
+                }
+
+            } else {
+                libyuv::I420ToABGR(pFrameYUV->data[0], pFrameYUV->linesize[0],
+                                   pFrameYUV->data[1], pFrameYUV->linesize[1],
+                                   pFrameYUV->data[2], pFrameYUV->linesize[2],
+                                   Rgbabuffer, pFrameYUV->width * 4,
+                                   pFrameYUV->width, pFrameYUV->height);
+            }
+            F_SentRevBmp(W1 + H1 * 0x10000);
         }
         if (bSentRevBMP)
             return;
     }
 
-    {
-
-        if (gl_Frame != nullptr) {
+        if (gl_Frame != nullptr)
+        {
             if ((nSDStatus & bit1_LocalRecording) && !bRealRecording) {
                 bRealRecording = true;
-                nRecStartTime = av_gettime() / 1000;
-
+                //nRecStartTime = av_gettime() / 1000;
             }
 
             gl_Frame->width = pFrameYUV->width;
@@ -2644,7 +2172,6 @@ void C_FFMpegPlayer::F_DispSurface()
                              pFrameYUV->width, pFrameYUV->height);
 
         }
-    }
 
 }
 
