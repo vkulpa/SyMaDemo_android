@@ -8,7 +8,6 @@ import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.support.v4.app.NavUtils;
 import android.util.Log;
 
 import org.simple.eventbus.EventBus;
@@ -24,6 +23,8 @@ import java.nio.ByteBuffer;
 public class wifination {
 
 
+
+
     private  final  static int CmdLen = 1024;
 
     public final static int IC_NO = -1;
@@ -37,6 +38,7 @@ public class wifination {
     public final static int IC_GPH264A = 7;
     public final static int IC_GPRTPB = 8;
     public final static int IC_GK_UDP = 9;
+
 
 
     public static AudioEncoder AudioEncoder;
@@ -57,7 +59,7 @@ public class wifination {
 
     private final static String TAG = "wifination";
     private static final wifination m_Instance = new wifination();
-    private static final int BMP_Len = (((2560 + 3) / 4) * 4) * 4 * 1920 + 1024;
+    private static final int BMP_Len = (((2560 + 3) / 4) * 4) * 4 * 1920 + 2048;
 
 
 
@@ -186,6 +188,125 @@ public class wifination {
 
 
 
+    /*
+            4225 凌通 支持SD卡录像+
+    */
+
+
+
+    /*
+        APP读取状态信息
+
+    */
+    public static void na4225_ReadStatus()
+    {
+
+        byte[] cmd = new byte[20];
+        cmd[0]='F';
+        cmd[1]='D';
+        cmd[2]='W';
+        cmd[3]='N';
+        cmd[4]=0x00;
+        cmd[5]=0x00;
+        cmd[6]=0x01;
+        cmd[7]=0x00;
+        cmd[8]=0x00;
+        cmd[9]=0x00;
+        naSentUdpData("192.168.33.1",20001, cmd,10);
+    }
+
+
+    /*
+            APP设定工作模式
+            0  实时图像
+            1  文件操作
+     */
+    public static void na4225_SetMode(byte nMode)
+    {
+
+        byte[] cmd = new byte[20];
+
+        cmd[0]='F';
+        cmd[1]='D';
+        cmd[2]='W';
+        cmd[3]='N';
+
+        cmd[4]=0x01;
+        cmd[5]=0x00;
+
+        cmd[6]=0x01;
+        cmd[7]=0x00;
+
+        cmd[8]=0x01;
+        cmd[9]=0x00;
+
+        cmd[10]=nMode;
+
+        if(nMode!=0)  //文件模式
+        {
+            naStopRecord_All();
+            naStop();
+        }
+        else            //图传模式
+        {
+            naDisConnectedTCP();
+        }
+        naSentUdpData("192.168.33.1",20001,cmd,11);
+    }
+
+
+    /*
+        APP 查询文件列表
+        先调用na4225_SetMode，进入文件列表模式
+        nType = 1;  视频
+        nType = 2;  锁定视频
+        nType = 3'  相片
+        nType = 4'  锁定相片
+
+ */
+    public static void na4225_GetFileList(int nVideo, int nStrtinx,int nEndinx)
+    {
+
+        byte[] cmd = new byte[20];
+
+        cmd[0]='F';
+        cmd[1]='D';
+        cmd[2]='W';
+        cmd[3]='N';
+
+
+        cmd[4]=0x02;
+        cmd[5]=0x00;
+
+
+        cmd[6]=(byte)nVideo;
+        cmd[7]=0x00;
+
+        cmd[8]=0x04;
+        cmd[9]=0x00;
+
+        cmd[10]=(byte)(nStrtinx&0xFF);
+        cmd[11]=(byte)((nStrtinx>>8)&0xFF);
+
+        cmd[12]=(byte)(nEndinx&0xFF);
+        cmd[13]=(byte)((nEndinx>>8)&0xFF);
+
+        naSentUdpData("192.168.33.1",20001,cmd,14);
+    }
+
+    /*
+        文件下载
+    */
+//    public static native boolean na4225StartDonwLoad(String sServerIP,int nPort,String sPath,String sFileName,int nLen);
+//    public static native boolean  na4225StartPlay(String sServerIP,int nPort,String sPath,String sFileName,int nLen);
+
+    public static native boolean na4225StartDonwLoad(String sServerIP,int nPort,String sPath,String sFileName,int nLen,String sSaveName);
+    public static native boolean  na4225StartPlay(String sServerIP,int nPort,String sPath,String sFileName,int nLen);
+
+    public static native boolean naDisConnectedTCP();
+
+    ///////// 4225 end --------------
+
 
 
     private static native void naSetRevBmpA(boolean b);
@@ -277,6 +398,11 @@ public class wifination {
 
     public static native void naSetAdjFps(boolean b); //对应国科IC，有些早期固件不支持调整FPS，所以需要增加这一条命令
 
+
+
+
+
+    public static native  void naSetCameraDataRota(int n);
 
 
 
@@ -761,9 +887,16 @@ public class wifination {
     //下载文件回调 nError =1 表示有错误。
     private static void DownloadFile_callback(int nPercentage, String sFileName, int nError) {
         if (nError == 0) {
-            Log.e("downloading", "downloading  " + nPercentage + "%     " + sFileName);
+            ;
         }
-        jh_dowload_callback jh_dowload_callback = new jh_dowload_callback(nPercentage, sFileName, nError);
+        jh_dowload_callback jh_dowload_callback;
+        if(nError==0xFF)
+        {
+            jh_dowload_callback = new jh_dowload_callback(nPercentage, sFileName);
+        }
+        else {
+            jh_dowload_callback = new jh_dowload_callback(nPercentage, sFileName, nError);
+        }
         EventBus.getDefault().post(jh_dowload_callback, "DownloadFile");
     }
 

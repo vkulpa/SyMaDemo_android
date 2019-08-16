@@ -14,6 +14,10 @@ android {
             abiFilters 'armeabi-v7a','arm64-v8a'
         }
 
+
+        buildConfigField("boolean", "D_Debug", "true")
+
+
     }
     buildTypes {
         release {

@@ -9,6 +9,7 @@
 #include "opengles/esUtil.h"
 #include "opengles/matrix.h"
 #include "cameraShader.h"
+
 #include "libavcodec/avcodec.h"
 #include "libavformat/avformat.h"
 #include "libswscale/swscale.h"

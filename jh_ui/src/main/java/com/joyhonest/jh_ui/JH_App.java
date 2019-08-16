@@ -1,7 +1,6 @@
 package com.joyhonest.jh_ui;
 
 import android.app.Activity;
-
 import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.content.ContentValues;
@@ -40,6 +39,10 @@ import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
 
+import com.joyhonest.wifination.wifination;
+
+import org.simple.eventbus.EventBus;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -51,15 +54,9 @@ import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Calendar;
-
 import java.util.List;
-import java.util.Locale;
 
 import static android.content.Context.WIFI_SERVICE;
-
-import com.joyhonest.wifination.wifination;
-
-import org.simple.eventbus.EventBus;
 
 
 /**
@@ -1036,66 +1033,13 @@ public class JH_App {
         if(JH_App.nICType == wifination.IC_GP)
             str = "http://192.168.25.1:8080/?action=stream";
         //str ="/storage/emulated/0/DCIM/Camera/MOVI0001.avi";
+        //wifination.naSetCameraDataRota(90);
         wifination.naInit(str);
+
+        wifination.naStartReadUdp(20001);
+
         wifination.naGetRtl_Mode();
-/*
-        String str = "";
-        int re = -1;
-        if (JH_App.nICType == wifination.IC_GK) {
-            str = "rtsp://192.168.234.1/12";
-            re = wifination.naInit(str);
-        }
-        if (JH_App.nICType == wifination.IC_GKA) {
-            if (JH_App.b720P) {
-                str = "1";
-            } else {
-                str = "2";
-            }
-            wifination.naSetGKA_SentCmdByUDP(true);
-            re = wifination.naInit(str);
-        }
-        if (JH_App.nICType == wifination.IC_SN) {
-            wifination.naInit(str);
-        }
 
-        if (JH_App.nICType == wifination.IC_GP) {
-            str = "http://192.168.25.1:8080/?action=stream";
-            re = wifination.naInit(str);
-            if (re == 0)
-                wifination.naPlay();
-        }
-
-        if (JH_App.nICType == wifination.IC_GPRTSP) {
-            str = "rtsp://192.168.26.1:8080/?action=stream";
-            re = wifination.naInit(str);
-            if (re == 0)
-                wifination.naPlay();
-        }
-
-        if (JH_App.nICType == wifination.IC_GPH264) {
-            str = "";
-            wifination.naInit(str);
-        }
-
-        if (JH_App.nICType == wifination.IC_GPRTP) {
-            str = "";
-            wifination.naInit(str);
-        }
-        if (JH_App.nICType == wifination.IC_GPRTPB) {
-            str = "192.168.29.1:19200";
-            wifination.naInit(str);
-        }
-        if (JH_App.nICType == wifination.IC_GPH264A) {
-            str = "192.168.30.1:8080";
-            wifination.naSetGPFps(20);
-            wifination.naInit(str);
-        }
-        if (JH_App.nICType == wifination.IC_GK_UDP) {
-            str = "192.168.16.1";
-            wifination.naSetGPFps(25);
-            wifination.naInit(str);
-        }
-*/
     }
 
 

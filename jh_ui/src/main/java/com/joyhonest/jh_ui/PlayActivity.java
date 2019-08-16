@@ -3,27 +3,17 @@ package com.joyhonest.jh_ui;
 
 import android.Manifest;
 import android.animation.ObjectAnimator;
-//import android.app.Fragment;
-//import android.app.FragmentManager;
-//import android.app.FragmentTransaction;
-import android.content.Intent;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Point;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
-//import android.support.v4.app.Fragment;
-//import android.support.v4.app.FragmentManager;
-//import android.support.v4.app.FragmentTransaction;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.telephony.TelephonyManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.View;
@@ -34,7 +24,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
-import com.joyhonest.jh_fly.Fly_PlayActivity;
 import com.joyhonest.wifination.JH_GLSurfaceView;
 import com.joyhonest.wifination.MyThumb;
 import com.joyhonest.wifination.jh_dowload_callback;
@@ -50,6 +39,13 @@ import java.lang.ref.WeakReference;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+//import android.app.Fragment;
+//import android.app.FragmentManager;
+//import android.app.FragmentTransaction;
+//import android.support.v4.app.Fragment;
+//import android.support.v4.app.FragmentManager;
+//import android.support.v4.app.FragmentTransaction;
 
 
 public class PlayActivity extends AppCompatActivity implements View.OnClickListener {
@@ -130,8 +126,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             {
 
                 JH_App.F_OpenStream();
-
-
 
 
                 if (main_fragment != null) {
@@ -273,9 +267,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
         EventBus.getDefault().register(this);
         RssiHander.postDelayed(RssiRunable, 100);
-
-
-
 
 
     }
@@ -619,11 +610,10 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             //wifination.naSetVideoSurface(null);
             wifination.naCancelDownload();
             wifination.naCancelGetThumb();
+            wifination.naDisConnectedTCP();
             wifination.naStop();
         }
     }
-
-
 
 
     @Override
@@ -632,6 +622,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         if (bGoFly)
             return;
         if (openHandler != null) {
+            wifination.naDisConnectedTCP();
             wifination.naStop();
             wifination.release();
             EventBus.getDefault().unregister(this);
@@ -706,7 +697,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
     @Subscriber(tag = "key_Press")
     private void key_Press(Integer n) {
-        main_fragment.F_DispInfo("Error:" + n);
+        //main_fragment.F_DispInfo("Error:" + n);
     }
 
     @Subscriber(tag = "GetThumb")
@@ -719,12 +710,25 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
     @Subscriber(tag = "DownloadFile")
     private void DownloadFile(jh_dowload_callback dowload) {
-        //Log.v("abc",dowload.sFileName+"   "+dowload.nPercentage+"%");
-        if (JH_App.bBrowSD && !JH_App.bBrowPhoto) {
-            for (MyItemData data : JH_App.mGridList) {
-                if (data.sSDPath.compareToIgnoreCase(dowload.sFileName) == 0) {
-                    data.fPrecent = dowload.nPercentage;
-                    Grid_fragment.F_UpdateLisetViewData();
+        if (BuildConfig.D_Debug) {
+            String ss = "";
+            if (dowload.nError != 0) {
+                //main_fragment.F_DispInfo("Error:" + n)
+                ss =    dowload.sFileName;
+
+            } else {
+                ss = dowload.sFileName + "  DownLod " + dowload.nPercentage + "%";
+
+            }
+            main_fragment.F_DispInfo(ss);
+            //Log.e("TAG", ss);
+        } else {
+            if (JH_App.bBrowSD && !JH_App.bBrowPhoto) {
+                for (MyItemData data : JH_App.mGridList) {
+                    if (data.sSDPath.compareToIgnoreCase(dowload.sFileName) == 0) {
+                        data.fPrecent = dowload.nPercentage;
+                        Grid_fragment.F_UpdateLisetViewData();
+                    }
                 }
             }
         }
@@ -1142,9 +1146,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
                 } else if (data.nDownloadStatus == JH_App.DownLoading) {
                     ;
                 } else if (data.nDownloadStatus == JH_App.DownLoaded_NO ||
-                        data.nDownloadStatus == JH_App.DownLoadNormal)
-
-                {
+                        data.nDownloadStatus == JH_App.DownLoadNormal) {
                     //data.nDownloadStatus = JH_App.DownLoading;
                     Integer x = ix;
                     data.nDownloadStatus = JH_App.DownLoadNeed;
@@ -1874,24 +1876,22 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
-    @Subscriber(tag="ReadDataFromFlash")
-    private void ReadDataFromFlash(byte[] data)
-    {
-        Log.e("Read","Redata len = "+data.length);
-        String str = String.format("%02X %02X %02X %02X %02X  ...   %02X %02X",data[0],data[1],data[2],data[3],data[4],data[510],data[511]);
-        Log.e("Read",str);
+    @Subscriber(tag = "ReadDataFromFlash")
+    private void ReadDataFromFlash(byte[] data) {
+        Log.e("Read", "Redata len = " + data.length);
+        String str = String.format("%02X %02X %02X %02X %02X  ...   %02X %02X", data[0], data[1], data[2], data[3], data[4], data[510], data[511]);
+        Log.e("Read", str);
 
     }
-    @Subscriber(tag="WriteData2FlashResult")
-    private void WriteData2FlashResult(int re)
-    {
-        Log.e("Read","Write result:"+re);
+
+    @Subscriber(tag = "WriteData2FlashResult")
+    private void WriteData2FlashResult(int re) {
+        Log.e("Read", "Write result:" + re);
     }
 
 
-    @Subscriber(tag="Key_Pressed")
-    private void Key_Pressed(int nKey)
-    {
+    @Subscriber(tag = "Key_Pressed")
+    private void Key_Pressed(int nKey) {
 //        Log.e("Key","key = "+nKey);
 //        if(nKey == 4)
 //        {
@@ -1904,9 +1904,136 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     }
 
 
+    String sFile__ = "";
 
+    @Subscriber(tag = "onUdpRevData")
+    private void onUdpRevData(byte[] data) {
+        String str = String.format("%c%c%c%c", data[0], data[1], data[2], data[3]);
+        int m_cmd = data[4] & 0xFF + (data[5] & 0xFF) * 0x100;
+        int s_cmd = data[6] & 0xFF + (data[7] & 0xFF) * 0x100;
+        int n_len = data[8] & 0xFF + (data[9] & 0xFF) * 0x100;
 
+        if (m_cmd == 0x0000 && s_cmd == 0x0001) {   //Device Status
+            String sm_cmd = String.format("main = %d", m_cmd);
+            String ss_cmd = String.format("main = %d", s_cmd);
+            String ss_len = String.format("main = %d", n_len);
 
+            String str1 = String.format("Mode = %d ", data[10] & 0xFF);
+            String str2 = String.format("SD = %d ", data[11] & 0xFF);
+            String str3 = String.format("Videos = %d ", ((data[12] & 0xFF) + (data[13] & 0xFF) * 0x100 + (data[14] & 0xFF) * 0x10000 + (data[15] & 0xFF) * 0x1000000) & 0xFFFFFFFF);
+            String str4 = String.format("Locked = %d ", ((data[16] & 0xFF) + (data[17] & 0xFF) * 0x100 + (data[18] & 0xFF) * 0x10000 + (data[19] & 0xFF) * 0x1000000) & 0xFFFFFFFF);
+            String str5 = String.format("Photos = %d ", ((data[20] & 0xFF) + (data[21] & 0xFF) * 0x100 + (data[22] & 0xFF) * 0x10000 + (data[23] & 0xFF) * 0x1000000) & 0xFFFFFFFF);
+            String str6 = String.format("res1 = %d ", data[24] & 0xFF);
+            String str7 = String.format("res2 = %d ", data[25] & 0xFF);
+            Log.e("TAG", "Rev Data = " + str + str1 + str2 + str3 + str4 + str5 + str6 + str7);
+        }
+        if (m_cmd == 0x0002)  //GetFileList
+        {
+            if (s_cmd == 0x0001) {  //VideoList
+                int nStart, nEnd;
+                nStart = data[10] & 0xFF + (data[11] & 0xFF) * 0x100;
+                nEnd = data[12] & 0xFF + (data[13] & 0xFF) * 0x100;
+                Log.e("TAG", "Files = " + n_len + " startInx = " + nStart + " EndInx= " + nEnd);
+                int inx = 14 + 36;
+                int x = 0;
+                byte[] filestruct = new byte[32];
+
+                for (int ii = 0; ii <= nEnd - nStart; ii++) {
+                    inx = 14 + 36 + (ii * 68);
+
+                    int da = 0;
+                    for (int xx = 0; xx < 32; xx++) {
+                        if (data[inx + xx] != 0) {
+                            da++;
+                        }
+                    }
+                    int nLLL = 0;
+
+                    nLLL= (data[inx+32-36]&0xFF)+(data[inx+33-36]&0xFF)*0x100+(data[inx+34-36]&0xFF)*0x10000+(data[inx+35-36]&0xFF)*0x1000000;
+                    if (da != 0) {
+                        byte bytes[] = new byte[da];
+                        System.arraycopy(data, inx, bytes, 0, da);
+                        String s = new String(bytes);
+                        Log.e("TAG", "video fileName = " + s+" Len = "+nLLL);
+                    }
+                }
+            }
+            if (s_cmd == 0x0002) {  //LockFileList
+                int nStart, nEnd;
+                nStart = data[10] & 0xFF + (data[11] & 0xFF) * 0x100;
+                nEnd = data[12] & 0xFF + (data[13] & 0xFF) * 0x100;
+                Log.e("TAG", "Files = " + n_len + " startInx = " + nStart + " EndInx= " + nEnd);
+                int inx = 14 + 36;
+                int x = 0;
+                byte[] filestruct = new byte[32];
+
+                for (int ii = 0; ii <= nEnd - nStart; ii++) {
+                    inx = 14 + 36 + (ii * 68);
+
+                    int da = 0;
+                    for (int xx = 0; xx < 32; xx++) {
+                        if (data[inx + xx] != 0) {
+                            da++;
+                        }
+                    }
+                    int nLLL = 0;
+
+                    nLLL= (data[inx+32-36]&0xFF)+(data[inx+33-36]&0xFF)*0x100+(data[inx+34-36]&0xFF)*0x10000+(data[inx+35-36]&0xFF)*0x1000000;
+                    if (da != 0) {
+                        byte bytes[] = new byte[da];
+                        System.arraycopy(data, inx, bytes, 0, da);
+                        String s = new String(bytes);
+                        Log.e("TAG", "lock fileName = " + s+" Len = "+nLLL);
+                    }
+                }
+            }
+            if (s_cmd == 0x0003) {  //图片文件
+                int nStart, nEnd;
+
+                nStart = (data[10] & 0xFF + (data[11] & 0xFF) * 0x100);
+                nEnd = (data[12] & 0xFF + (data[13] & 0xFF) * 0x100);
+                Log.e("TAG", "Files = " + n_len + " startInx = " + nStart + " EndInx= " + nEnd);
+                int inx = 14 + 36;
+                int x = 0;
+                for (int ii = 0; ii <= nEnd - nStart; ii++) {
+                    inx = 14 + 36 + (ii * 68);
+                    int da = 0;
+                    for (int xx = 0; xx < 32; xx++) {
+                        if (data[inx + xx] != 0) {
+                            da++;
+                        }
+                    }
+
+                    int nLLL = 0;
+                    nLLL= (data[inx+32-36]&0xFF)+(data[inx+33-36]&0xFF)*0x100+(data[inx+34-36]&0xFF)*0x10000+(data[inx+35-36]&0xFF)*0x1000000;
+
+                    if (da != 0) {
+                        byte bytes[] = new byte[da];
+                        System.arraycopy(data, inx, bytes, 0, da);
+                        String s = new String(bytes);
+                        nLLL= (data[inx+32]&0xFF)|(data[inx+33]&0xFF)*0x100|(data[inx+34]&0xFF)*0x10000|(data[inx+35]&0xFF)*0x1000000;
+                        Log.e("TAG", "picture fileName = " + s+ " Len = "+nLLL);
+                    }
+                }
+            }
+        }
+        if (m_cmd == 0x000A && s_cmd == 0x0001)   //文件下载状态
+        {
+            int nStatus = data[10] & 0xFF;
+            if (nStatus == 0) {
+                Log.e("TAG", "Ready to download...");
+            }
+            if (nStatus == 1) {
+                Log.e("TAG", "File not find...");
+            }
+            if (nStatus == 2) {
+                Log.e("TAG", "TCP_socket not connected...");
+            }
+            if (nStatus == 4) {
+                Log.e("TAG", "Donwloading...");
+            }
+        }
+    }
 
 
 }

@@ -4,13 +4,10 @@ package com.joyhonest.jh_ui;
 //import android.app.Fragment;
 
 import android.content.pm.ActivityInfo;
-
 import android.os.Bundle;
 import android.os.Handler;
-
 import android.support.constraint.ConstraintLayout;
 import android.support.constraint.ConstraintSet;
-
 import android.support.v4.app.Fragment;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -20,7 +17,6 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 
 import com.joyhonest.wifination.wifination;
 
@@ -32,6 +28,9 @@ import org.simple.eventbus.EventBus;
  */
 public class main_fragment extends Fragment implements View.OnClickListener {
 
+
+
+    //private final  boolean  D_Debug = true;
 
     //private Button  But_Power;
     //private Button  But_Adj;
@@ -125,7 +124,7 @@ public class main_fragment extends Fragment implements View.OnClickListener {
 
 
         infp_TestView = (TextView) view.findViewById(R.id.infp_TestView);
-
+        infp_TestView.setVisibility(View.VISIBLE);
 
         snapshot = (TextView) view.findViewById(R.id.snapshot);
         snapshot.setVisibility(View.INVISIBLE);
@@ -675,6 +674,9 @@ public class main_fragment extends Fragment implements View.OnClickListener {
         }
     }
 
+
+    byte NMODE_4225 = 0;
+
     void F_Power(boolean b) {
         if (b) {
 
@@ -711,6 +713,7 @@ public class main_fragment extends Fragment implements View.OnClickListener {
 
     String sRecordFileName = "";
 
+    int   nType = 0;
     // 按键
     @Override
     public void onClick(View view) {
@@ -733,106 +736,159 @@ public class main_fragment extends Fragment implements View.OnClickListener {
         if (view == But_Power) {
 
             //F_NeedReadCmd();
+            if(BuildConfig.D_Debug)
+            {
+                 wifination.na4225_ReadStatus();
+            }
+            else {
 
 
-            if (myControl.getVisibility() == View.VISIBLE) {
-                F_Power(false);
-            } else {
-                F_Power(true);
+                if (myControl.getVisibility() == View.VISIBLE) {
+                    F_Power(false);
+                } else {
+                    F_Power(true);
+                }
             }
 
         }
 
         if (view == But_Adj) {
 
-//            F_Write();
-
-            //aivenlau
-            myControl.F_SetRotateAdj(0x80);
-            myControl.F_SetForwardBackAdj(0x80);
-            myControl.F_SetLeftRightAdj(0x80);
-
-            JH_App.nAdjRota = 0x80;
-            JH_App.nAdjForwardBack = 0x80;
-            JH_App.nAdjLeftRight = 0x80;
-            JH_App.F_ReadSaveSetting(true);
-
-
-            bAdj = true;
-            But_Adj.setBackgroundResource(R.mipmap.trest_sel_jh);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    bAdj = false;
-                    But_Adj.setBackgroundResource(R.mipmap.trest_nor_jh);
+            if(BuildConfig.D_Debug)
+            {
+                if(nType==0)
+                {
+                    nType = 1;
                 }
-            }, 1000);
+                else
+                {
+                    nType = 0;
+                }
+
+
+                wifination.na4225_SetMode((byte)nType);
+                if(nType==0)
+                    wifination.naInit("1");
+
+
+            }
+            else {
+
+                myControl.F_SetRotateAdj(0x80);
+                myControl.F_SetForwardBackAdj(0x80);
+                myControl.F_SetLeftRightAdj(0x80);
+
+                JH_App.nAdjRota = 0x80;
+                JH_App.nAdjForwardBack = 0x80;
+                JH_App.nAdjLeftRight = 0x80;
+                JH_App.F_ReadSaveSetting(true);
+
+
+                bAdj = true;
+                But_Adj.setBackgroundResource(R.mipmap.trest_sel_jh);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        bAdj = false;
+                        But_Adj.setBackgroundResource(R.mipmap.trest_nor_jh);
+                    }
+                }, 1000);
+            }
         }
 
         if (view == But_KeyStop) {
-            bStop = true;
-            bUp = false;
-            bDn = false;
-            But_KeyStop.setBackgroundResource(R.mipmap.stop_sel_jh);
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    bStop = false;
-                    But_KeyStop.setBackgroundResource(R.mipmap.stop_nor_jh);
-                }
-            }, 500);
+            if(BuildConfig.D_Debug)
+            {
+
+            }
+            else {
+                bStop = true;
+                bUp = false;
+                bDn = false;
+                But_KeyStop.setBackgroundResource(R.mipmap.stop_sel_jh);
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        bStop = false;
+                        But_KeyStop.setBackgroundResource(R.mipmap.stop_nor_jh);
+                    }
+                }, 500);
+            }
 
         }
 
         if (view == But_KeyUp) {
-            if (nIsOldFlyControl == _720P_oldCtron) {
-                bUp = !bUp;
-                bDn = false;
-                But_KeyUp.setBackgroundResource(R.mipmap.takeoff_sel_jh);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        But_KeyUp.setBackgroundResource(R.mipmap.takeoff_nor_jh);
-                    }
-                }, 500);
-            } else {
-                bUp = true;
-                bDn = false;
-                But_KeyUp.setBackgroundResource(R.mipmap.takeoff_sel_jh);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        bUp = false;
-                        bDn = false;
-                        But_KeyUp.setBackgroundResource(R.mipmap.takeoff_nor_jh);
-                    }
-                }, 500);
+            if(BuildConfig.D_Debug)
+            {
+                //wifination.na4225_GetFileList(1,1,10);
+                wifination.na4225StartDonwLoad("192.168.33.1",30000,"","MOVI0133.AVI",65667072,"/storage/emulated/0/MOVI_ABC.AVI");
+            }
+            else {
+                if (nIsOldFlyControl == _720P_oldCtron) {
+                    bUp = !bUp;
+                    bDn = false;
+                    But_KeyUp.setBackgroundResource(R.mipmap.takeoff_sel_jh);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            But_KeyUp.setBackgroundResource(R.mipmap.takeoff_nor_jh);
+                        }
+                    }, 500);
+                } else {
+                    bUp = true;
+                    bDn = false;
+                    But_KeyUp.setBackgroundResource(R.mipmap.takeoff_sel_jh);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            bUp = false;
+                            bDn = false;
+                            But_KeyUp.setBackgroundResource(R.mipmap.takeoff_nor_jh);
+                        }
+                    }, 500);
+                }
             }
         }
         if (view == But_KeyDn) {
-            if (nIsOldFlyControl == _720P_oldCtron) {
-                bUp = !bUp;
-                bDn = false;
-                But_KeyDn.setBackgroundResource(R.mipmap.takeoff_a_sel_jh);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        //bDn = false;
-                        //But_KeyDn.setBackgroundResource(R.mipmap.landing_nor_jh);
-                        But_KeyDn.setBackgroundResource(R.mipmap.takeoff_a_jh);
-                    }
-                }, 500);
-            } else {
-                bUp = false;
-                bDn = true;
-                But_KeyDn.setBackgroundResource(R.mipmap.landing_sel_jh);
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        bDn = false;
-                        But_KeyDn.setBackgroundResource(R.mipmap.landing_nor_jh);
-                    }
-                }, 500);
+            if(BuildConfig.D_Debug)
+            {
+
+                String ss = Storage.getNormalSDCardPath();
+
+                wifination.na4225StartPlay("192.168.33.1",30000,"","MOVI0142.AVI",14516224);
+
+                //wifination.na4225StartPlay("192.168.33.1",30000,"","MOVI0140.AVI",38043648);
+                //wifination.na4225StartPlay("192.168.33.1",30000,"","MOVI0136.AVI",44695552);
+                //wifination.na4225StartPlay("192.168.33.1",30000,"","MOVI0133.AVI",65667072);
+                //wifination.na4225StartPlay("192.168.33.1",30000,"","MOVI0010.AVI",9535488);
+                //wifination.na4225StartPlay("192.168.33.1",30000,"","MOVI0007.AVI",18808832);
+                //wifination.na4225StartPlay("192.168.33.1",30000,"","MOVI0008.AVI",19136512);
+            }
+            else {
+                if (nIsOldFlyControl == _720P_oldCtron) {
+                    bUp = !bUp;
+                    bDn = false;
+                    But_KeyDn.setBackgroundResource(R.mipmap.takeoff_a_sel_jh);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            //bDn = false;
+                            //But_KeyDn.setBackgroundResource(R.mipmap.landing_nor_jh);
+                            But_KeyDn.setBackgroundResource(R.mipmap.takeoff_a_jh);
+                        }
+                    }, 500);
+                } else {
+                    bUp = false;
+                    bDn = true;
+                    But_KeyDn.setBackgroundResource(R.mipmap.landing_sel_jh);
+                    new Handler().postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            bDn = false;
+                            But_KeyDn.setBackgroundResource(R.mipmap.landing_nor_jh);
+                        }
+                    }, 500);
+                }
             }
         }
 

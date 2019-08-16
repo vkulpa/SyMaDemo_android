@@ -21,12 +21,12 @@ src/main/cpp/mp4v2-2.0.0/include/mp4v2;
 src/main/cpp/GL;
 src/main/cpp/GL/opengles;
 src/main/cpp/h264prase;
-src/main/cpp/ffmpeginclude;
+/WORK/ffmpeg/ffmpeglib/include;
 /work/ffmpeg/libyuv/jni/include;
 /WORK/ffmpeg/speexdsp-1.2rc3/jni/include;
 
 #/WORK/ffmpeg/OpenCV/include;
-
+#src/main/cpp/ffmpeginclude;
 )
 
 
@@ -114,6 +114,7 @@ target_link_libraries( # Specifies the target library.
                        #c
                        #dl
                        GLESv2
+                       OpenSLES
                        #GLESv3
 
 

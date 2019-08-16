@@ -105,7 +105,7 @@ int RTL_DownLoad::Connect()
             if (error == 0)          // 超时，可以做更进一步的处理，如重试等
             {
                 bTimeoutFlag = 1;
-                LOGE("Not Connect timeout");
+                LOGE("Not Connect timeout RTL");
             } else {
                 LOGE("Not Connect host error");
             }

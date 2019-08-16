@@ -8,6 +8,7 @@
 #include <string>
 #include "MySocketData.h"
 #include "phone_rl_protocol.h"
+#include "GP4225_FileStruct.h"
 
 using namespace std;
 
@@ -22,6 +23,9 @@ class MySocket_GKA {
 public:
     int buffLen;
     int nICType;
+
+
+    bool  bNormalTCP;
 
     MySocket_GKA();
 
@@ -47,6 +51,7 @@ public:
     MySocketData RevSendData;
 
     void GetData(MySocketData *dat);
+    void GetData_A(uint8_t *dataA,int nLenA);
 
     //int FindHead(MySocketData *dat);
     int FindHead(MySocketData *dat, int pos);
@@ -60,6 +65,7 @@ public:
     bool bFindHead;
     bool  bNotice;
     pthread_t readid;
+
 
 };
 

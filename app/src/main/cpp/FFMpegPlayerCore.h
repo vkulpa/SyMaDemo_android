@@ -56,6 +56,12 @@ extern "C" {
 
 
 typedef unsigned char byte;
+
+#define   DATA_Type_NO     0
+#define   DATA_Type_H264    1
+#define   DATA_Type_MJPEG   2
+
+
 #define   IC_NO         -1
 #define   IC_GK         0
 #define   IC_GP         1
@@ -265,6 +271,8 @@ private:
 
 public:
 
+
+    AVFrame *pFrameYUV_Real;
 
     AVFrame *pFrameYUV;
     AVFrame *m_decodedFrame;

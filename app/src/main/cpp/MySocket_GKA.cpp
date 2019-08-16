@@ -33,7 +33,7 @@ extern "C" {
 
 #include <stdio.h>
 #include <pthread.h>
-#include <stdbool.h>
+//#include <stdbool.h>
 
 #ifdef __cplusplus
 }
@@ -57,10 +57,10 @@ extern "C" {
 
 extern JPEG_BUFFER jpg0;
 
-MySocket_GKA::MySocket_GKA() : socketfd(-1), bConnected(false), readid(-1), bFindHead(false), bNotice(false), nICType(IC_NO),fuc_getData_mjpeg(NULL),fuc_getData(NULL),
-                               buffLen(1000) {
-    pthread_mutex_init(&m_mutex, NULL);
-    fuc_getData = NULL;
+MySocket_GKA::MySocket_GKA() : socketfd(-1), bConnected(false), readid(-1), bFindHead(false), bNotice(false), nICType(IC_NO),fuc_getData_mjpeg(nullptr),fuc_getData(nullptr),
+                               buffLen(1000),bNormalTCP(false) {
+    pthread_mutex_init(&m_mutex, nullptr);
+    fuc_getData = nullptr;
     bConnected = false;
 };
 
@@ -71,7 +71,7 @@ MySocket_GKA::~MySocket_GKA() {
 int MySocket_GKA::DisConnect() {
     if (bConnected) {
         bConnected = false;
-        usleep(1000 * 5);
+        usleep(1000 * 10);
         shutdown(socketfd, 2);
         close(socketfd);
         socketfd = -1;
@@ -80,7 +80,7 @@ int MySocket_GKA::DisConnect() {
     }
 
     if (readid != -1) {
-        void *ret = NULL;
+        void *ret = nullptr;
         pthread_join(readid, &ret);
         readid = -1;
     }
@@ -105,7 +105,7 @@ int MySocket_GKA::ConnectA(string host, int port) {
     }
     this->host = host;
     this->port = port;
-    socketfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    socketfd = socket(AF_INET, (int)SOCK_STREAM |SOCK_CLOEXEC, IPPROTO_TCP);
     if (socketfd == -1) {
         bConnected = false;
         return -1;
@@ -125,6 +125,15 @@ int MySocket_GKA::ConnectA(string host, int port) {
     setsockopt(socketfd, SOL_SOCKET, SO_REUSEADDR, &nAddr, sizeof(int));
     int nPorta = 1;
     setsockopt(socketfd, SOL_SOCKET, SO_REUSEPORT, &nPorta, sizeof(int));
+    if(bNormalTCP)
+    {
+        int al = 1;
+        setsockopt(socketfd, SOL_SOCKET, SO_KEEPALIVE, &al, sizeof(int));
+        int al1 = 2;
+        setsockopt(socketfd, SOL_SOCKET, TCP_KEEPIDLE, &al1, sizeof(int));
+        int al2 = 1;
+        setsockopt(socketfd, SOL_SOCKET, TCP_KEEPINTVL, &al2, sizeof(int));
+    }
 
 /*
     int keepAlive = 1;   // 开启keepalive属性. 缺省值: 0(关闭)
@@ -146,17 +155,17 @@ int MySocket_GKA::ConnectA(string host, int port) {
     if (-1 == connect(socketfd, (struct sockaddr *) &dest_addr, sizeof(struct sockaddr)))
     {
         timeout.tv_sec = 1;
-        timeout.tv_usec = 1000 * 5;  //1.500ms
+        timeout.tv_usec = 1500;  //1.500ms
         FD_ZERO(&writeset);
         FD_SET(socketfd, &writeset);
-        ret = select(socketfd + 1, NULL, &writeset, NULL, &timeout);
+        ret = select(socketfd + 1, nullptr, &writeset, nullptr, &timeout);
         if (ret == 0)              //返回0，代表在描述词状态改变已超过timeout时间
         {
             getsockopt(socketfd, SOL_SOCKET, SO_ERROR, &error, (socklen_t *) &len);
             if (error == 0)          // 超时，可以做更进一步的处理，如重试等
             {
                 bTimeoutFlag = 1;
-                LOGE("Not Connect timeout");
+               // LOGE("Not Connect timeout");
             } else {
                 LOGE("Not Connect host error");
             }
@@ -221,7 +230,7 @@ int MySocket_GKA::Read(MySocketData *data, int msTimeout) {
     while (nLen > 0) {
         struct timeval timeoutA = {0, 1000 * 20};     //20ms
         setsockopt(socketfd, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeoutA, sizeof(struct timeval));
-        nRet = recv(socketfd, bufferA, nLen, 0);
+        nRet = recv(socketfd, bufferA, (size_t) nLen, 0);
         if (nRet > 0) {
             nLen -= nRet;
             bufferA += nRet;
@@ -249,7 +258,7 @@ int MySocket_GKA::Read(MySocketData *data) {
     int nRet;
     struct timeval timeoutA = {0, 1000 * 50};     //20ms
     setsockopt(socketfd, SOL_SOCKET, SO_RCVTIMEO, (char *) &timeoutA, sizeof(struct timeval));
-    if ((nRet = recv(socketfd, data->data, data->nLen, 0)) != -1) {
+    if ((nRet = (int)recv(socketfd, data->data, (size_t)data->nLen, 0)) != -1) {
         if (nRet <= 0) {
             int errs = errno;
             if (errs == EWOULDBLOCK) { ;
@@ -389,6 +398,7 @@ bool F_FindJpg(void) {
     return false;
 }
 
+void F_SentError(int nError,const char  *info);
 
 void *MySocket_GKA::ReadData(void *dat) {
     MySocket_GKA *self = (MySocket_GKA *) dat;
@@ -396,9 +406,11 @@ void *MySocket_GKA::ReadData(void *dat) {
 
 
     int Bufferlen = self->buffLen;
-    if (self->nICType == IC_GPRTPC) {
-        Bufferlen = 8192;
-        jpg0.Clear();
+    if(!self->bNormalTCP) {
+        if (self->nICType == IC_GPRTPC) {
+            Bufferlen = 8192;
+            jpg0.Clear();
+        }
     }
 
     uint8_t *buffer = new uint8_t[Bufferlen];
@@ -414,12 +426,12 @@ void *MySocket_GKA::ReadData(void *dat) {
     int next[4] = {0};
     uint8_t  *pbuffer = new uint8_t[500*1024];
     while (self->bConnected) {
-        struct timeval timeoutA = {0, 500};
+        struct timeval timeoutA = {0, 1000*5};
         int nError;
         FD_ZERO(&set); // 在使用之前总是要清空
         // 开始使用select
         FD_SET(self->socketfd, &set); // 把socka放入要测试的描述符集中
-        nRet = select(self->socketfd + 1, &set, NULL, NULL, &timeoutA);  // 检测是否有套接口是否可读+1, &rfd, NULL, NULL, &timeoutA);// 检测是否有套接口是否可读
+        nRet = select(self->socketfd + 1, &set, nullptr, nullptr, &timeoutA);  // 检测是否有套接口是否可读+1, &rfd, nullptr, nullptr, &timeoutA);// 检测是否有套接口是否可读
         if (nRet <= 0) // 超时
         {
             continue;
@@ -430,122 +442,85 @@ void *MySocket_GKA::ReadData(void *dat) {
 
         bzero(buffer, Bufferlen);
         nRet = recv(self->socketfd, buffer, Bufferlen, 0);
-        //setsockopt(self->socketfd, IPPROTO_TCP, TCP_QUICKACK, (int[]) {1}, sizeof(int));
         if (nRet <= 0) {
-            nError = errno;
-            if (nError == EWOULDBLOCK && nRet < 0) {
-                //self->RevData.nLen = 0;
-            } else {
-                continue;//break;
-            }
+                LOGE_B("REmote Sockect lose!!!!");
+                shutdown(self->socketfd, 2);
+                close(self->socketfd);
+                self->socketfd = -1;
+                self->host = "";
+                self->port = -1;
+                self->bConnected = false;
+                const char *ds = "Remote tcp  Sockect lose!!!!";
+                F_SentError(0xFF,ds);
+                break;
+
         }
         if (nRet > 0) {
-            F_ResetRelinker();
-            if (self->nICType == IC_GPRTPC)
+            if(!self->bNormalTCP)
             {
-                    if(jpg0.AppendData(buffer,nRet))
-                    {
-                        if(F_FindJpg())
-                        {
+                F_ResetRelinker();
+                if (self->nICType == IC_GPRTPC) {
+                    if (jpg0.AppendData(buffer, nRet)) {
+                        if (F_FindJpg()) {
                             int nLen = jpg0.nCount;
-                            int nJpgStart =_nJpgStart;
+                            int nJpgStart = _nJpgStart;
                             int nJpgEnd = _nJpgEnd;
                             uint8_t *buffer = jpg0.buffer;
-                            if(self->fuc_getData_mjpeg!=NULL)
-                            {
-                                self->fuc_getData_mjpeg((char *)(buffer+nJpgStart),nJpgEnd-nJpgStart+2);
+                            if (self->fuc_getData_mjpeg != nullptr) {
+                                self->fuc_getData_mjpeg((char *) (buffer + nJpgStart), nJpgEnd - nJpgStart + 2);
                             }
-                            if(nLen-nJpgEnd-2>0)
-                            {
-                                memcpy(pbuffer, buffer+nJpgEnd+2, nLen-nJpgEnd-2);
+                            if (nLen - nJpgEnd - 2 > 0) {
+                                memcpy(pbuffer, buffer + nJpgEnd + 2, nLen - nJpgEnd - 2);
                                 jpg0.Clear();
-                                jpg0.AppendData(pbuffer,nLen-nJpgEnd-2);
+                                jpg0.AppendData(pbuffer, nLen - nJpgEnd - 2);
 
-                            }
-                            else
-                            {
+                            } else {
                                 jpg0.Clear();
                             }
-                            _nJpgStart=-1;
+                            _nJpgStart = -1;
                             _nJpgEnd = -1;
                         }
-                    }
-                    else
-                    {
+                    } else {
                         LOGE("Not Find!!!");
                         jpg0.Clear();
-                        _nJpgStart=-1;
+                        _nJpgStart = -1;
                         _nJpgEnd = -1;
                     }
 
-            } else {
-
-                if (self->bNotice)
-                {
-                    if (nRet > self->RevData.nSize) {
-                        LOGE("errorA");
-                    }
-                    self->RevData.nLen = nRet;
-                    memcpy(self->RevData.data, buffer, nRet);
-                    self->GetData(&self->RevData);
-                    usleep(1000);
-                    continue;
-                }
-
-#if 1
-#if 1
-                mydat.nLen = 0;
-                mydat.AppendData(buffer, nRet);
-                self->GetData(&mydat);
-#else
-
-
-                self->RevData.AppendData(buffer, nRet);
-                int headpos = self->FindHead(&self->RevData, nNexPos);//nSerchPos);
-                if (headpos < 0) {
-                    if (self->RevData.nLen > 4) {
-                        nNexPos = self->RevData.nLen - 4;
-                    } else {
-                        nNexPos = 0;
-                    }
                 } else {
-                    nNexPos = 0;
-                    if (!bStartab) {
-                        bStartab = true;
-                        LOGE("GetFrame Data!!!!");
+
+                    if (self->bNotice) {
+                        if (nRet > self->RevData.nSize) {
+                            LOGE("errorA");
+                        }
+                        self->RevData.nLen = nRet;
+                        memcpy(self->RevData.data, buffer, nRet);
+                        self->GetData(&self->RevData);
+                        usleep(1000);
                         continue;
                     }
+
+
                     mydat.nLen = 0;
-                    mydat.AppendData(self->RevData.data, headpos + 4);
+                    mydat.AppendData(buffer, nRet);
                     self->GetData(&mydat);
-                    mydatA.nLen = 0;
-                    mydatA.AppendData(self->RevData.data + headpos + 4, self->RevData.nLen - headpos - 4);
-                    self->RevData.nLen = 0;
-                    self->RevData.AppendData(mydatA.data, mydatA.nLen);
+
                 }
-#endif
-#else
-                if (nRet > self->RevData.nSize)
+            }else
             {
-                LOGE("errorA");
+                if (self->fuc_getData_mjpeg != nullptr) {
+                    self->fuc_getData_mjpeg((char *) buffer, nRet);
+
+                }
             }
-            self->RevData.nLen = nRet;
-            memcpy(self->RevData.data,buffer,nRet);
-            //self->RevData.data = buffer;
-            self->GetData(&self->RevData);
-#endif
-
-            }
-
-
         }
 
     }
-    if(buffer!=NULL)
+    if(buffer!=nullptr)
     {
         delete []buffer;
     }
-    if(pbuffer!=NULL)
+    if(pbuffer!=nullptr)
     {
         delete []pbuffer;
     }
@@ -555,12 +530,18 @@ void *MySocket_GKA::ReadData(void *dat) {
         LOGE("Exit DataSocket  Read Thread!!!");
     }
     self->readid = -1;
-    return NULL;
+    return nullptr;
+
+}
+
+void MySocket_GKA::GetData_A(uint8_t *dataA,int nLenA)
+{
+
 
 }
 
 void MySocket_GKA::GetData(MySocketData *dat) {
-    if (fuc_getData != NULL) {
+    if (fuc_getData != nullptr) {
         fuc_getData(dat);
     }
 }
@@ -570,7 +551,7 @@ void MySocket_GKA::StartReadThread(void) {
     if (readid == -1) {
         bFindHead = true;
         RevData.nLen = 0;
-        ret = pthread_create(&readid, NULL, ReadData, (void *) this); // 成功返回0，错误返回错误编号
+        ret = pthread_create(&readid, nullptr, ReadData, (void *) this); // 成功返回0，错误返回错误编号
 
     }
     if (ret != 0) {

@@ -196,7 +196,7 @@ Project_BINARY_DIR:STATIC=/WORK2/SyMaDemo_android/app/.externalNativeBuild/cmake
 Project_SOURCE_DIR:STATIC=/WORK2/SyMaDemo_android/app
 
 //Dependencies for the target
-jh_wifi_LIB_DEPENDS:STATIC=general;log;general;z;general;GLESv2;general;/WORK/ffmpeg/mp4v2-2.0.0/obj/local/armeabi-v7a/libmp4v2.a;general;/WORK/ffmpeg/libyuv/obj/local/armeabi-v7a/libyuv.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libavformat.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libavdevice.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libavcodec.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libavutil.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libavfilter.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libswresample.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libswscale.a;
+jh_wifi_LIB_DEPENDS:STATIC=general;log;general;z;general;GLESv2;general;OpenSLES;general;/WORK/ffmpeg/mp4v2-2.0.0/obj/local/armeabi-v7a/libmp4v2.a;general;/WORK/ffmpeg/libyuv/obj/local/armeabi-v7a/libyuv.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libavformat.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libavdevice.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libavcodec.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libavutil.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libavfilter.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libswresample.a;general;/WORK/ffmpeg/ffmpeglib/armeabi-v7a/libswscale.a;
 
 //Path to a library.
 jnigraphics-lib:FILEPATH=/Users/aiven/Library/Android/sdk/ndk-bundle/toolchains/llvm/prebuilt/darwin-x86_64/sysroot/usr/lib/arm-linux-androideabi/18/libjnigraphics.so

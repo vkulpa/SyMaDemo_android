@@ -4,8 +4,8 @@
 
 #include <cstring>
 
-#include <cstdio>
-#include <src/main/cpp/ffmpeginclude/libavutil/time.h>
+#include <stdio.h>
+#include "libavutil/time.h"
 
 #include "JH_TestInfo.h"
 

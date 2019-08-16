@@ -22,7 +22,6 @@ android {
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         externalNativeBuild {
             cmake {
-                //cppFlags "-std=c++11 -frtti -fexceptions" //-std=c++11
                 cppFlags  "-Wno-error=format-security"
                 arguments "-DANDROID_ARM_NEON=TRUE  -DGL_GLEXT_PROTOTYPES"
             }

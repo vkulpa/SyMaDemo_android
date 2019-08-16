@@ -19,6 +19,7 @@ public:
     void CancelDownLod();
 
     bool  bCancel;
+    int8_t  aa;
 
 };
 
