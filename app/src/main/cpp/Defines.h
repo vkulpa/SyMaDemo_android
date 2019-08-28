@@ -7,6 +7,25 @@
 
 
 
+#define   IC_NO         -1
+#define   IC_GK         0
+#define   IC_GP         1
+#define   IC_SN         2
+#define   IC_GKA        3
+#define   IC_GPRTSP     4
+#define   IC_GPH264     5
+#define   IC_GPRTP      6
+#define   IC_GPH264A    7
+#define   IC_GPRTPB      8
+#define   IC_GK_UDP      9
+
+#define   IC_GPRTPC      10
+#define   IC_RTLH264     11
+
+
+#define   IC_FILES      100
+
+
 //#ifdef DEBUG
 #include <android/log.h>
 #ifdef DEBUG

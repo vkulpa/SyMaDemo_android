@@ -25,7 +25,7 @@ public class wifination {
 
 
 
-    private  final  static int CmdLen = 1024;
+
 
     public final static int IC_NO = -1;
     public final static int IC_GK = 0;
@@ -60,7 +60,11 @@ public class wifination {
     private final static String TAG = "wifination";
     private static final wifination m_Instance = new wifination();
     private static final int BMP_Len = (((2560 + 3) / 4) * 4) * 4 * 1920 + 2048;
+    //private static final int BMP_Len = (((1920 + 3) / 4) * 4) * 4 * 1080 +1024;
+    private  final  static int CmdLen = 2048;
 
+
+    public static GP4225_Device gp4225_Device;
 
 
     public static Context appContext = null;
@@ -71,7 +75,10 @@ public class wifination {
             AudioEncoder = new AudioEncoder();
             videoMediaCoder = new VideoMediaCoder();
 
+            gp4225_Device = new GP4225_Device();
+
             mDirectBuffer = ByteBuffer.allocateDirect(BMP_Len + CmdLen);     //获取每帧数据，主要根据实际情况，分配足够的空间。
+
             naSetDirectBuffer(mDirectBuffer, BMP_Len + CmdLen);
 
         } catch (UnsatisfiedLinkError Ule) {
@@ -82,6 +89,13 @@ public class wifination {
 
         }
     }
+
+//    public static void   naSetMaxResolution(int nWidth,int nHeight)
+//    {
+//        int len = (((nWidth + 3) / 4) * 4) * 4 * nHeight + 2048;
+//        mDirectBuffer = ByteBuffer.allocateDirect(len + CmdLen);     //获取每帧数据，主要根据实际情况，分配足够的空间。
+//        naSetDirectBuffer(mDirectBuffer, len + CmdLen);
+//    }
 
     private wifination() {
 
@@ -96,8 +110,6 @@ public class wifination {
 
 
     ////// ------------- -------------------------
-
-
 
     //初始化，开始接受wifi数据，显示图像
     /*
@@ -192,68 +204,18 @@ public class wifination {
             4225 凌通 支持SD卡录像+
     */
 
-
-
     /*
         APP读取状态信息
-
     */
-    public static void na4225_ReadStatus()
-    {
-
-        byte[] cmd = new byte[20];
-        cmd[0]='F';
-        cmd[1]='D';
-        cmd[2]='W';
-        cmd[3]='N';
-        cmd[4]=0x00;
-        cmd[5]=0x00;
-        cmd[6]=0x01;
-        cmd[7]=0x00;
-        cmd[8]=0x00;
-        cmd[9]=0x00;
-        naSentUdpData("192.168.33.1",20001, cmd,10);
-    }
-
+    public static native void na4225_ReadStatus();
 
     /*
             APP设定工作模式
             0  实时图像
             1  文件操作
      */
-    public static void na4225_SetMode(byte nMode)
-    {
 
-        byte[] cmd = new byte[20];
-
-        cmd[0]='F';
-        cmd[1]='D';
-        cmd[2]='W';
-        cmd[3]='N';
-
-        cmd[4]=0x01;
-        cmd[5]=0x00;
-
-        cmd[6]=0x01;
-        cmd[7]=0x00;
-
-        cmd[8]=0x01;
-        cmd[9]=0x00;
-
-        cmd[10]=nMode;
-
-        if(nMode!=0)  //文件模式
-        {
-            naStopRecord_All();
-            naStop();
-        }
-        else            //图传模式
-        {
-            naDisConnectedTCP();
-        }
-        naSentUdpData("192.168.33.1",20001,cmd,11);
-    }
-
+    public static native void na4225_SetMode(byte nMode);
 
     /*
         APP 查询文件列表
@@ -262,49 +224,23 @@ public class wifination {
         nType = 2;  锁定视频
         nType = 3'  相片
         nType = 4'  锁定相片
-
  */
-    public static void na4225_GetFileList(int nVideo, int nStrtinx,int nEndinx)
-    {
 
-        byte[] cmd = new byte[20];
-
-        cmd[0]='F';
-        cmd[1]='D';
-        cmd[2]='W';
-        cmd[3]='N';
+    public static native void na4225_GetFileList(int nType, int nStrtinx,int nEndinx);
 
 
-        cmd[4]=0x02;
-        cmd[5]=0x00;
 
+    public static native void na4225_DeleteFile(String sPath,String sFileName);
+    public static native void na4225_DeleteAll(int nType); //  2 videos 3 photos   4 all
 
-        cmd[6]=(byte)nVideo;
-        cmd[7]=0x00;
-
-        cmd[8]=0x04;
-        cmd[9]=0x00;
-
-        cmd[10]=(byte)(nStrtinx&0xFF);
-        cmd[11]=(byte)((nStrtinx>>8)&0xFF);
-
-        cmd[12]=(byte)(nEndinx&0xFF);
-        cmd[13]=(byte)((nEndinx>>8)&0xFF);
-
-        naSentUdpData("192.168.33.1",20001,cmd,14);
-    }
 
     /*
         文件下载
     */
-//    public static native boolean na4225StartDonwLoad(String sServerIP,int nPort,String sPath,String sFileName,int nLen);
-//    public static native boolean  na4225StartPlay(String sServerIP,int nPort,String sPath,String sFileName,int nLen);
 
-    public static native boolean na4225StartDonwLoad(String sServerIP,int nPort,String sPath,String sFileName,int nLen,String sSaveName);
-    public static native boolean  na4225StartPlay(String sServerIP,int nPort,String sPath,String sFileName,int nLen);
-
+    public static native boolean na4225StartDonwLoad(String sPath,String sFileName,int nLen,String sSaveName);
+    public static native boolean  na4225StartPlay(String sPath,String sFileName,int nLen);
     public static native boolean naDisConnectedTCP();
-
     ///////// 4225 end --------------
 
 
@@ -401,7 +337,7 @@ public class wifination {
 
 
 
-
+    //镜头传过来的数据旋转 0 90 180 270
     public static native  void naSetCameraDataRota(int n);
 
 
@@ -471,14 +407,17 @@ public class wifination {
         ObjectDetector.MINIMUM_CONFIDENCE_TF_OD_API = aa;
     }
 
-///////JoyTrip
 
     public static native boolean naSentUdpData(String sIP, int nPort,byte[] data, int nLen);
     public static native boolean naStartReadUdp(int nPort); // 收到数据后，会通过onUdpRevData 返回
     public static native boolean naStopReadUdp();
     private static  void onUdpRevData(byte[] data)
     {
-          EventBus.getDefault().post(data,"onUdpRevData");
+
+
+         if(!gp4225_Device.GP4225_PressData(data)) {
+             EventBus.getDefault().post(data, "onUdpRevData");
+         }
     }
 
 
@@ -526,9 +465,6 @@ public class wifination {
 
     public static void F_AdjBackGround(Context context, int bakid) {
 
-
-
-
         Bitmap bmp = null;
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
@@ -563,9 +499,6 @@ public class wifination {
             Bitmap croppedBitmap = Bitmap.createBitmap(newWidth, newHeight, Bitmap.Config.ARGB_8888);
             Canvas canvas = new Canvas(croppedBitmap);
             Matrix frameToCropTransform;
-
-
-
                 frameToCropTransform =
                         ImageUtils.getTransformationMatrix(
                                 width, height,
@@ -576,27 +509,6 @@ public class wifination {
                 frameToCropTransform.invert(cropToFrameTransform);
                 canvas.drawBitmap(bmp, frameToCropTransform, null);
 
-                /*
-            //获得图片的宽高
-            int width = bmp.getWidth();
-            int height = bmp.getHeight();
-            // 设置想要的大小
-            int newWidth = ((width+7)/8)*8;
-            int newHeight = ((height+7)/8)*8;
-
-
-            // 计算缩放比例
-            float scaleWidth = ((float) newWidth) / width;
-            float scaleHeight = ((float) newHeight) / height;
-            // 取得想要缩放的matrix参数
-            Matrix matrix = new Matrix();
-            matrix.postScale(scaleWidth, scaleHeight);
-            // 得到新的图片
-            Bitmap newbm = Bitmap.createBitmap(bmp, 0, 0, width, height, matrix,
-                    true);
-            bmp.recycle();
-            bmp = newbm;
-            */
                 bmp.recycle();
                 bmp = croppedBitmap;
         }

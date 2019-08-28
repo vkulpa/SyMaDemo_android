@@ -8,7 +8,7 @@
 #include <unistd.h>
 #include <linux/in.h>
 #include <linux/tcp.h>
-#include <errno.h>
+#include <cerrno>
 #include <sys/endian.h>
 #include <arpa/inet.h>
 #include <asm/ioctls.h>
@@ -17,6 +17,9 @@
 #include "MySocket_GKA.h"
 #include "phone_rl_protocol.h"
 #include "JPEG_BUFFER.h"
+
+#include <cstdio>
+#include <pthread.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,8 +34,7 @@ extern "C" {
 #include "libavutil/error.h"
 #include "libavutil/frame.h"
 
-#include <stdio.h>
-#include <pthread.h>
+
 //#include <stdbool.h>
 
 #ifdef __cplusplus
@@ -40,25 +42,26 @@ extern "C" {
 #endif
 
 
-#define   IC_NO         -1
-#define   IC_GK         0
-#define   IC_GP         1
-#define   IC_SN         2
-#define   IC_GKA        3
-#define   IC_GPRTSP     4
-#define   IC_GPH264     5
-#define   IC_GPRTP      6
-#define   IC_GPH264A    7
-#define   IC_GPRTPB      8
-#define   IC_GK_UDP      9
-
-#define   IC_GPRTPC      10
+//#define   IC_NO         -1
+//#define   IC_GK         0
+//#define   IC_GP         1
+//#define   IC_SN         2
+//#define   IC_GKA        3
+//#define   IC_GPRTSP     4
+//#define   IC_GPH264     5
+//#define   IC_GPRTP      6
+//#define   IC_GPH264A    7
+//#define   IC_GPRTPB      8
+//#define   IC_GK_UDP      9
+//
+//#define   IC_GPRTPC      10
 
 
 extern JPEG_BUFFER jpg0;
 
 MySocket_GKA::MySocket_GKA() : socketfd(-1), bConnected(false), readid(-1), bFindHead(false), bNotice(false), nICType(IC_NO),fuc_getData_mjpeg(nullptr),fuc_getData(nullptr),
-                               buffLen(1000),bNormalTCP(false) {
+                               buffLen(1000),bNormalTCP(false),port(0)
+{
     pthread_mutex_init(&m_mutex, nullptr);
     fuc_getData = nullptr;
     bConnected = false;
@@ -97,24 +100,29 @@ int MySocket_GKA::Connect(string host, int port) {
     return 0;
 }
 
-int MySocket_GKA::ConnectA(string host, int port) {
+int MySocket_GKA::ConnectA(string host_, int port_) {
     const char *df = host.c_str();
     struct sockaddr_in dest_addr; //destnation ip info
     if (socketfd != -1 && bConnected) {
         return 1;
     }
-    this->host = host;
-    this->port = port;
-    socketfd = socket(AF_INET, (int)SOCK_STREAM |SOCK_CLOEXEC, IPPROTO_TCP);
+    host = host_;
+    port = port_;
+
+    socketfd = socket(AF_INET, (unsigned int)SOCK_STREAM|SOCK_CLOEXEC, IPPROTO_TCP);
     if (socketfd == -1) {
         bConnected = false;
         return -1;
     }
     int ret = 0;
     unsigned long ul = 1;
+
     struct timeval timeout;
-    fd_set readset, writeset;
-    int error = -1, len = sizeof(int);
+    fd_set readset;
+    fd_set writeset;
+
+    int error = -1;
+    int len = sizeof(int);
 
     int bTimeoutFlag = 0;
 
@@ -274,22 +282,22 @@ int MySocket_GKA::Read(MySocketData *data) {
 }
 //0XF3B0A4B8
 
-int MySocket_GKA::FindHead(MySocketData *dat, int pos) {
-
-    int ix;
-    if (dat->nLen < 4)
-        return -1;
-    uint8_t *pdata = dat->data;
-    uint32_t magic = 0x01000000;
-    uint32_t data = 0;
-    for (ix = pos; ix <= dat->nLen - 4; ix++) {
-        data = *((uint32_t *) (pdata + ix));
-        if (magic == data) {
-            return ix;
-        }
-    }
-    return -1;
-}
+//int MySocket_GKA::FindHead(MySocketData *dat, int pos) {
+//
+//    int ix;
+//    if (dat->nLen < 4)
+//        return -1;
+//    uint8_t *pdata = dat->data;
+//    uint32_t magic = 0x01000000;
+//    uint32_t data = 0;
+//    for (ix = pos; ix <= dat->nLen - 4; ix++) {
+//        data = *((uint32_t *) (pdata + ix));
+//        if (magic == data) {
+//            return ix;
+//        }
+//    }
+//    return -1;
+//}
 
 void F_ResetRelinker();
 
@@ -301,37 +309,37 @@ extern MySocket_GKA GK_tcp_NoticeSocket;
 
 uint8_t pat[] = {0, 0, 0, 1};
 
-void getNext(int next[])   //lengthP为模式串P的长度
-{
-    int j = 0, k = -1;//j为P串的下标，k用来记录该下标对应的next数组的值
-    next[0] = -1;//初始化0下标下的next数组值为-1
-    while (j < 4) { //对模式串进行扫描
-        if (k == -1 || pat[j] == pat[k]) {//串后缀与前缀没有相等的子串或者此时j下标下的字符与k下的字符相等。
-            j++;
-            k++;
-            next[j] = k;//设置next数组j下标的值为k
-        } else
-            k = next[k];//缩小子串的范围继续比较
-    }
-}
-
-int kmp(int k, int next[], int nTlen, uint8_t *T) {
-    int posP = 0, posT = k;              //posP和posT分别是模式串pat和目标串T的下标，先初始化它们的起始位置
-    //int lengthP= pat.length();    //lengthP是模式串pat长
-    int lengthT = nTlen;// T.length();        //lengthT是目标串T长
-    while (posP < 4 && posT < lengthT)    //对两串扫描
-    {
-        if (posP == -1 || pat[posP] == T[posT]) {                           //对应字符匹配
-            posP++;
-            posT++;
-        } else
-            posP = next[posP];        //失配时，用next数组值选择下一次匹配的位置
-    }
-    if (posP < 4)
-        return -1;
-    else
-        return posT - 4;//匹配成功
-}
+//void getNext(int next[])   //lengthP为模式串P的长度
+//{
+//    int j = 0, k = -1;//j为P串的下标，k用来记录该下标对应的next数组的值
+//    next[0] = -1;//初始化0下标下的next数组值为-1
+//    while (j < 4) { //对模式串进行扫描
+//        if (k == -1 || pat[j] == pat[k]) {//串后缀与前缀没有相等的子串或者此时j下标下的字符与k下的字符相等。
+//            j++;
+//            k++;
+//            next[j] = k;//设置next数组j下标的值为k
+//        } else
+//            k = next[k];//缩小子串的范围继续比较
+//    }
+//}
+//
+//int kmp(int k, int next[], int nTlen, uint8_t *T) {
+//    int posP = 0, posT = k;              //posP和posT分别是模式串pat和目标串T的下标，先初始化它们的起始位置
+//    //int lengthP= pat.length();    //lengthP是模式串pat长
+//    int lengthT = nTlen;// T.length();        //lengthT是目标串T长
+//    while (posP < 4 && posT < lengthT)    //对两串扫描
+//    {
+//        if (posP == -1 || pat[posP] == T[posT]) {                           //对应字符匹配
+//            posP++;
+//            posT++;
+//        } else
+//            posP = next[posP];        //失配时，用next数组值选择下一次匹配的位置
+//    }
+//    if (posP < 4)
+//        return -1;
+//    else
+//        return posT - 4;//匹配成功
+//}
 
 void F_SetRelinkerT(int nMs);
 
@@ -341,7 +349,7 @@ int nNexPos = 0;
 int32_t _nJpgStart;
 int32_t _nJpgEnd;
 
-uint8_t  *mypbuffer = new uint8_t[500*1024];
+//uint8_t  *mypbuffer = new uint8_t[500*1024];
 
 bool F_FindJpg(void) {
     if (jpg0.nCount < 4)
@@ -401,9 +409,8 @@ bool F_FindJpg(void) {
 void F_SentError(int nError,const char  *info);
 
 void *MySocket_GKA::ReadData(void *dat) {
-    MySocket_GKA *self = (MySocket_GKA *) dat;
+    auto *self = (MySocket_GKA *) dat;
     int nRet;
-
 
     int Bufferlen = self->buffLen;
     if(!self->bNormalTCP) {
@@ -413,21 +420,21 @@ void *MySocket_GKA::ReadData(void *dat) {
         }
     }
 
-    uint8_t *buffer = new uint8_t[Bufferlen];
+    auto *buffer = new uint8_t[Bufferlen];
     self->RevData.nLen = 0;
     MySocketData mydat;
     MySocketData mydatA;
     fd_set set;
-    bool bStartab = false;
-    int on = 1;
-
-    //F_SetRelinkerT(3000);
+//    bool bStartab = false;
+//    int on = 1;
+//
+//    //F_SetRelinkerT(3000);
     nNexPos = 0;
     int next[4] = {0};
-    uint8_t  *pbuffer = new uint8_t[500*1024];
+    auto  *pbuffer = new uint8_t[500*1024];
     while (self->bConnected) {
         struct timeval timeoutA = {0, 1000*5};
-        int nError;
+        //int nError;
         FD_ZERO(&set); // 在使用之前总是要清空
         // 开始使用select
         FD_SET(self->socketfd, &set); // 把socka放入要测试的描述符集中
@@ -441,7 +448,7 @@ void *MySocket_GKA::ReadData(void *dat) {
         }
 
         bzero(buffer, Bufferlen);
-        nRet = recv(self->socketfd, buffer, Bufferlen, 0);
+        nRet = (int)recv(self->socketfd, buffer, (size_t)Bufferlen, 0);
         if (nRet <= 0) {
                 LOGE_B("REmote Sockect lose!!!!");
                 shutdown(self->socketfd, 2);
@@ -465,12 +472,12 @@ void *MySocket_GKA::ReadData(void *dat) {
                             int nLen = jpg0.nCount;
                             int nJpgStart = _nJpgStart;
                             int nJpgEnd = _nJpgEnd;
-                            uint8_t *buffer = jpg0.buffer;
+                            uint8_t *buffer_ = jpg0.buffer;
                             if (self->fuc_getData_mjpeg != nullptr) {
-                                self->fuc_getData_mjpeg((char *) (buffer + nJpgStart), nJpgEnd - nJpgStart + 2);
+                                self->fuc_getData_mjpeg((char *) (buffer_ + nJpgStart), nJpgEnd - nJpgStart + 2);
                             }
                             if (nLen - nJpgEnd - 2 > 0) {
-                                memcpy(pbuffer, buffer + nJpgEnd + 2, nLen - nJpgEnd - 2);
+                                memcpy(pbuffer, buffer_ + nJpgEnd + 2, nLen - nJpgEnd - 2);
                                 jpg0.Clear();
                                 jpg0.AppendData(pbuffer, nLen - nJpgEnd - 2);
 
@@ -493,18 +500,17 @@ void *MySocket_GKA::ReadData(void *dat) {
                         if (nRet > self->RevData.nSize) {
                             LOGE("errorA");
                         }
-                        self->RevData.nLen = nRet;
-                        memcpy(self->RevData.data, buffer, nRet);
+                        self->RevData.nLen =(uint32_t)nRet;
+                        memcpy(self->RevData.data, buffer,(size_t)nRet);
                         self->GetData(&self->RevData);
-                        usleep(1000);
-                        continue;
+                        usleep(100);
+
                     }
-
-
-                    mydat.nLen = 0;
-                    mydat.AppendData(buffer, nRet);
-                    self->GetData(&mydat);
-
+                    else {
+                        mydat.nLen = 0;
+                        mydat.AppendData(buffer, (uint32_t) nRet);
+                        self->GetData(&mydat);
+                    }
                 }
             }else
             {
@@ -534,11 +540,11 @@ void *MySocket_GKA::ReadData(void *dat) {
 
 }
 
-void MySocket_GKA::GetData_A(uint8_t *dataA,int nLenA)
-{
-
-
-}
+//void MySocket_GKA::GetData_A(uint8_t *dataA,int nLenA)
+//{
+//
+//
+//}
 
 void MySocket_GKA::GetData(MySocketData *dat) {
     if (fuc_getData != nullptr) {

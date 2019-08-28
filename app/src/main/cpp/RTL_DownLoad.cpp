@@ -26,10 +26,7 @@
 
 using namespace std;
 
-
-
-
-RTL_DownLoad::RTL_DownLoad():socketfd(-1),bConnected(false),readid(-1),fuc_getData(NULL)
+RTL_DownLoad::RTL_DownLoad():socketfd(-1),bConnected(false),readid(-1),fuc_getData(nullptr)
 {
 
 
@@ -66,7 +63,7 @@ int RTL_DownLoad::Connect()
         return 0;
     }
 
-    socketfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    socketfd = socket(AF_INET, ((unsigned)SOCK_STREAM)|((unsigned)SOCK_CLOEXEC), IPPROTO_TCP);
     if (socketfd <0) {
         bConnected = false;
         return -1;
@@ -74,10 +71,11 @@ int RTL_DownLoad::Connect()
     int ret = 0;
     unsigned long ul = 1;
     struct timeval timeout;
-    fd_set readset, writeset;
+    memset(&timeout,0, sizeof(timeout));
+    fd_set writeset;
     int error = -1, len = sizeof(int);
 
-    int bTimeoutFlag = 0;
+
 
     int nRecvBufLen = 200 * 1024; //设置为200K
     int status = setsockopt(socketfd, SOL_SOCKET, SO_RCVBUF, (char *) &nRecvBufLen, sizeof(int));
@@ -104,7 +102,6 @@ int RTL_DownLoad::Connect()
             getsockopt(socketfd, SOL_SOCKET, SO_ERROR, &error, (socklen_t *) &len);
             if (error == 0)          // 超时，可以做更进一步的处理，如重试等
             {
-                bTimeoutFlag = 1;
                 LOGE("Not Connect timeout RTL");
             } else {
                 LOGE("Not Connect host error");
@@ -156,7 +153,7 @@ string RTL_DownLoad::string_format(const char* format, ...)
 
 }
 
-int RTL_DownLoad::F_GetMode(void)
+int RTL_DownLoad::F_GetMode()
 {
     string sgetmode="GETMODE";
     if(!bConnected || socketfd<0)
@@ -178,7 +175,7 @@ int  RTL_DownLoad::F_ReadList(int  nImage,int inx)
     if(!bConnected || socketfd<0)
         return -2;
     struct timeval timeoutA = {0, 1000 * 10};     //10ms
-    string sformat="";
+    string sformat;
     if(nImage == 0)
     {
         sformat="BROWSE;img;%003d";
@@ -202,10 +199,10 @@ int  RTL_DownLoad::F_ReadList(int  nImage,int inx)
     return 0;
 }
 
-void RTL_DownLoad::StartReadThread(void) {
+void RTL_DownLoad::StartReadThread() {
     int ret = 0;
     if (readid == -1) {
-        ret = pthread_create(&readid, NULL, ReadData, (void *) this); // 成功返回0，错误返回错误编号
+        ret = pthread_create(&readid, nullptr, ReadData, (void *) this); // 成功返回0，错误返回错误编号
     }
     if (ret != 0) {
         readid = -1;
@@ -217,11 +214,11 @@ void F_onReadRtlData(uint8_t *data,int nLen);
 
 void *RTL_DownLoad::ReadData(void *dat)
 {
-    RTL_DownLoad *self = (RTL_DownLoad *)dat;
+    auto *self = (RTL_DownLoad *)dat;
 
-    int Bufferlen = 2048;
+    size_t Bufferlen = 2048;
 
-    uint8_t *buffer = new uint8_t[Bufferlen];
+    auto *buffer = new uint8_t[Bufferlen];
 
     fd_set set;
     int nRet;
@@ -232,7 +229,7 @@ void *RTL_DownLoad::ReadData(void *dat)
         int nError;
         FD_ZERO(&set); // 在使用之前总是要清空
         FD_SET(self->socketfd, &set); // 把socka放入要测试的描述符集中
-        nRet = select(self->socketfd + 1, &set, NULL, NULL, &timeoutA);  // 检测是否有套接口是否可读+1, &rfd, NULL, NULL, &timeoutA);// 检测是否有套接口是否可读
+        nRet = select(self->socketfd + 1, &set, nullptr, nullptr, &timeoutA);  // 检测是否有套接口是否可读+1, &rfd, NULL, NULL, &timeoutA);// 检测是否有套接口是否可读
         if (nRet <= 0) // 超时
         {
             continue;
@@ -242,7 +239,7 @@ void *RTL_DownLoad::ReadData(void *dat)
             continue;
         }
         bzero(buffer, Bufferlen);
-        nRet = recv(self->socketfd, buffer, Bufferlen, 0);
+        nRet = (int)recv(self->socketfd, buffer,  Bufferlen, 0);
         if (nRet <= 0) {
             nError = errno;
             if (nError == EWOULDBLOCK && nRet < 0) {
@@ -256,12 +253,12 @@ void *RTL_DownLoad::ReadData(void *dat)
     }
     delete []buffer;
     self->readid=-1;
-    return NULL;
+    return nullptr;
 }
 
 void RTL_DownLoad::GetData(uint8_t *data,int nLen)
 {
-    if (fuc_getData != NULL) {
+    if (fuc_getData != nullptr) {
         fuc_getData(data,nLen);
     }
 }

@@ -1,0 +1,16 @@
+Executable : /Users/aiven/Library/Android/sdk/cmake/3.6.4111459/bin/cmake
+arguments : 
+-H/WORK2/SyMaDemo_android/app
+-B/WORK2/SyMaDemo_android/app/.cxx/cmake/release/armeabi-v7a
+-DANDROID_ABI=armeabi-v7a
+-DANDROID_PLATFORM=android-18
+-DCMAKE_LIBRARY_OUTPUT_DIRECTORY=/WORK2/SyMaDemo_android/app/build/intermediates/cmake/release/obj/armeabi-v7a
+-DCMAKE_BUILD_TYPE=Release
+-DANDROID_NDK=/Users/aiven/Library/Android/sdk/ndk-bundle
+-DCMAKE_CXX_FLAGS=-Wno-error=format-security
+-DCMAKE_TOOLCHAIN_FILE=/Users/aiven/Library/Android/sdk/ndk-bundle/build/cmake/android.toolchain.cmake
+-DCMAKE_MAKE_PROGRAM=/Users/aiven/Library/Android/sdk/cmake/3.6.4111459/bin/ninja
+-GAndroid Gradle - Ninja
+-DANDROID_ARM_NEON=TRUE  -DGL_GLEXT_PROTOTYPES
+jvmArgs : 
+

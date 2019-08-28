@@ -12,7 +12,6 @@
 MyRevBuffer::MyRevBuffer()
 {
     nStartInx = 0;
-
     nLength = 0;
     nCount = 0;
     buffer = nullptr;
@@ -105,6 +104,7 @@ void MyRevBuffer::Init()
     if(buffer!= nullptr)
     {
         delete []buffer;
+        buffer = nullptr;
     }
     buffer = new uint8_t[nCount];
 }
@@ -116,6 +116,7 @@ void MyRevBuffer::Clear()
     if(buffer!= nullptr)
     {
         delete []buffer;
+        buffer = nullptr;
     }
 
 

@@ -1,0 +1,72 @@
+{
+  "variant": {
+    "module": {
+      "rootBuildGradleFolder": "/WORK2/SyMaDemo_android",
+      "sdkFolder": "/Users/aiven/Library/Android/sdk",
+      "isNativeCompilerSettingsCacheEnabled": false,
+      "isBuildOnlyTargetAbiEnabled": true,
+      "splitsAbiFilterSet": [],
+      "intermediatesFolder": "/WORK2/SyMaDemo_android/app/build/intermediates",
+      "gradleModulePathName": ":app",
+      "moduleRootFolder": "/WORK2/SyMaDemo_android/app",
+      "makeFile": "/WORK2/SyMaDemo_android/app/CMakeLists.txt",
+      "buildSystem": "CMAKE",
+      "compilerSettingsCacheFolder": "/WORK2/SyMaDemo_android/.cxx",
+      "cxxFolder": "/WORK2/SyMaDemo_android/app/.cxx",
+      "ndkFolder": "/Users/aiven/Library/Android/sdk/ndk-bundle",
+      "ndkVersion": "20.0.5594570",
+      "ndkSupportedAbiList": [
+        "ARMEABI_V7A",
+        "ARM64_V8A",
+        "X86",
+        "X86_64"
+      ],
+      "ndkDefaultAbiList": [
+        "ARMEABI_V7A",
+        "ARM64_V8A",
+        "X86",
+        "X86_64"
+      ],
+      "cmakeToolchainFile": "."
+    },
+    "buildSystemArgumentList": [
+      "-DANDROID_ARM_NEON\u003dTRUE  -DGL_GLEXT_PROTOTYPES"
+    ],
+    "cFlagList": [],
+    "cppFlagsList": [
+      "-Wno-error\u003dformat-security"
+    ],
+    "variantName": "debug",
+    "soFolder": "/WORK2/SyMaDemo_android/app/build/intermediates/cmake/debug/lib",
+    "objFolder": "/WORK2/SyMaDemo_android/app/build/intermediates/cmake/debug/obj",
+    "jsonFolder": "/WORK2/SyMaDemo_android/app/.cxx/cmake/debug",
+    "gradleBuildOutputFolder": "/WORK2/SyMaDemo_android/app/.cxx/cxx/debug",
+    "isDebuggableEnabled": true,
+    "validAbiList": [
+      "ARMEABI_V7A",
+      "ARM64_V8A"
+    ],
+    "buildTargetSet": []
+  },
+  "abi": "ARM64_V8A",
+  "abiPlatformVersion": 18,
+  "cxxBuildFolder": "/WORK2/SyMaDemo_android/app/.cxx/cmake/debug/arm64-v8a",
+  "jsonFile": "/WORK2/SyMaDemo_android/app/.cxx/cmake/debug/arm64-v8a/android_gradle_build.json",
+  "gradleBuildOutputFolder": "/WORK2/SyMaDemo_android/app/.cxx/cxx/debug/arm64-v8a",
+  "objFolder": "/WORK2/SyMaDemo_android/app/build/intermediates/cmake/debug/obj/arm64-v8a",
+  "buildCommandFile": "/WORK2/SyMaDemo_android/app/.cxx/cmake/debug/arm64-v8a/build_command.txt",
+  "buildOutputFile": "/WORK2/SyMaDemo_android/app/.cxx/cmake/debug/arm64-v8a/build_output.txt",
+  "modelOutputFile": "/WORK2/SyMaDemo_android/app/.cxx/cmake/debug/arm64-v8a/build_model.json",
+  "cmake": {
+    "cmakeListsWrapperFile": "/WORK2/SyMaDemo_android/app/.cxx/cxx/debug/arm64-v8a/CMakeLists.txt",
+    "toolchainWrapperFile": "/WORK2/SyMaDemo_android/app/.cxx/cxx/debug/arm64-v8a/android_gradle_build.toolchain.cmake",
+    "buildGenerationStateFile": "/WORK2/SyMaDemo_android/app/.cxx/cxx/debug/arm64-v8a/build_generation_state.json",
+    "cacheKeyFile": "/WORK2/SyMaDemo_android/app/.cxx/cxx/debug/arm64-v8a/compiler_cache_key.json",
+    "compilerCacheUseFile": "/WORK2/SyMaDemo_android/app/.cxx/cxx/debug/arm64-v8a/compiler_cache_use.json",
+    "compilerCacheWriteFile": "/WORK2/SyMaDemo_android/app/.cxx/cxx/debug/arm64-v8a/compiler_cache_write.json",
+    "toolchainSettingsFromCacheFile": "/WORK2/SyMaDemo_android/app/.cxx/cxx/debug/arm64-v8a/compiler_settings_cache.cmake",
+    "cmakeWrappingBaseFolder": "."
+  },
+  "jsonGenerationLoggingRecordFile": "/WORK2/SyMaDemo_android/app/.cxx/cmake/debug/arm64-v8a/json_generation_record.json",
+  "compileCommandsJsonFile": "/WORK2/SyMaDemo_android/app/.cxx/cmake/debug/arm64-v8a/compile_commands.json"
+}

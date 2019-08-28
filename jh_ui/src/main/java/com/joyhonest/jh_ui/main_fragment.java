@@ -799,7 +799,7 @@ public class main_fragment extends Fragment implements View.OnClickListener {
         if (view == But_KeyStop) {
             if(BuildConfig.D_Debug)
             {
-
+                 wifination.na4225_GetFileList(3,1,66);
             }
             else {
                 bStop = true;
@@ -821,7 +821,8 @@ public class main_fragment extends Fragment implements View.OnClickListener {
             if(BuildConfig.D_Debug)
             {
                 //wifination.na4225_GetFileList(1,1,10);
-                wifination.na4225StartDonwLoad("192.168.33.1",30000,"","MOVI0133.AVI",65667072,"/storage/emulated/0/MOVI_ABC.AVI");
+                //"192.168.33.1",30000,
+                wifination.na4225StartDonwLoad("","MOVI0133.AVI",65667072,"/storage/emulated/0/MOVI_ABC.AVI");
             }
             else {
                 if (nIsOldFlyControl == _720P_oldCtron) {
@@ -855,7 +856,7 @@ public class main_fragment extends Fragment implements View.OnClickListener {
 
                 String ss = Storage.getNormalSDCardPath();
 
-                wifination.na4225StartPlay("192.168.33.1",30000,"","MOVI0142.AVI",14516224);
+                wifination.na4225StartPlay("","MOVI0142.AVI",14516224);
 
                 //wifination.na4225StartPlay("192.168.33.1",30000,"","MOVI0140.AVI",38043648);
                 //wifination.na4225StartPlay("192.168.33.1",30000,"","MOVI0136.AVI",44695552);

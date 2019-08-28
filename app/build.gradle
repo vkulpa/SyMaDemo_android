@@ -6,15 +6,7 @@ android {
     compileSdkVersion 26
     buildToolsVersion '28.0.3'
     defaultConfig {
-        //applicationId "com.joyhonest.symademo"
-        //applicationId "com.joyhonest.jh_demo_test"
-        //applicationId "com.joyhonest.jh_demo_test"
         applicationId "com.joyhonest.jh_demo"
-        //applicationId "com.joyhonest.jh_demo_abr"
-        //applicationId "com.joyhonest.Byd_demo"
-        //applicationId "com.joyhonest.jh_demo_iKey"
-        //applicationId "com.joyhonest.symademo_gph264a"
-        //applicationId "com.joyhonest.GP_RTP"
         minSdkVersion 18
         targetSdkVersion 26
         versionCode 11
@@ -30,7 +22,6 @@ android {
         ndk {
             stl "c++_static"
             abiFilters 'armeabi-v7a','arm64-v8a'
-            //
         }
     }
     buildTypes {
@@ -38,6 +29,10 @@ android {
             minifyEnabled false
             shrinkResources false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            jniDebuggable = true
+            renderscriptDebuggable = true
         }
     }
     externalNativeBuild {
@@ -49,17 +44,14 @@ android {
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-
     implementation project(':jh_ui')
+
+
     implementation 'com.android.support:appcompat-v7:26.1.0'
     implementation 'com.android.support:transition:26.1.0'
     implementation 'com.android.support:support-v4:26.1.0'
-
     implementation 'org.simple:androideventbus:1.0.5.1'
-
-
     implementation 'com.android.support.constraint:constraint-layout:1.1.3'
 
-    
 
 }

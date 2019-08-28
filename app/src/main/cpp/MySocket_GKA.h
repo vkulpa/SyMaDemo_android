@@ -48,13 +48,9 @@ public:
     static void *ReadData(void *dat);
 
     MySocketData RevData;
-    MySocketData RevSendData;
+    //MySocketData RevSendData;
 
     void GetData(MySocketData *dat);
-    void GetData_A(uint8_t *dataA,int nLenA);
-
-    //int FindHead(MySocketData *dat);
-    int FindHead(MySocketData *dat, int pos);
 
     Fuc_GetDAta fuc_getData;
     Fuc_GetData_mjpeg  fuc_getData_mjpeg;

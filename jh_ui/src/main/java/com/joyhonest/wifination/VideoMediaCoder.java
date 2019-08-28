@@ -2,9 +2,7 @@ package com.joyhonest.wifination;
 
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
-import android.media.MediaCodecList;
 import android.media.MediaFormat;
-import android.util.Log;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
@@ -57,8 +55,6 @@ public class VideoMediaCoder {
 
     public int initMediaCodec(int width,int height,int bitrate,int fps) {
 
-        //chooseVideoEncoder();
-
         if (mMediaCodec != null) {
             mMediaCodec.stop();
             mMediaCodec.release();
@@ -86,18 +82,10 @@ public class VideoMediaCoder {
             return 0x7FFFF;
         }
 
-
-
         int nColor;
-
         nColor = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420SemiPlanar;
         if(F_GetMediaFormat(width,height,bitrate,fps,nColor) ==null)
         {
-
-            //if(F_ReCreateMediaCoder()<0)
-            //    return 0x7FFFF;
-
-
             if (mMediaCodec != null) {
                 mMediaCodec.stop();
                 mMediaCodec.release();
@@ -164,7 +152,6 @@ public class VideoMediaCoder {
         {
              return;
         }
-        //Log.e("abc","sent 0");
         ByteBuffer[] inputBuffers = mMediaCodec.getInputBuffers();//拿到输入缓冲区,用于传送数据进行编码
         ByteBuffer[] outputBuffers = mMediaCodec.getOutputBuffers();//拿到输出缓冲区,用于取到编码后的数据
         int inputBufferIndex = mMediaCodec.dequeueInputBuffer(5000);
@@ -219,60 +206,60 @@ public class VideoMediaCoder {
     }
 
 
-    private MediaCodecInfo chooseVideoEncoder(String name, MediaCodecInfo def) {
-        int nbCodecs = MediaCodecList.getCodecCount();
-        for (int i = 0; i < nbCodecs; i++) {
-            MediaCodecInfo mci = MediaCodecList.getCodecInfoAt(i);
-            if (!mci.isEncoder()) {
-                continue;
-            }
-            String[] types = mci.getSupportedTypes();
-            for (int j = 0; j < types.length; j++) {
-                if (types[j].equalsIgnoreCase(VCODEC)) {
-                    //Log.i(TAG, String.format("vencoder %s types: %s", mci.getName(), types[j]));
-                    if (name == null) {
-                        return mci;
-                    }
-
-                    if (mci.getName().contains(name)) {
-                        return mci;
-                    }
-                }
-            }
-        }
-        return def;
-    }
-
-    private int chooseVideoEncoder() {
-        // choose the encoder "video/avc":
-        //      1. select one when type matched.
-        //      2. perfer google avc.
-        //      3. perfer qcom avc.
-        MediaCodecInfo vmci = chooseVideoEncoder(null, null);
-        //vmci = chooseVideoEncoder("google", vmci);
-        //vmci = chooseVideoEncoder("qcom", vmci);
-
-        int matchedColorFormat = 0;
-        MediaCodecInfo.CodecCapabilities cc = vmci.getCapabilitiesForType(VCODEC);
-        for (int i = 0; i < cc.colorFormats.length; i++) {
-            int cf = cc.colorFormats[i];
-            Log.i(TAG, String.format("vencoder %s supports color fomart 0x%x(%d)", vmci.getName(), cf, cf));
-
-            // choose YUV for h.264, prefer the bigger one.
-            // corresponding to the color space transform in onPreviewFrame
-            if ((cf >= cc.COLOR_FormatYUV420Planar && cf <= cc.COLOR_FormatYUV420SemiPlanar)) {
-                if (cf > matchedColorFormat) {
-                    matchedColorFormat = cf;
-                }
-            }
-        }
-        for (int i = 0; i < cc.profileLevels.length; i++) {
-            MediaCodecInfo.CodecProfileLevel pl = cc.profileLevels[i];
-            Log.i(TAG, String.format("vencoder %s support profile %d, level %d", vmci.getName(), pl.profile, pl.level));
-        }
-        Log.i(TAG, String.format("vencoder %s choose color format 0x%x(%d)", vmci.getName(), matchedColorFormat, matchedColorFormat));
-        return matchedColorFormat;
-    }
+//    private MediaCodecInfo chooseVideoEncoder(String name, MediaCodecInfo def) {
+//        int nbCodecs = MediaCodecList.getCodecCount();
+//        for (int i = 0; i < nbCodecs; i++) {
+//            MediaCodecInfo mci = MediaCodecList.getCodecInfoAt(i);
+//            if (!mci.isEncoder()) {
+//                continue;
+//            }
+//            String[] types = mci.getSupportedTypes();
+//            for (int j = 0; j < types.length; j++) {
+//                if (types[j].equalsIgnoreCase(VCODEC)) {
+//                    //Log.i(TAG, String.format("vencoder %s types: %s", mci.getName(), types[j]));
+//                    if (name == null) {
+//                        return mci;
+//                    }
+//
+//                    if (mci.getName().contains(name)) {
+//                        return mci;
+//                    }
+//                }
+//            }
+//        }
+//        return def;
+//    }
+//
+//    private int chooseVideoEncoder() {
+//        // choose the encoder "video/avc":
+//        //      1. select one when type matched.
+//        //      2. perfer google avc.
+//        //      3. perfer qcom avc.
+//        MediaCodecInfo vmci = chooseVideoEncoder(null, null);
+//        //vmci = chooseVideoEncoder("google", vmci);
+//        //vmci = chooseVideoEncoder("qcom", vmci);
+//
+//        int matchedColorFormat = 0;
+//        MediaCodecInfo.CodecCapabilities cc = vmci.getCapabilitiesForType(VCODEC);
+//        for (int i = 0; i < cc.colorFormats.length; i++) {
+//            int cf = cc.colorFormats[i];
+//            Log.i(TAG, String.format("vencoder %s supports color fomart 0x%x(%d)", vmci.getName(), cf, cf));
+//
+//            // choose YUV for h.264, prefer the bigger one.
+//            // corresponding to the color space transform in onPreviewFrame
+//            if ((cf >= cc.COLOR_FormatYUV420Planar && cf <= cc.COLOR_FormatYUV420SemiPlanar)) {
+//                if (cf > matchedColorFormat) {
+//                    matchedColorFormat = cf;
+//                }
+//            }
+//        }
+//        for (int i = 0; i < cc.profileLevels.length; i++) {
+//            MediaCodecInfo.CodecProfileLevel pl = cc.profileLevels[i];
+//            Log.i(TAG, String.format("vencoder %s support profile %d, level %d", vmci.getName(), pl.profile, pl.level));
+//        }
+//        Log.i(TAG, String.format("vencoder %s choose color format 0x%x(%d)", vmci.getName(), matchedColorFormat, matchedColorFormat));
+//        return matchedColorFormat;
+//    }
 
 
 

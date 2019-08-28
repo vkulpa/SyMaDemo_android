@@ -37,9 +37,9 @@ extern "C" {
 #include "libyuv.h"
 
 
-#include "h264_rbsp.h"
-#include "sps_parse.h"
-#include "pps_parse.h"
+//#include "h264_rbsp.h"
+//#include "sps_parse.h"
+//#include "pps_parse.h"
 //#include "myOpenCV.h"
 
 
@@ -62,23 +62,7 @@ typedef unsigned char byte;
 #define   DATA_Type_MJPEG   2
 
 
-#define   IC_NO         -1
-#define   IC_GK         0
-#define   IC_GP         1
-#define   IC_SN         2
-#define   IC_GKA        3
-#define   IC_GPRTSP     4
-#define   IC_GPH264     5
-#define   IC_GPRTP      6
-#define   IC_GPH264A    7
-#define   IC_GPRTPB      8
-#define   IC_GK_UDP      9
 
-#define   IC_GPRTPC      10
-#define   IC_RTLH264     11
-
-
-#define   IC_FILES      100
 
 
 #define  bit0_OnLine            1
@@ -239,12 +223,7 @@ private:
     AVFormatContext *m_formatCtx;
     int m_videoStream;
 
-
-
-
-
     struct SwsContext *img_convert_ctx;
-    //struct SwsContext *m_sws_ctx;
 
     int m_width;
     int m_height;
@@ -285,9 +264,7 @@ public:
 
 
     bool  F_WriteAudio(jbyte * data,int nLen);
-    int Releaseffmpeg(void);
-
-
+    int   Releaseffmpeg(void);
 
     char m_snapShotPath[256];
     char m_MediaPath[256];

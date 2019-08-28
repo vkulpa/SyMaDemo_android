@@ -1,0 +1,16 @@
+{
+  "buildFiles": [
+    "/WORK2/SyMaDemo_android/app/CMakeLists.txt"
+  ],
+  "cleanCommands": [
+    "/Users/aiven/Library/Android/sdk/cmake/3.6.4111459/bin/cmake --build /WORK2/SyMaDemo_android/app/.cxx/cmake/release/armeabi-v7a --target clean"
+  ],
+  "libraries": {
+    "jh_wifi-Release-armeabi-v7a": {
+      "artifactName": "jh_wifi",
+      "buildCommand": "/Users/aiven/Library/Android/sdk/cmake/3.6.4111459/bin/cmake --build /WORK2/SyMaDemo_android/app/.cxx/cmake/release/armeabi-v7a --target jh_wifi",
+      "abi": "armeabi-v7a",
+      "output": "/WORK2/SyMaDemo_android/app/build/intermediates/cmake/release/obj/armeabi-v7a/libjh_wifi.so"
+    }
+  }
+}

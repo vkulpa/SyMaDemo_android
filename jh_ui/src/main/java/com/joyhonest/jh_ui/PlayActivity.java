@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
 
+import com.joyhonest.wifination.GP4225_Device;
 import com.joyhonest.wifination.JH_GLSurfaceView;
 import com.joyhonest.wifination.MyThumb;
 import com.joyhonest.wifination.jh_dowload_callback;
@@ -125,10 +126,12 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         public void run() {
             {
 
+                wifination.na4225_SetMode((byte)0);
                 JH_App.F_OpenStream();
 
 
                 if (main_fragment != null) {
+                    main_fragment.nType = 0;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -168,22 +171,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         JH_App.F_InitMusic();
 
         wifination.naCancelRTL();
-
-
-
-
-
-/*
-        if(JH_App.F_GetWifiType()==wifination.IC_GPH264A)
-        {
-            bGoFly = true;
-            Intent mainIntent = new Intent(PlayActivity.this, Fly_PlayActivity.class);
-            startActivity(mainIntent);
-            finish();
-            return;
-        }
-*/
-
         bGoFly = false;
         wifination.appContext = getApplicationContext();
         wifination.naSetVrBackground(false);
@@ -193,21 +180,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             public void run() {
                 setContentView(R.layout.activity_play_jh);
                 F_Init();
-                /*  BYd
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        int nW = Fragment_Layout.getWidth();
-                        int nH = Fragment_Layout.getHeight();
-                        RelativeLayout.LayoutParams  params =(RelativeLayout.LayoutParams) glSurfaceView.getLayoutParams();
-                        params.width = nW/2;
-                        params.height = nH/2;
-                        params.addRule(RelativeLayout.CENTER_IN_PARENT,RelativeLayout.TRUE);
-                        glSurfaceView.setLayoutParams(params);
-
-                    }
-                },200);
-                */
             }
         }, new Runnable() {
             @Override
@@ -217,7 +189,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
                 finish();
             }
         }).askPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE);
-
     }
 
 
@@ -253,21 +224,12 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
         };
 
 
-        // surfaceView = (SurfaceView) findViewById(R.id.surfaceView);
-        //surfaceHolder = surfaceView.getHolder();
-        //surfaceHolder.addCallback(this);
-
         thread1 = new HandlerThread("MyHandlerThread");
         thread1.start(); //创建一个HandlerThread并启动它
         openHandler = new Handler(thread1.getLooper());
-
         F_InitFragment();
-
-        //openHandler.postDelayed(initmusic,100);
-
         EventBus.getDefault().register(this);
         RssiHander.postDelayed(RssiRunable, 100);
-
 
     }
 
@@ -348,22 +310,6 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onPause() {
         super.onPause();
-//        if (bGoFly)
-//            return;
-//        if (main_fragment != null) {
-//            main_fragment.myControl.F_ReasetAll();
-//        }
-
-
-        /*
-        // sendCmdHandle.removeCallbacksAndMessages(null);
-        TelephonyManager tm = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
-        int status = tm.getCallState();
-        if(status== TelephonyManager.CALL_STATE_IDLE) {
-            Exit2Spalsh("");
-        }
-        */
-
         F_OpenCamera(false);
 
 
@@ -372,9 +318,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     protected void onResume() {
         super.onResume();
-
         F_OpenCamera(true);
-
         if (bGoFly)
             return;
         JH_App.checkDeviceHasNavigationBar(this);
@@ -623,9 +567,11 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
             return;
         if (openHandler != null) {
             wifination.naDisConnectedTCP();
+            wifination.naStopRecord_All();
             wifination.naStop();
             wifination.release();
             EventBus.getDefault().unregister(this);
+
 
             openHandler.removeCallbacksAndMessages(null);
             //  sendCmdHandle.removeCallbacksAndMessages(null);
@@ -717,7 +663,7 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
                 ss =    dowload.sFileName;
 
             } else {
-                ss = dowload.sFileName + "  DownLod " + dowload.nPercentage + "%";
+                ss = dowload.sFileName + "  DownLod " + dowload.nPercentage + "‰";
 
             }
             main_fragment.F_DispInfo(ss);
@@ -1906,133 +1852,18 @@ public class PlayActivity extends AppCompatActivity implements View.OnClickListe
 
     String sFile__ = "";
 
+
+
+    @Subscriber(tag = "GP4225_RevFile")
+    private  void GP4225_RevFile(GP4225_Device.MyFile file)
+    {
+        Log.e("TAG","get file = "+file.sFileName + "   len = "+file.nLength);
+    }
+
+
     @Subscriber(tag = "onUdpRevData")
     private void onUdpRevData(byte[] data) {
-        String str = String.format("%c%c%c%c", data[0], data[1], data[2], data[3]);
-        int m_cmd = data[4] & 0xFF + (data[5] & 0xFF) * 0x100;
-        int s_cmd = data[6] & 0xFF + (data[7] & 0xFF) * 0x100;
-        int n_len = data[8] & 0xFF + (data[9] & 0xFF) * 0x100;
 
-        if (m_cmd == 0x0000 && s_cmd == 0x0001) {   //Device Status
-            String sm_cmd = String.format("main = %d", m_cmd);
-            String ss_cmd = String.format("main = %d", s_cmd);
-            String ss_len = String.format("main = %d", n_len);
-
-            String str1 = String.format("Mode = %d ", data[10] & 0xFF);
-            String str2 = String.format("SD = %d ", data[11] & 0xFF);
-            String str3 = String.format("Videos = %d ", ((data[12] & 0xFF) + (data[13] & 0xFF) * 0x100 + (data[14] & 0xFF) * 0x10000 + (data[15] & 0xFF) * 0x1000000) & 0xFFFFFFFF);
-            String str4 = String.format("Locked = %d ", ((data[16] & 0xFF) + (data[17] & 0xFF) * 0x100 + (data[18] & 0xFF) * 0x10000 + (data[19] & 0xFF) * 0x1000000) & 0xFFFFFFFF);
-            String str5 = String.format("Photos = %d ", ((data[20] & 0xFF) + (data[21] & 0xFF) * 0x100 + (data[22] & 0xFF) * 0x10000 + (data[23] & 0xFF) * 0x1000000) & 0xFFFFFFFF);
-            String str6 = String.format("res1 = %d ", data[24] & 0xFF);
-            String str7 = String.format("res2 = %d ", data[25] & 0xFF);
-            Log.e("TAG", "Rev Data = " + str + str1 + str2 + str3 + str4 + str5 + str6 + str7);
-        }
-        if (m_cmd == 0x0002)  //GetFileList
-        {
-            if (s_cmd == 0x0001) {  //VideoList
-                int nStart, nEnd;
-                nStart = data[10] & 0xFF + (data[11] & 0xFF) * 0x100;
-                nEnd = data[12] & 0xFF + (data[13] & 0xFF) * 0x100;
-                Log.e("TAG", "Files = " + n_len + " startInx = " + nStart + " EndInx= " + nEnd);
-                int inx = 14 + 36;
-                int x = 0;
-                byte[] filestruct = new byte[32];
-
-                for (int ii = 0; ii <= nEnd - nStart; ii++) {
-                    inx = 14 + 36 + (ii * 68);
-
-                    int da = 0;
-                    for (int xx = 0; xx < 32; xx++) {
-                        if (data[inx + xx] != 0) {
-                            da++;
-                        }
-                    }
-                    int nLLL = 0;
-
-                    nLLL= (data[inx+32-36]&0xFF)+(data[inx+33-36]&0xFF)*0x100+(data[inx+34-36]&0xFF)*0x10000+(data[inx+35-36]&0xFF)*0x1000000;
-                    if (da != 0) {
-                        byte bytes[] = new byte[da];
-                        System.arraycopy(data, inx, bytes, 0, da);
-                        String s = new String(bytes);
-                        Log.e("TAG", "video fileName = " + s+" Len = "+nLLL);
-                    }
-                }
-            }
-            if (s_cmd == 0x0002) {  //LockFileList
-                int nStart, nEnd;
-                nStart = data[10] & 0xFF + (data[11] & 0xFF) * 0x100;
-                nEnd = data[12] & 0xFF + (data[13] & 0xFF) * 0x100;
-                Log.e("TAG", "Files = " + n_len + " startInx = " + nStart + " EndInx= " + nEnd);
-                int inx = 14 + 36;
-                int x = 0;
-                byte[] filestruct = new byte[32];
-
-                for (int ii = 0; ii <= nEnd - nStart; ii++) {
-                    inx = 14 + 36 + (ii * 68);
-
-                    int da = 0;
-                    for (int xx = 0; xx < 32; xx++) {
-                        if (data[inx + xx] != 0) {
-                            da++;
-                        }
-                    }
-                    int nLLL = 0;
-
-                    nLLL= (data[inx+32-36]&0xFF)+(data[inx+33-36]&0xFF)*0x100+(data[inx+34-36]&0xFF)*0x10000+(data[inx+35-36]&0xFF)*0x1000000;
-                    if (da != 0) {
-                        byte bytes[] = new byte[da];
-                        System.arraycopy(data, inx, bytes, 0, da);
-                        String s = new String(bytes);
-                        Log.e("TAG", "lock fileName = " + s+" Len = "+nLLL);
-                    }
-                }
-            }
-            if (s_cmd == 0x0003) {  //图片文件
-                int nStart, nEnd;
-
-                nStart = (data[10] & 0xFF + (data[11] & 0xFF) * 0x100);
-                nEnd = (data[12] & 0xFF + (data[13] & 0xFF) * 0x100);
-                Log.e("TAG", "Files = " + n_len + " startInx = " + nStart + " EndInx= " + nEnd);
-                int inx = 14 + 36;
-                int x = 0;
-                for (int ii = 0; ii <= nEnd - nStart; ii++) {
-                    inx = 14 + 36 + (ii * 68);
-                    int da = 0;
-                    for (int xx = 0; xx < 32; xx++) {
-                        if (data[inx + xx] != 0) {
-                            da++;
-                        }
-                    }
-
-                    int nLLL = 0;
-                    nLLL= (data[inx+32-36]&0xFF)+(data[inx+33-36]&0xFF)*0x100+(data[inx+34-36]&0xFF)*0x10000+(data[inx+35-36]&0xFF)*0x1000000;
-
-                    if (da != 0) {
-                        byte bytes[] = new byte[da];
-                        System.arraycopy(data, inx, bytes, 0, da);
-                        String s = new String(bytes);
-                        nLLL= (data[inx+32]&0xFF)|(data[inx+33]&0xFF)*0x100|(data[inx+34]&0xFF)*0x10000|(data[inx+35]&0xFF)*0x1000000;
-                        Log.e("TAG", "picture fileName = " + s+ " Len = "+nLLL);
-                    }
-                }
-            }
-        }
-        if (m_cmd == 0x000A && s_cmd == 0x0001)   //文件下载状态
-        {
-            int nStatus = data[10] & 0xFF;
-            if (nStatus == 0) {
-                Log.e("TAG", "Ready to download...");
-            }
-            if (nStatus == 1) {
-                Log.e("TAG", "File not find...");
-            }
-            if (nStatus == 2) {
-                Log.e("TAG", "TCP_socket not connected...");
-            }
-            if (nStatus == 4) {
-                Log.e("TAG", "Donwloading...");
-            }
-        }
     }
 
 

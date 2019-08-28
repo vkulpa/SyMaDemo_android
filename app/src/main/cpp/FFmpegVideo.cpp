@@ -24,11 +24,11 @@ extern AVFrame *gl_Frame;
 static void (*video_call)(AVFrame *frame);
 
 void *videoPlay(void *args) {
-    FFmpegVideo *ffmpegVideo = (FFmpegVideo *) args;
+    auto *ffmpegVideo = (FFmpegVideo *) args;
     //申请AVFrame
-    AVFrame *frame = av_frame_alloc();//分配一个AVFrame结构体,AVFrame结构体一般用于存储原始数据，指向解码后的原始帧
+    auto *frame = av_frame_alloc();//分配一个AVFrame结构体,AVFrame结构体一般用于存储原始数据，指向解码后的原始帧
 
-    AVPacket *packet = (AVPacket *) av_mallocz(sizeof(AVPacket));
+    auto *packet = (AVPacket *) av_mallocz(sizeof(AVPacket));
 
     //输出文件
     //FILE *fp = fopen(outputPath,"wb");
@@ -67,7 +67,8 @@ void *videoPlay(void *args) {
 
     //从第一帧开始的绝对时间
 
-    // start_time = av_gettime() / 1000000.0f;
+     start_time = av_gettime() /1000000.0;
+    last_delay = 0;
 
     int frameCount;
     last_play = 0;
@@ -167,11 +168,30 @@ void *videoPlay(void *args) {
             }
             if (actual_delay > 1.5)
                 actual_delay = 1.5;
-            uint32_t nDe = (uint32_t) ((actual_delay * 1000000) + 6000);
-            usleep(nDe);
+            usleep( (uint32_t) ((actual_delay * 1000000) + 6000));
 
 
             if (gl_Frame != nullptr) {
+
+
+//                if(gl_Frame->width != yuv_frame->width ||
+//                   gl_Frame->height != yuv_frame->height)
+//                {
+//                    av_freep(&gl_Frame->data[0]);
+//                    av_frame_free(&gl_Frame);
+//
+//                    gl_Frame = av_frame_alloc();
+//                    gl_Frame->format = AV_PIX_FMT_YUV420P;
+//                    gl_Frame->width = yuv_frame->width;
+//                    gl_Frame->height = yuv_frame->height;
+//                    av_image_alloc(
+//                            gl_Frame->data, gl_Frame->linesize, yuv_frame->width,
+//                            yuv_frame->height,
+//                            AV_PIX_FMT_YUV420P, 4);
+//
+//                }
+
+
                 gl_Frame->width = yuv_frame->width;
                 gl_Frame->height = yuv_frame->height;
                 gl_Frame->linesize[0] = yuv_frame->linesize[0];
@@ -261,9 +281,8 @@ int FFmpegVideo::get(AVPacket *avPacket) {
 }
 
 void FFmpegVideo::play() {
-    LOGE("开启播放线程");
     if (isPause == 0) {
-        LOGE("sssssssssssssssssssssssssssssssssssssssssssss");
+        ;
     }
     clock = 0;
     isPlay = 1;

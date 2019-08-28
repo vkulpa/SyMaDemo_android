@@ -21,14 +21,17 @@ extern "C" {
 #include "libavutil/error.h"
 #include "libavutil/frame.h"
 
-#include <stdio.h>
-#include <pthread.h>
-#include <stdbool.h>
+
 
 
 #ifdef __cplusplus
 }
 #endif
+
+#include <stdio.h>
+#include <pthread.h>
+#include <stdbool.h>
+
 
 #include  <vector>
 #include  <list>

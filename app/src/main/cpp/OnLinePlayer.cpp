@@ -393,14 +393,11 @@ int OnLinePlayer::Play_B() {
         ffmpegMusic.setAvCodecContext(pAudioCodecCtx);
         ffmpegMusic.time_base = pFormatCtx->streams[audioindex]->time_base;
 
-
         ffmpegVideo.stop();
         ffmpegVideo.index = videoindex;
         ffmpegVideo.setFFmepegMusic(&ffmpegMusic);
         ffmpegVideo.setAvCodecContext(pVideoCodecCtx);
         ffmpegVideo.time_base = pFormatCtx->streams[videoindex]->time_base;
-
-
 
         ffmpegMusic.play();
         ffmpegVideo.play();
@@ -587,6 +584,24 @@ int OnLinePlayer::Play_B() {
 
                             if (gl_Frame != nullptr) {//} && bReadDataOK) {
 
+
+//                                if(gl_Frame->width != pFrameYUV->width ||
+//                                   gl_Frame->height != pFrameYUV->height)
+//                                {
+//                                    av_freep(&gl_Frame->data[0]);
+//                                    av_frame_free(&gl_Frame);
+//
+//                                    gl_Frame = av_frame_alloc();
+//                                    gl_Frame->format = AV_PIX_FMT_YUV420P;
+//                                    gl_Frame->width = pFrameYUV->width;
+//                                    gl_Frame->height = pFrameYUV->height;
+//                                    av_image_alloc(
+//                                            gl_Frame->data, gl_Frame->linesize, pFrameYUV->width,
+//                                            pFrameYUV->height,
+//                                            AV_PIX_FMT_YUV420P, 4);
+//
+//                                }
+
                                 gl_Frame->width = pFrameYUV->width;
                                 gl_Frame->height = pFrameYUV->height;
 
@@ -636,11 +651,10 @@ int OnLinePlayer::Play_B() {
     }
 
 
-    //revBuffer.bNeedRead = false;
     bisPlaying = false;
     sws_freeContext(img_convert_ctx);
 
-    //avcodec_close(pVideoCodecCtx);
+
 
     if(pVideoCodecCtx!= nullptr) {
             if(avcodec_is_open(pVideoCodecCtx))

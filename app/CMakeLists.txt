@@ -13,7 +13,7 @@ cmake_minimum_required(VERSION 3.4.1)
 #设定ingluce 路径
 
 include_directories (
-${CMAKE_CURRENT_SOURCE_DIR};
+#${CMAKE_CURRENT_SOURCE_DIR};
 src/main/cpp/ffmpeginclude;
 src/main/cpp/mp4v2-2.0.0;
 src/main/cpp/mp4v2-2.0.0/include;
@@ -22,7 +22,7 @@ src/main/cpp/GL;
 src/main/cpp/GL/opengles;
 src/main/cpp/h264prase;
 /WORK/ffmpeg/ffmpeglib/include;
-/work/ffmpeg/libyuv/jni/include;
+/WORK/ffmpeg/libyuv/jni/include;
 /WORK/ffmpeg/speexdsp-1.2rc3/jni/include;
 
 #/WORK/ffmpeg/OpenCV/include;
@@ -116,8 +116,6 @@ target_link_libraries( # Specifies the target library.
                        GLESv2
                        OpenSLES
                        #GLESv3
-
-
                        /WORK/ffmpeg/mp4v2-2.0.0/obj/local/${ANDROID_ABI}/libmp4v2.a
                        /WORK/ffmpeg/libyuv/obj/local/${ANDROID_ABI}/libyuv.a
                        /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libavformat.a
@@ -127,7 +125,7 @@ target_link_libraries( # Specifies the target library.
                        /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libavfilter.a
                        /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libswresample.a
                        /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libswscale.a
-                       # ${OpenCV_LIBS}    #4
+                        #${OpenCV_LIBS}    #4
                         )
 
 

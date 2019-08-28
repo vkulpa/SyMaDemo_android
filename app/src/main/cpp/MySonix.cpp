@@ -1516,7 +1516,7 @@ int MySonix::createVideoSocket(void) {
         return 0;
     }
     struct sockaddr_in myaddr;
-    if ((videofd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
+    if ((videofd = socket(AF_INET, (unsigned int)SOCK_DGRAM|SOCK_CLOEXEC, IPPROTO_UDP)) < 0) {
         //printf("Failed to create socket\n");
         LOGE("Failed to create socket");
         return -1;
@@ -1846,7 +1846,7 @@ int MySonix::createCommandSocket(void) {
     struct sockaddr_in myaddr;
 
     if (uartCommandfd < 0) {
-        uartCommandfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        uartCommandfd = socket(AF_INET, (unsigned int)SOCK_DGRAM|SOCK_CLOEXEC, IPPROTO_UDP);
         if (uartCommandfd >= 0) {
             setsockopt(uartCommandfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
         }
@@ -1859,7 +1859,7 @@ int MySonix::createCommandSocket(void) {
     commandfd = -1;
 
     /* Create the UDP socket */
-    if ((commandfd = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) < 0) {
+    if ((commandfd = socket(AF_INET, (unsigned int)SOCK_DGRAM|SOCK_CLOEXEC, IPPROTO_UDP)) < 0) {
         LOGE("Failed to create socket");
         return -1;
     }
@@ -1882,28 +1882,11 @@ int MySonix::createCommandSocket(void) {
     myaddr.sin_family = AF_INET;
     myaddr.sin_addr.s_addr = htonl(INADDR_ANY);
     myaddr.sin_port = htons(0);
-/*
-        if (bind(commandfd, (struct sockaddr *)&myaddr, sizeof(myaddr)) <0)
-        {
-            printf("CommandSocket bind failed!\n");
-            shutdown(commandfd, 0);
-            close(commandfd);
-            commandfd = -1;
-            return -1;
-        }
-        */
+
 #if  1
     int value = 1;
     int status;
     status = setsockopt(commandfd, SOL_SOCKET, SO_REUSEADDR, &value, sizeof(value));
-
-    //  if (status) {
-    //          fprintf(stderr, "SO_REUSEADDR failed! (%s)\n", strerror(errno));
-    //          shutdown(commandfd, 0);
-    //          close(commandfd);
-    //          commandfd = -1;
-    //          return -1;
-    //  }
 
     value = 1;
 #if 0
@@ -2035,7 +2018,7 @@ void  MySonix::F_CreateRevSocket_and_Listen(void)
         {
                 return;
         }
-        rev_socket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        rev_socket = socket(AF_INET, (unsigned int)SOCK_DGRAM|SOCK_CLOEXEC, IPPROTO_UDP);
         if (rev_socket > 0) {
                 setsockopt(rev_socket, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
         } else

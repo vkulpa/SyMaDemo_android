@@ -40,7 +40,6 @@ public:
 
     int CreatePlayer();//创建opensl es播放器
 
-    void F_SentPlayData(uint8_t *data,int nLen);
     int createFFmpeg();
 
     //成员变量

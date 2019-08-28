@@ -6,7 +6,8 @@
 #include "JPEG_BUFFER.h"
 JPEG_BUFFER::JPEG_BUFFER():nSize(0)
 {
-    buffer=new uint8_t[500*1024];
+    //buffer=new uint8_t[500*1024];
+    buffer = nullptr;
     nCount = 0;
     nJpegInx= 0;
     bOK = false;
@@ -14,15 +15,15 @@ JPEG_BUFFER::JPEG_BUFFER():nSize(0)
 }
 JPEG_BUFFER::~JPEG_BUFFER()
 {
-    if(buffer!=NULL)
+    if(buffer!= nullptr)
     {
         delete  []buffer;
-        buffer = NULL;
+        buffer = nullptr;
     }
 }
-void JPEG_BUFFER::Clear(void)
+void JPEG_BUFFER::Clear()
 {
-    if(buffer==NULL)
+    if(buffer==nullptr)
     {
         buffer=new uint8_t[500*1024];
     }
@@ -34,12 +35,12 @@ void JPEG_BUFFER::Clear(void)
     bzero(mInx,sizeof(mInx));
 
 }
-void JPEG_BUFFER::Release(void)
+void JPEG_BUFFER::Release()
 {
-    if(buffer!=NULL)
+    if(buffer!=nullptr)
     {
         delete  []buffer;
-        buffer = NULL;
+        buffer = nullptr;
     }
     nCount = 0;
     nJpegInx= 0;
@@ -51,6 +52,9 @@ void JPEG_BUFFER::Release(void)
 
 bool  JPEG_BUFFER::AppendData(uint8_t *data,int nLen)
 {
+    if(buffer== nullptr)
+        return false;
+
     if(nCount+nLen>500*1024)
     {
         Clear();
