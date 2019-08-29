@@ -1,0 +1,26 @@
+# ninja log v5
+3	103	0	CMakeFiles/jh_wifi.dir/src/main/cpp/GL/cameraShader.c.o	3b6555a2af60f376
+4	105	0	CMakeFiles/jh_wifi.dir/src/main/cpp/GL/opengles/esUtil.c.o	14b1884e54e94033
+103	170	0	CMakeFiles/jh_wifi.dir/src/main/cpp/GL/opengles/matrix.c.o	918d85d3f70618e5
+2	187	0	CMakeFiles/jh_wifi.dir/src/main/cpp/GL/CameraOpenGLES.c.o	65a2557097fe2958
+170	214	0	CMakeFiles/jh_wifi.dir/src/main/cpp/JPEG_BUFFER.cpp.o	fbc10e8ecb9cc00f
+214	251	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MyFrame.cpp.o	edf4f77b752ab84
+251	373	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MyMediaCoder.cpp.o	6a48f5268acafc2b
+373	465	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MyRevBuffer.cpp.o	277703b5eb75acf9
+465	525	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MySocketData.cpp.o	47c264a2668db6bc
+105	1169	0	CMakeFiles/jh_wifi.dir/src/main/cpp/JH_TestInfo.cpp.o	b095615329be47d
+0	1288	0	CMakeFiles/jh_wifi.dir/src/main/cpp/FFmpegMusic.cpp.o	4e6a307e067ff65
+1	1371	0	CMakeFiles/jh_wifi.dir/src/main/cpp/FFmpegVideo.cpp.o	848d158369b8d207
+1371	1399	0	CMakeFiles/jh_wifi.dir/src/main/cpp/OpenCV_Focusing.cpp.o	ca3852dba62c82e5
+525	1672	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MySocket_GKA.cpp.o	d72a75e8e067ac7c
+1672	1753	0	CMakeFiles/jh_wifi.dir/src/main/cpp/imageutils_jni.cc.o	1b2c7c2a566bd20a
+187	1898	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MyDownLoad_GKA.cpp.o	861fc03444750e86
+1288	2251	0	CMakeFiles/jh_wifi.dir/src/main/cpp/OnLinePlayer.cpp.o	a777542bc85224a3
+1399	2279	0	CMakeFiles/jh_wifi.dir/src/main/cpp/RTL_DownLoad.cpp.o	e126c02e7fd60202
+2251	2288	0	CMakeFiles/jh_wifi.dir/src/main/cpp/rgb2yuv.cc.o	d1701e9cb0e6ca05
+2279	2319	0	CMakeFiles/jh_wifi.dir/src/main/cpp/yuv2rgb.cc.o	3add4782fd705fe7
+1170	2503	0	CMakeFiles/jh_wifi.dir/src/main/cpp/MySonix.cpp.o	ee105ef3e16fd9f8
+1898	2837	0	CMakeFiles/jh_wifi.dir/src/main/cpp/myRTP.cpp.o	c2d840abc70f55ee
+0	2874	0	CMakeFiles/jh_wifi.dir/src/main/cpp/FFMpegPlayerCore.cpp.o	7434d186abdc3e4
+1753	4742	0	CMakeFiles/jh_wifi.dir/src/main/cpp/jh_wifi.cpp.o	4dfac66b8da49b9b
+4742	12450	0	../../../../build/intermediates/cmake/debug/obj/arm64-v8a/libjh_wifi.so	f17f32da5c454b92

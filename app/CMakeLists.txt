@@ -24,8 +24,7 @@ src/main/cpp/h264prase;
 /WORK/ffmpeg/ffmpeglib/include;
 /WORK/ffmpeg/libyuv/jni/include;
 /WORK/ffmpeg/speexdsp-1.2rc3/jni/include;
-
-#/WORK/ffmpeg/OpenCV/include;
+/WORK/ffmpeg/OpenCV/include;
 #src/main/cpp/ffmpeginclude;
 )
 
@@ -100,9 +99,9 @@ ENDIF()
 
 #加入OpenCV
 
-#set(OpenCV_STATIC ON) #1
-#set(OpenCV_DIR /WORK/ffmpeg/OpenCV-android-sdk/sdk/native/jni) #2
-#find_package(OpenCV REQUIRED) #3
+set(OpenCV_STATIC ON) #1
+set(OpenCV_DIR /WORK/ffmpeg/OpenCV-android-sdk/sdk/native/jni) #2
+find_package(OpenCV REQUIRED) #3
 
 
 target_link_libraries( # Specifies the target library.
@@ -125,7 +124,7 @@ target_link_libraries( # Specifies the target library.
                        /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libavfilter.a
                        /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libswresample.a
                        /WORK/ffmpeg/ffmpeglib/${ANDROID_ABI}/libswscale.a
-                        #${OpenCV_LIBS}    #4
+                        ${OpenCV_LIBS}    #4
                         )
 
 

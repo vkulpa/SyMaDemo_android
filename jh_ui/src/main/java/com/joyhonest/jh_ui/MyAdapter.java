@@ -116,13 +116,11 @@ public class MyAdapter extends BaseAdapter {
                         }
 
                         holder.Time_View.setText(sTime);
-
                         holder.Name_View.setVisibility(View.VISIBLE);
                         if (sName != null)
                             holder.Name_View.setText(sName);
                         else
                             holder.Name_View.setText("");
-
 
                         holder.Precent_View.setText("100%");
 
